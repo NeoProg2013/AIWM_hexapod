@@ -1,3 +1,6 @@
 [submodule "hardware/ControlBoard/lib"]
 	path = hardware/ControlBoard/lib
 	url = https://github.com/NeoProgAIM/AltiumDesignLib.git
+[submodule "hardware/PowerBoard/lib"]
+	path = hardware/PowerBoard/lib
+	url = https://github.com/NeoProgAIM/AltiumDesignLib.git
