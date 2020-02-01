@@ -2458,6 +2458,24 @@
     </group>
     <group>
         <name>src</name>
+        <group>
+            <name>drivers</name>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\pwm.c</name>
+                <configuration>
+                    <name>Debug</name>
+                </configuration>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\pwm.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\systimer.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\systimer.h</name>
+            </file>
+        </group>
         <file>
             <name>$PROJ_DIR$\src\main.c</name>
         </file>

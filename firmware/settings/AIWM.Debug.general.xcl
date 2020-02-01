@@ -2,7 +2,7 @@
 
 "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.1\arm\bin\armjlink2.dll" 
 
-"C:\Users\NeoProg\Desktop\AIWM\Debug\Exe\AIWM.out" 
+"D:\AIWM_hexapod\firmware\Debug\Exe\AIWM.out" 
 
 --plugin="C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.1\arm\bin\armbat.dll" 
 

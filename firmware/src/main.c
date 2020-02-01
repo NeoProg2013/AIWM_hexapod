@@ -1,23 +1,37 @@
 #include "stm32f373xc.h"
 #include "project_base.h"
+#include "pwm.h"
+#include "systimer.h"
 #include <stdbool.h>
 
 
-static void system_setup(void);
-static void systimer_setup(void);
-static void setup_debug_gpio(void);
+static void system_init(void);
+static void debug_gpio_init(void);
+
+uint64_t systime_ms = 0;
 
 
-int main()
-{
-    system_setup();
-    systimer_setup();
-    setup_debug_gpio();
+void main() {
     
-    while (1);
+    system_init();
+    systimer_init();
+    debug_gpio_init();
+    
+    pwm_init();
+    pwm_enable();
+    
+    for (int i = 0; i < 18; ++i) {
+        pwm_set_width(i, 100 + i * 100);
+    }
+    
+    
+    
+    while (true) {
+        
+    }
 }
 
-static void system_setup(void) {
+static void system_init(void) {
     
     // Enable HSE
     RCC->CR |= RCC_CR_HSEON;
@@ -47,19 +61,7 @@ static void system_setup(void) {
                    RCC_AHBENR_GPIODEN | RCC_AHBENR_GPIOEEN | RCC_AHBENR_GPIOFEN;
 }
 
-static void systimer_setup(void) {
-    
-    // Systimer setup 
-    SysTick->VAL = 0;
-    SysTick->LOAD = SYSTEM_CLOCK_FREQUENCY / 1000;
-    SysTick->CTRL = (1 << SysTick_CTRL_TICKINT_Pos) | (1 << SysTick_CTRL_CLKSOURCE_Pos) | (1 << SysTick_CTRL_ENABLE_Pos);
-    
-    // Enable systimer
-    SysTick->CTRL |= (1 << SysTick_CTRL_ENABLE_Pos);
-    NVIC_EnableIRQ(SysTick_IRQn);
-}
-
-static void setup_debug_gpio(void) {
+static void debug_gpio_init(void) {
     
     // TP1 pin (PC9): output mode, push-pull, high speed, no pull
     GPIOC->BRR      =  (0x01 << (DEBUG_TP1_PIN * 1));
@@ -86,18 +88,14 @@ static void setup_debug_gpio(void) {
     GPIOD->PUPDR   &= ~(0x03 << (DEBUG_TP4_PIN * 2));
 }
 
-void SysTick_Handler(void) {
-  
-    //GPIOA->ODR ^= (1 << DEBUG_PIN);
-  
-    DEBUG_TP1_PIN_TOGGLE;
-    DEBUG_TP2_PIN_TOGGLE;
-    DEBUG_TP3_PIN_TOGGLE;
-    DEBUG_TP4_PIN_TOGGLE;
-    asm("NOP");
-}
-
 void HardFault_Handler(void) {
     
     while (true);
 }
+
+
+
+
+
+
+
