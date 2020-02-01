@@ -2,14 +2,25 @@
 #include "project_base.h"
 #include "pwm.h"
 #include "systimer.h"
+#include "usart2.h"
 #include <stdbool.h>
 
 
 static void system_init(void);
 static void debug_gpio_init(void);
 
-uint64_t systime_ms = 0;
 
+uint8_t rx_buffer[1024] = {0};
+uint8_t tx_buffer[1024] = {49,49,49,49,0};
+
+static void frame_received_callback(uint32_t frame_size) {
+    usart2_start_rx(rx_buffer, 10);
+    usart2_start_tx(tx_buffer, 4);
+}
+
+static void frame_transmitted_or_error_callback(void) {
+    usart2_start_rx(rx_buffer, 10);
+}
 
 void main() {
     
@@ -17,14 +28,13 @@ void main() {
     systimer_init();
     debug_gpio_init();
     
-    pwm_init();
-    pwm_enable();
+    usart2_callbacks_t callbacks;
+    callbacks.frame_received_callback = frame_received_callback;
+    callbacks.frame_transmitted_callback = frame_transmitted_or_error_callback;
+    callbacks.error_callback = frame_transmitted_or_error_callback;
     
-    for (int i = 0; i < 18; ++i) {
-        pwm_set_width(i, 100 + i * 100);
-    }
-    
-    
+    usart2_init(115200, &callbacks);
+    usart2_start_rx(rx_buffer, 10);
     
     while (true) {
         
@@ -56,9 +66,19 @@ static void system_init(void) {
     RCC->CFGR3 |= RCC_CFGR3_I2C1SW_SYSCLK | RCC_CFGR3_I2C2SW_SYSCLK | 
                   RCC_CFGR3_USART2SW_SYSCLK | RCC_CFGR3_USART3SW_SYSCLK;
     
+    
+    
     // Enable GPIO clocks
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN | 
                    RCC_AHBENR_GPIODEN | RCC_AHBENR_GPIOEEN | RCC_AHBENR_GPIOFEN;
+    
+    // Enable clocks for DMA1
+    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
+    while ((RCC->AHBENR & RCC_AHBENR_DMA1EN) == 0);
+
+    // Enable clocks for USART2
+    RCC->APB1ENR  |= RCC_APB1ENR_USART2EN;
+    while ((RCC->APB1ENR & RCC_APB1ENR_USART2EN) == 0);
 }
 
 static void debug_gpio_init(void) {

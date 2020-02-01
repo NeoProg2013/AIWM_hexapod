@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
     <fileVersion>4</fileVersion>
-    <fileChecksum>618071593</fileChecksum>
+    <fileChecksum>2731549996</fileChecksum>
     <configuration>
         <name>Debug</name>
         <outputs>
@@ -64,9 +64,14 @@
             <file>$PROJ_DIR$\Debug\Obj\pwm.pbi</file>
             <file>$PROJ_DIR$\Debug\Obj\pwm.o</file>
             <file>$PROJ_DIR$\src\drivers\pwm.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\usart2.__cstat.et</file>
             <file>$PROJ_DIR$\Debug\Obj\systimer.__cstat.et</file>
             <file>$PROJ_DIR$\src\drivers\pwm.cpp</file>
             <file>$PROJ_DIR$\src\drivers\pwm.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\usart2.o</file>
+            <file>$PROJ_DIR$\src\drivers\usart2.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\usart2.pbi</file>
+            <file>$PROJ_DIR$\src\drivers\usart2.h</file>
             <file>$PROJ_DIR$\src\drivers\systimer.c</file>
             <file>$PROJ_DIR$\src\drivers\systimer.h</file>
             <file>$PROJ_DIR$\Debug\Obj\systimer.pbi</file>
@@ -128,11 +133,11 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 2 0 40 33 34 47 38 35 28 7 8 44 11 20 6 61 26 63</file>
+                    <file> 2 0 40 33 34 47 38 35 28 7 8 44 11 20 6 62 26 68 66</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 11 34 47 26 40 61 0 6 63 20 8 2 28 7 33 38 35 44</file>
+                    <file> 66 20 8 62 40 34 6 68 26 0 11 47 2 28 7 33 38 35 44</file>
                 </tool>
             </inputs>
         </file>
@@ -182,7 +187,7 @@
             <inputs>
                 <tool>
                     <name>ILINK</name>
-                    <file> 55 49 57 43 42 65 48 53 54 39</file>
+                    <file> 55 49 57 43 42 70 63 48 53 54 39</file>
                 </tool>
             </inputs>
         </file>
@@ -221,17 +226,17 @@
                 </tool>
                 <tool>
                     <name>__cstat</name>
-                    <file> 66</file>
+                    <file> 71</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 61 40 33 34 47 38 35 26 6 2 0 28 7 8 44 11 20</file>
+                    <file> 62 40 33 34 47 38 35 26 2 0 28 7 8 44 11 20 6</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 35 40 33 34 2 38 0 8 6 26 47 20 11 61 28 7 44</file>
+                    <file> 35 20 40 33 7 6 38 2 26 34 47 0 28 44 62 11 8</file>
                 </tool>
             </inputs>
         </file>
@@ -250,20 +255,20 @@
             <inputs>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 35 40 33 38 6 26 34 47 61</file>
+                    <file> 35 40 33 38 6 26 34 47 62</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\drivers\systimer.c</name>
+            <name>$PROJ_DIR$\src\drivers\usart2.c</name>
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 65</file>
+                    <file> 63</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 64</file>
+                    <file> 65</file>
                 </tool>
                 <tool>
                     <name>__cstat</name>
@@ -273,11 +278,38 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 63 40 33 34 47 38 35 6 2 0 28 7 8 44 11 20</file>
+                    <file> 66 40 33 34 47 38 35 2 0 28 7 8 44 11 20 6 26</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 38 20 34 2 40 33 35 8 6 47 0 11 63 28 7 44</file>
+                    <file> 0 8 38 40 6 33 35 34 2 26 47 20 11 66 28 7 44</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\drivers\systimer.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 70</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 69</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 60</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 68 40 33 34 47 38 35 2 0 28 7 8 44 11 20 6</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 38 0 7 6 40 33 35 2 34 47 20 28 44 68 11 8</file>
                 </tool>
             </inputs>
         </file>

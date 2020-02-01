@@ -3,8 +3,8 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "pwm.h"
-#include "project_base.h"
 #include "stm32f373xc.h"
+#include "project_base.h"
 
 
 #define SUPPORT_PWM_CHANNELS_COUNT      (18)
