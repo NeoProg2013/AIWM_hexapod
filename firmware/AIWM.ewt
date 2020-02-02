@@ -2461,6 +2461,12 @@
         <group>
             <name>drivers</name>
             <file>
+                <name>$PROJ_DIR$\src\drivers\i2c1.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\i2c1.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\drivers\pwm.c</name>
                 <configuration>
                     <name>Debug</name>

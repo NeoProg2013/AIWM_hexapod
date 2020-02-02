@@ -1,215 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
     <fileVersion>4</fileVersion>
-    <fileChecksum>2731549996</fileChecksum>
+    <fileChecksum>1433701919</fileChecksum>
     <configuration>
         <name>Debug</name>
         <outputs>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm4.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\main.__cstat.et</file>
+            <file>$PROJ_DIR$\CMSIS\STM32F3xx\system_stm32f3xx.h</file>
+            <file>$PROJ_DIR$\src\drivers\pwm.c</file>
+            <file>$PROJ_DIR$\src\drivers\pwm.h</file>
+            <file>$PROJ_DIR$\src\drivers\i2c1.h</file>
+            <file>$PROJ_DIR$\src\drivers\systimer.h</file>
             <file>$PROJ_DIR$\CMSIS\STM32F3xx\stm32f373xc.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm23.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\mpu_armv8.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\tz_context.h</file>
-            <file>$PROJ_DIR$\src\project_base.h</file>
+            <file>$PROJ_DIR$\src\drivers\systimer.c</file>
             <file>$PROJ_DIR$\CMSIS\Include\cmsis_compiler.h</file>
             <file>$PROJ_DIR$\CMSIS\Include\cmsis_iccarm.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_armv8mbl.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm7.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\mpu_armv7.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\cmsis_armcc.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm0.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\cmsis_armclang.h</file>
-            <file>$PROJ_DIR$\CMSIS\STM32F3xx\system_stm32f3xx.c</file>
-            <file>$PROJ_DIR$\src\main.c</file>
-            <file>$PROJ_DIR$\CMSIS\STM32F3xx\startup_stm32f373xc.s</file>
-            <file>$PROJ_DIR$\CMSIS\STM32F3xx\stm32f3xx.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_sc000.h</file>
-            <file>$PROJ_DIR$\CMSIS\STM32F3xx\system_stm32f3xx.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm3.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\cmsis_gcc.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm0plus.h</file>
-            <file>$PROJ_DIR$\CMSIS\STM32F37x\startup_stm32f37x.s</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_sc300.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\stdbool.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_armv8mml.h</file>
             <file>$PROJ_DIR$\CMSIS\Include\cmsis_version.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm1.h</file>
-            <file>$PROJ_DIR$\CMSIS\Include\core_cm33.h</file>
+            <file>$PROJ_DIR$\CMSIS\Include\core_cm4.h</file>
+            <file>$PROJ_DIR$\CMSIS\STM32F3xx\startup_stm32f373xc.s</file>
+            <file>$PROJ_DIR$\CMSIS\STM32F3xx\system_stm32f3xx.c</file>
+            <file>$PROJ_DIR$\CMSIS\STM32F3xx\stm32f3xx.h</file>
+            <file>$PROJ_DIR$\CMSIS\Include\mpu_armv7.h</file>
+            <file>$PROJ_DIR$\src\drivers\i2c1.c</file>
+            <file>$PROJ_DIR$\Debug\Obj\systimer.pbi</file>
+            <file>$PROJ_DIR$\Debug\Obj\i2c1.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\usart2.pbi</file>
+            <file>C:\Users\NeoProg\Desktop\AIWM\src\stm32f372xC.icf</file>
+            <file>$PROJ_DIR$\Debug\Obj\usart2.__cstat.et</file>
+            <file>$PROJ_DIR$\Debug\Obj\i2c1.pbi</file>
+            <file>$PROJ_DIR$\Debug\Obj\pwm.pbi</file>
+            <file>$PROJ_DIR$\Debug\Obj\systimer.__cstat.et</file>
+            <file>$PROJ_DIR$\Debug\Obj\systimer.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\pwm.o</file>
+            <file>$PROJ_DIR$\Debug\Obj\pwm.__cstat.et</file>
+            <file>$PROJ_DIR$\Debug\Obj\usart2.o</file>
+            <file>$PROJ_DIR$\src\drivers\pwm.cpp</file>
+            <file>$PROJ_DIR$\Debug\Obj\main.__cstat.et</file>
+            <file>$PROJ_DIR$\CMSIS\system_stm32f3xx.c</file>
+            <file>$PROJ_DIR$\src\drivers\usart2.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
+            <file>$PROJ_DIR$\Debug\Exe\AIWM.out</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\startup_stm32f373xc.o</file>
+            <file>$PROJ_DIR$\src\drivers\usart2.c</file>
             <file>$PROJ_DIR$\Debug\Obj\AIWM.pbd</file>
             <file>$PROJ_DIR$\Debug\Obj\startup_stm32f37x.o</file>
-            <file>$TOOLKIT_DIR$\inc\c\ycheck.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
-            <file>$TOOLKIT_DIR$\inc\c\DLib_Product.h</file>
-            <file>$PROJ_DIR$\main.c</file>
-            <file>$PROJ_DIR$\Debug\Exe\AIWM.out</file>
-            <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</file>
-            <file>$TOOLKIT_DIR$\lib\dl7M_tln.a</file>
-            <file>$TOOLKIT_DIR$\inc\c\stdint.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\system_stm32f3xx.__cstat.et</file>
-            <file>$PROJ_DIR$\Debug\Obj\system_stm32f3xx.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\startup_stm32f373xc.o</file>
-            <file>$TOOLKIT_DIR$\inc\c\iccarm_builtin.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
-            <file>$PROJ_DIR$\Debug\Obj\system_stm32f3xx.pbi</file>
-            <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
-            <file>$TOOLKIT_DIR$\lib\shb_l.a</file>
-            <file>$PROJ_DIR$\Debug\Obj\main.o</file>
-            <file>$PROJ_DIR$\CMSIS\startup_stm32f373xc.s</file>
-            <file>$PROJ_DIR$\Debug\List\AIWM.map</file>
-            <file>$PROJ_DIR$\CMSIS\system_stm32f3xx.c</file>
             <file>$TOOLKIT_DIR$\lib\rt7M_tl.a</file>
             <file>$TOOLKIT_DIR$\lib\m7M_tls.a</file>
-            <file>C:\Users\NeoProg\Desktop\AIWM\src\stm32f372xC.icf</file>
-            <file>$PROJ_DIR$\Debug\Obj\pwm.pbi</file>
-            <file>$PROJ_DIR$\Debug\Obj\pwm.o</file>
-            <file>$PROJ_DIR$\src\drivers\pwm.c</file>
-            <file>$PROJ_DIR$\Debug\Obj\usart2.__cstat.et</file>
-            <file>$PROJ_DIR$\Debug\Obj\systimer.__cstat.et</file>
-            <file>$PROJ_DIR$\src\drivers\pwm.cpp</file>
-            <file>$PROJ_DIR$\src\drivers\pwm.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\usart2.o</file>
-            <file>$PROJ_DIR$\src\drivers\usart2.c</file>
-            <file>$PROJ_DIR$\Debug\Obj\usart2.pbi</file>
-            <file>$PROJ_DIR$\src\drivers\usart2.h</file>
-            <file>$PROJ_DIR$\src\drivers\systimer.c</file>
-            <file>$PROJ_DIR$\src\drivers\systimer.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\systimer.pbi</file>
-            <file>$PROJ_DIR$\Debug\Obj\systimer.o</file>
-            <file>$PROJ_DIR$\Debug\Obj\pwm.__cstat.et</file>
+            <file>$PROJ_DIR$\src\main.c</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Config_Normal.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\iccarm_builtin.h</file>
+            <file>$TOOLKIT_DIR$\lib\dl7M_tln.a</file>
+            <file>$PROJ_DIR$\CMSIS\STM32F37x\startup_stm32f37x.s</file>
+            <file>$TOOLKIT_DIR$\inc\c\stdbool.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
+            <file>$PROJ_DIR$\src\project_base.h</file>
+            <file>$TOOLKIT_DIR$\inc\c\yvals.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\system_stm32f3xx.__cstat.et</file>
+            <file>$PROJ_DIR$\Debug\Obj\system_stm32f3xx.pbi</file>
+            <file>$TOOLKIT_DIR$\inc\c\DLib_Defaults.h</file>
+            <file>$PROJ_DIR$\CMSIS\startup_stm32f373xc.s</file>
+            <file>$PROJ_DIR$\Debug\Obj\system_stm32f3xx.o</file>
+            <file>$TOOLKIT_DIR$\lib\shb_l.a</file>
+            <file>$PROJ_DIR$\Debug\Obj\main.o</file>
+            <file>$PROJ_DIR$\main.c</file>
+            <file>$PROJ_DIR$\Debug\List\AIWM.map</file>
+            <file>$PROJ_DIR$\Debug\Obj\i2c1.__cstat.et</file>
         </outputs>
         <file>
             <name>[ROOT_NODE]</name>
             <outputs>
                 <tool>
                     <name>ILINK</name>
-                    <file> 37 51</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\CMSIS\STM32F3xx\system_stm32f3xx.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 42</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 46</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 41</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 18 2 0 40 33 34 47 38 35 28 7 8 44 11 20</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 20 40 34 2 8 0 11 47 18 28 7 33 38 35 44</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\main.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 49</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 45</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 1</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 2 0 40 33 34 47 38 35 28 7 8 44 11 20 6 62 26 68 66</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 66 20 8 62 40 34 6 68 26 0 11 47 2 28 7 33 38 35 44</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\CMSIS\STM32F3xx\startup_stm32f373xc.s</name>
-            <outputs>
-                <tool>
-                    <name>AARM</name>
-                    <file> 43</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\CMSIS\STM32F37x\startup_stm32f37x.s</name>
-            <outputs>
-                <tool>
-                    <name>AARM</name>
-                    <file> 32</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\main.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 49</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 45</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 1</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\Debug\Exe\AIWM.out</name>
-            <outputs>
-                <tool>
-                    <name>ILINK</name>
-                    <file> 51</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ILINK</name>
-                    <file> 55 49 57 43 42 70 63 48 53 54 39</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\CMSIS\startup_stm32f373xc.s</name>
-            <outputs>
-                <tool>
-                    <name>AARM</name>
-                    <file> 43</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\CMSIS\system_stm32f3xx.c</name>
-            <outputs>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 46</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 41</file>
+                    <file> 33 59</file>
                 </tool>
             </outputs>
         </file>
@@ -218,71 +81,25 @@
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 57</file>
+                    <file> 25</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 56</file>
+                    <file> 22</file>
                 </tool>
                 <tool>
                     <name>__cstat</name>
-                    <file> 71</file>
+                    <file> 26</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 62 40 33 34 47 38 35 26 2 0 28 7 8 44 11 20 6</file>
+                    <file> 2 34 35 50 53 43 32 47 5 10 9 7 8 44 14 0 49</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 35 20 40 33 7 6 38 2 26 34 47 0 28 44 62 11 8</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\drivers\pwm.cpp</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 57</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 56</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 35 40 33 38 6 26 34 47 62</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\drivers\usart2.c</name>
-            <outputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 63</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 65</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 59</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICCARM</name>
-                    <file> 66 40 33 34 47 38 35 2 0 28 7 8 44 11 20 6 26</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 0 8 38 40 6 33 35 34 2 26 47 20 11 66 28 7 44</file>
+                    <file> 43 7 49 34 35 32 0 5 47 50 53 10 9 44 2 14 8</file>
                 </tool>
             </inputs>
         </file>
@@ -291,11 +108,74 @@
             <outputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 70</file>
+                    <file> 24</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 69</file>
+                    <file> 16</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 23</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 4 34 35 50 53 43 32 5 10 9 7 8 44 14 0 49</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 43 10 7 49 34 35 32 5 50 53 0 9 44 4 14 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\CMSIS\STM32F3xx\startup_stm32f373xc.s</name>
+            <outputs>
+                <tool>
+                    <name>AARM</name>
+                    <file> 36</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\CMSIS\STM32F3xx\system_stm32f3xx.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 55</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 52</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 51</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 13 5 10 34 35 50 53 43 32 9 7 8 44 14 0</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 0 34 50 5 8 10 14 53 13 9 7 35 43 32 44</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\drivers\i2c1.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 17</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 21</file>
                 </tool>
                 <tool>
                     <name>__cstat</name>
@@ -305,21 +185,157 @@
             <inputs>
                 <tool>
                     <name>ICCARM</name>
-                    <file> 68 40 33 34 47 38 35 2 0 28 7 8 44 11 20 6</file>
+                    <file> 3 34 35 50 53 43 32 47 5 10 9 7 8 44 14 0 4</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 38 0 7 6 40 33 35 2 34 47 20 28 44 68 11 8</file>
+                    <file> 35 32 0 34 4 43 14 5 47 50 53 10 8 3 9 7 44</file>
                 </tool>
             </inputs>
         </file>
-        <forcedrebuild>
-            <name>$PROJ_DIR$\src\drivers\pwm.c</name>
-            <tool>C-STAT</tool>
-        </forcedrebuild>
+        <file>
+            <name>$PROJ_DIR$\src\drivers\pwm.cpp</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 25</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 22</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 32 34 35 43 49 47 50 53 2</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\CMSIS\system_stm32f3xx.c</name>
+            <outputs>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 52</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 51</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Debug\Exe\AIWM.out</name>
+            <outputs>
+                <tool>
+                    <name>ILINK</name>
+                    <file> 59</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ILINK</name>
+                    <file> 19 17 57 25 36 55 24 27 56 40 41 45</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\drivers\usart2.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 27</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 18</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 20</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 31 34 35 50 53 43 32 5 10 9 7 8 44 14 0 49 47</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 53 0 8 34 49 50 5 47 35 43 32 10 14 31 9 7 44</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\main.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 57</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 48</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 29</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 5 10 34 35 50 53 43 32 9 7 8 44 14 0 49 2 47 4 31 3</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 32 47 31 9 35 34 2 0 44 49 4 3 10 7 43 5 14 50 53 8</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\CMSIS\STM32F37x\startup_stm32f37x.s</name>
+            <outputs>
+                <tool>
+                    <name>AARM</name>
+                    <file> 39</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\CMSIS\startup_stm32f373xc.s</name>
+            <outputs>
+                <tool>
+                    <name>AARM</name>
+                    <file> 36</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\main.c</name>
+            <outputs>
+                <tool>
+                    <name>ICCARM</name>
+                    <file> 57</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 48</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 29</file>
+                </tool>
+            </outputs>
+        </file>
         <forcedrebuild>
             <name>$PROJ_DIR$\CMSIS\system_stm32f3xx.c</name>
             <tool>ICCARM</tool>
+        </forcedrebuild>
+        <forcedrebuild>
+            <name>$PROJ_DIR$\src\drivers\pwm.c</name>
+            <tool>C-STAT</tool>
         </forcedrebuild>
     </configuration>
     <configuration>

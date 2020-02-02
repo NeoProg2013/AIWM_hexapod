@@ -131,7 +131,7 @@ void pwm_set_shadow_buffer_state(bool is_locked) {
 //  ***************************************************************************
 void pwm_set_width(uint32_t channel, uint32_t width) {
     
-    int32_t ticks = width - PWM_CHANNEL_PULSE_TRIM;
+    int32_t ticks = (int32_t)width - PWM_CHANNEL_PULSE_TRIM;
     if (ticks < 0) {
         ticks = 0;
     }
@@ -150,8 +150,6 @@ void pwm_set_width(uint32_t channel, uint32_t width) {
 //  ***************************************************************************
 void TIM17_IRQHandler(void) {
     
-    DEBUG_TP1_PIN_SET;
-
     static uint32_t ch_cursor = 0;
 
     // Read and clear status register
@@ -217,6 +215,4 @@ void TIM17_IRQHandler(void) {
 
         ++synchro;
     }
-    
-    DEBUG_TP1_PIN_CLR;
 }
