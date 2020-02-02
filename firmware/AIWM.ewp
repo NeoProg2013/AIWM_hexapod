@@ -767,7 +767,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>C:\Users\NeoProg\Desktop\AIWM\src\stm32f372xC.icf</state>
+                    <state>$PROJ_DIR$\src\stm32f372xC.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -2436,10 +2436,37 @@
             </file>
         </group>
         <file>
+            <name>$PROJ_DIR$\src\cli.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\cli.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\communication.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\communication.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\src\main.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\project_base.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\swp.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\swp.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\swp_protocol.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\system_monitor.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\system_monitor.h</name>
         </file>
     </group>
 </project>

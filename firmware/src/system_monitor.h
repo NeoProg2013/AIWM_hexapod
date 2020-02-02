@@ -49,6 +49,7 @@ typedef enum {
 extern uint8_t  sysmon_system_status;
 extern uint8_t  sysmon_module_status;
 extern uint16_t sysmon_battery_cell_voltage[3];
+extern uint16_t sysmon_battery_voltage;
 
 
 extern void sysmon_init(void);

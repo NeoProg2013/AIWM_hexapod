@@ -6,21 +6,26 @@
 #include "adc.h"
 
 #define BATTERY_VOLTAGE_THRESHOLD       (900)       // 9.00V
+#define CELL_VOLTAGE_THRESHOLD          (280)       // 2.80V
+
 
 typedef enum {
     STATE_NO_INIT,
     STATE_START_CONVERSION,
     STATE_WAIT,
-    STATE_CALCULATION,
-    STATE_CHECK
+    STATE_CALCULATION
 } monitor_state_t;
 
+
 static monitor_state_t monitor_state = STATE_NO_INIT;
+
+static void calculate_battery_voltage(void);
 
 
 uint8_t  sysmon_system_status = 0;
 uint8_t  sysmon_module_status = 0;
 uint16_t sysmon_battery_cell_voltage[3] = {0, 0, 0};
+uint16_t sysmon_battery_voltage = 0;
 
 
 //  ***************************************************************************
@@ -49,10 +54,10 @@ void sysmon_process(void) {
         sysmon_battery_cell_voltage[0] = 0;
         sysmon_battery_cell_voltage[1] = 0;
         sysmon_battery_cell_voltage[2] = 0;
+        sysmon_battery_voltage = 0;
         return;
     }
 
-    uint32_t battery_voltage = 0;
     switch (monitor_state) {
 
         case STATE_START_CONVERSION:
@@ -67,20 +72,19 @@ void sysmon_process(void) {
             break;
 
         case STATE_CALCULATION:
-            sysmon_battery_cell_voltage[0] = adc_get_conversion_result(0);
-            sysmon_battery_cell_voltage[1] = adc_get_conversion_result(1);
-            sysmon_battery_cell_voltage[2] = adc_get_conversion_result(2);
-            
-            /*battery_voltage += sysmon_battery_cell_voltage[0];
-            battery_voltage += sysmon_battery_cell_voltage[1];
-            battery_voltage += sysmon_battery_cell_voltage[2];*/
-            monitor_state = STATE_CHECK;
-            break;
-
-        case STATE_CHECK:
-            /*if (battery_voltage < BATTERY_VOLTAGE_THRESHOLD) {
+            calculate_battery_voltage();
+            if (sysmon_battery_voltage < BATTERY_VOLTAGE_THRESHOLD) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
-            }*/
+            }
+            if (sysmon_battery_cell_voltage[0] < CELL_VOLTAGE_THRESHOLD) {
+                sysmon_set_error(SYSMON_VOLTAGE_ERROR);
+            }
+            if (sysmon_battery_cell_voltage[1] < CELL_VOLTAGE_THRESHOLD) {
+                sysmon_set_error(SYSMON_VOLTAGE_ERROR);
+            }
+            if (sysmon_battery_cell_voltage[2] < CELL_VOLTAGE_THRESHOLD) {
+                sysmon_set_error(SYSMON_VOLTAGE_ERROR);
+            }
             monitor_state = STATE_START_CONVERSION;
             break;
 
@@ -147,3 +151,42 @@ bool sysmon_is_module_disable(sysmon_module_t module) {
     return sysmon_module_status & module;
 }
 
+
+
+
+
+//  ***************************************************************************
+/// @brief  Calculate battery voltage 
+/// @param  none
+/// @return none
+//  ***************************************************************************
+static void calculate_battery_voltage(void) {
+    
+    // Revert voltage divisor factor (voltage_div_factor = 1 / real_factor)
+    // Voltage divisor: VIN-[10k]-OUT-[3k3]-GND
+    // * 1000 - convert V to mV
+    const float voltage_div_factor = ((10000.0f + 3300.0f) / 3300.0f) * 1000.0f;
+    const float bins_to_voltage_factor = 3.3f / 4096.0f;
+    
+    uint32_t adc_bins = 0;
+    float input_voltage = 0;
+    
+    // Battery cell #1 (max voltage 4.2V)
+    adc_bins = adc_get_conversion_result(0);
+    input_voltage = adc_bins * bins_to_voltage_factor;
+    sysmon_battery_cell_voltage[0] = (uint32_t)(input_voltage * voltage_div_factor);
+    
+    // Battery cell #2 (max voltage 8.4V)
+    adc_bins = adc_get_conversion_result(1);
+    input_voltage = adc_bins * bins_to_voltage_factor;
+    sysmon_battery_cell_voltage[1] = (uint32_t)(input_voltage * voltage_div_factor);
+    
+    // Battery cell #3 (max voltage 12.6V)
+    adc_bins = adc_get_conversion_result(2);
+    input_voltage = adc_bins * bins_to_voltage_factor;
+    sysmon_battery_cell_voltage[2] = (uint32_t)(input_voltage * voltage_div_factor);
+    
+    sysmon_battery_voltage = sysmon_battery_cell_voltage[2];
+    sysmon_battery_cell_voltage[2] -= sysmon_battery_cell_voltage[1];
+    sysmon_battery_cell_voltage[1] -= sysmon_battery_cell_voltage[0];
+}

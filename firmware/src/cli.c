@@ -125,10 +125,12 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
             sprintf(response, CLI_MSG("system status report")
                               CLI_MSG("    - system_status: 0x%04X")
                               CLI_MSG("    - module_status: 0x%04X")
-                              CLI_MSG("    - battery cell 1: %d V")
-                              CLI_MSG("    - battery cell 2: %d V")
-                              CLI_MSG("    - battery cell 3: %d V"),
+                              CLI_MSG("    - battery voltage: %d mV")
+                              CLI_MSG("    - battery cell #1: %d mV")
+                              CLI_MSG("    - battery cell #2: %d mV")
+                              CLI_MSG("    - battery cell #3: %d mV"),
                     sysmon_system_status, sysmon_module_status,
+                    sysmon_battery_voltage,
                     sysmon_battery_cell_voltage[0],
                     sysmon_battery_cell_voltage[1],
                     sysmon_battery_cell_voltage[2]);
