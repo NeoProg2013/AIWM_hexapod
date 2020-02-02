@@ -4,6 +4,7 @@
 #include "systimer.h"
 #include "usart2.h"
 #include "i2c1.h"
+#include "adc.h"
 #include <stdbool.h>
 
 
@@ -37,29 +38,7 @@ void main() {
     usart2_init(115200, &callbacks);
     usart2_start_rx(rx_buffer, 10);*/
     
-    delay_ms(10000);
-    
-    i2c1_init(I2C_SPEED_400KHZ);
-    
-    uint8_t buffer[32] = {0};
-    if (i2c1_read(0xA0, 0x0000, 2, buffer, 10) == false) {
-        asm("nop");
-    }
-    
-    buffer[0] = 0xBB;
-    buffer[1] = 0xBB;
-    buffer[2] = 0xBB;
-    if (i2c1_write(0xA0, 0x0002, 2, buffer, 3) == false) {
-        asm("nop");
-    }
-    delay_ms(10);
-    
-    buffer[0] = 0;
-    buffer[1] = 0;
-    buffer[2] = 0;
-    if (i2c1_read(0xA0, 0x0000, 2, buffer, 10) == false) {
-        asm("nop");
-    }
+    adc_init();
     
     while (true) {
         
@@ -100,6 +79,10 @@ static void system_init(void) {
     RCC->AHBENR |= RCC_AHBENR_DMA1EN;
     while ((RCC->AHBENR & RCC_AHBENR_DMA1EN) == 0);
 
+    // Enable clocks for TIM17
+    RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
+    while ((RCC->APB2ENR & RCC_APB2ENR_TIM17EN) == 0);    
+
     // Enable clocks for USART2
     RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_USART2EN) == 0);
@@ -107,6 +90,11 @@ static void system_init(void) {
     // Enable clocks for I2C1
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_I2C1EN) == 0);
+    
+    // Enable clocks for ADC1
+    RCC->CFGR |= RCC_CFGR_ADCPRE_DIV6;
+    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
+    while ((RCC->APB2ENR & RCC_APB2ENR_ADC1EN) == 0);
 }
 
 static void debug_gpio_init(void) {

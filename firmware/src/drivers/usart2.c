@@ -28,7 +28,27 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     // Copy callbacks
     usart_callbacks = *callbacks;
     
-    // Reset USART2 registers
+    
+    //
+    // Setup GPIO
+    //
+    // Setup TX pin
+    GPIOB->MODER   |=  (0x02 << (USART_TX_PIN * 2)); // Alternate function mode
+    GPIOB->OSPEEDR |=  (0x03 << (USART_TX_PIN * 2)); // High speed
+    GPIOB->PUPDR   &= ~(0x03 << (USART_TX_PIN * 2)); // Disable pull
+    GPIOB->AFR[0]  |=  (0x07 << (USART_TX_PIN * 4)); // AF7
+    
+    // Setup RX pin
+    GPIOB->MODER   |=  (0x02 << (USART_RX_PIN * 2)); // Alternate function mode
+    GPIOB->OSPEEDR |=  (0x03 << (USART_RX_PIN * 2)); // High speed
+    GPIOB->PUPDR   &= ~(0x03 << (USART_RX_PIN * 2)); // Disable pull
+    GPIOB->PUPDR   |=  (0x01 << (USART_RX_PIN * 2)); // Enable pull up
+    GPIOB->AFR[0]  |=  (0x07 << (USART_RX_PIN * 4)); // AF7
+    
+    
+    //
+    // Setup USART2
+    //
     RCC->APB1RSTR |= RCC_APB1RSTR_USART2RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_USART2RST;
 
@@ -58,19 +78,6 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     DMA1_Channel6->CNDTR = 0;
     NVIC_EnableIRQ(DMA1_Channel6_IRQn);
     NVIC_SetPriority(DMA1_Channel6_IRQn, USART1_IRQ_PRIORITY);
-
-    // Setup TX pin
-    GPIOB->MODER   |=  (0x02 << (USART_TX_PIN * 2)); // Alternate function
-    GPIOB->OSPEEDR |=  (0x03 << (USART_TX_PIN * 2)); // High speed
-    GPIOB->PUPDR   &= ~(0x03 << (USART_TX_PIN * 2)); // Disable pull
-    GPIOB->AFR[0]  |=  (0x07 << (USART_TX_PIN * 4)); // AF7
-    
-    // Setup RX pin
-    GPIOB->MODER   |=  (0x02 << (USART_RX_PIN * 2)); // Alternate function
-    GPIOB->OSPEEDR |=  (0x03 << (USART_RX_PIN * 2)); // High speed
-    GPIOB->PUPDR   &= ~(0x03 << (USART_RX_PIN * 2)); // Disable pull
-    GPIOB->PUPDR   |=  (0x01 << (USART_RX_PIN * 2)); // Enable pull up
-    GPIOB->AFR[0]  |=  (0x07 << (USART_RX_PIN * 4)); // AF7
 
     // Enable USART
     USART2->CR1 |= USART_CR1_UE;

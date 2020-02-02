@@ -23,16 +23,12 @@ static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask);
 /// @return none
 //  ***************************************************************************
 void i2c1_init(i2c_speed_t speed) {
-
-    // Reset I2C1 registers
-    RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;
-    RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C1RST;
-
-    // Configure I2C
-    I2C1->TIMINGR = speed;
-
+    
+    //
+    // Setup GPIO
+    //
     // Send 9 pulses on SCL
-    GPIOB->MODER   |=  (0x01 << (I2C_SCL_PIN * 2));         // Output
+    GPIOB->MODER   |=  (0x01 << (I2C_SCL_PIN * 2));         // Output mode
     GPIOB->OTYPER  |=  (0x01 << (I2C_SCL_PIN * 1));         // Open drain
     GPIOB->OSPEEDR |=  (0x03 << (I2C_SCL_PIN * 2));         // High speed
     GPIOB->PUPDR   &= ~(0x03 << (I2C_SCL_PIN * 2));         // Disable pull
@@ -44,17 +40,27 @@ void i2c1_init(i2c_speed_t speed) {
     }
     GPIOB->MODER   &= ~(0x03 << (I2C_SCL_PIN * 2));
     
-    // Setup SCL pin
-    GPIOB->MODER   |=  (0x02 << (I2C_SCL_PIN * 2));         // Alternate function
+    // Setup SCL pin (PB8)
+    GPIOB->MODER   |=  (0x02 << (I2C_SCL_PIN * 2));         // Alternate function mode
     GPIOB->AFR[1]  |=  (0x04 << (I2C_SCL_PIN * 4 - 32));    // AF4
     
-    // Setup SDA pin
-    GPIOB->MODER   |=  (0x02 << (I2C_SDA_PIN * 2));         // Alternate function
+    // Setup SDA pin (PB9)
+    GPIOB->MODER   |=  (0x02 << (I2C_SDA_PIN * 2));         // Alternate function mode
     GPIOB->OTYPER  |=  (0x01 << (I2C_SDA_PIN * 1));         // Open drain
     GPIOB->OSPEEDR |=  (0x03 << (I2C_SDA_PIN * 2));         // High speed
     GPIOB->PUPDR   &= ~(0x03 << (I2C_SDA_PIN * 2));         // Disable pull
     GPIOB->AFR[1]  |=  (0x04 << (I2C_SDA_PIN * 4 - 32));    // AF4
     
+    
+    //
+    // Setup I2C1
+    //
+    RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;
+    RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C1RST;
+
+    // Configure I2C
+    I2C1->TIMINGR = speed;
+ 
     
 }
 
@@ -205,7 +211,7 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
     uint64_t start_time = get_time_ms();
     while ((*reg & mask) == 0) {
         
-        if (get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
+        if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
             return false;
         }
     }
@@ -223,7 +229,7 @@ static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask) {
     uint64_t start_time = get_time_ms();
     while (*reg & mask) {
         
-        if (get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
+        if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
             return false;
         }
     }

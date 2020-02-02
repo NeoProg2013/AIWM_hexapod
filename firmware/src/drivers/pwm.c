@@ -59,20 +59,27 @@ uint64_t synchro = 0;
 /// @return none
 //  ***************************************************************************
 void pwm_init(void) {
-
-    // Initialization active buffer and configure GPIO
+    
+    // Initialization active buffer
     for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
-
 		active_buffer[i] = shadow_buffer[i];
+	}
 
+    
+    //
+    // Setup GPIO
+    //
+    for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
 		active_buffer[i].gpio_port->BRR      =  (0x01 << (active_buffer[i].gpio_pin * 1));   // Reset output
 		active_buffer[i].gpio_port->MODER   |=  (0x01 << (active_buffer[i].gpio_pin * 2));   // Output mode
 		active_buffer[i].gpio_port->OSPEEDR |=  (0x03 << (active_buffer[i].gpio_pin * 2));   // High speed
-		active_buffer[i].gpio_port->PUPDR   &= ~(0x03 << (active_buffer[i].gpio_pin * 2));   // No pull-up, no pull-down
+		active_buffer[i].gpio_port->PUPDR   &= ~(0x03 << (active_buffer[i].gpio_pin * 2));   // Disable pull
 	}
 
-    // Configure PWM timer clocks
-    RCC->APB2ENR  |= RCC_APB2ENR_TIM17EN;
+    
+    //
+    // Setup PWM timer
+    //
     RCC->APB2RSTR |= RCC_APB2RSTR_TIM17RST;
     RCC->APB2RSTR &= ~RCC_APB2RSTR_TIM17RST;
 
