@@ -5,6 +5,8 @@
 #include "usart2.h"
 #include "i2c1.h"
 #include "adc.h"
+#include "communication.h"
+#include "system_monitor.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -16,42 +18,21 @@ static void debug_gpio_init(void);
 uint8_t rx_buffer[1024] = {0};
 uint8_t tx_buffer[1024] = {0};
 
-static void frame_received_callback(uint32_t frame_size) {
 
-}
-
-static void frame_transmitted_or_error_callback(void) {
-
-}
 
 void main() {
     
     system_init();
     systimer_init();
     debug_gpio_init();
-    
-    usart2_callbacks_t callbacks;
-    callbacks.frame_received_callback = frame_received_callback;
-    callbacks.frame_transmitted_callback = frame_transmitted_or_error_callback;
-    callbacks.error_callback = frame_transmitted_or_error_callback;
-    
-    usart2_init(115200, &callbacks);
-    adc_init();
-    adc_start_conversion();
+
+    sysmon_init();
+    communication_init();
     
     while (true) {
         
-        if (adc_is_conversion_complete() == true) {
-            
-            uint16_t adc1 = adc_get_conversion_result(0);
-            uint16_t adc2 = adc_get_conversion_result(1);
-            uint16_t adc3 = adc_get_conversion_result(2);
-            sprintf(tx_buffer, "ADC1: %d\r\nADC2: %d\r\nADC3: %d\r\n", adc1, adc2, adc3);
-            usart2_start_tx(tx_buffer, strlen(tx_buffer));
-            delay_ms(1000);
-            adc_start_conversion();
-        }
-        
+        sysmon_process();
+        communication_process();
     }
 }
 
