@@ -1,12 +1,13 @@
+//  ***************************************************************************
+/// @file    main.c
+/// @author  NeoProg
+//  ***************************************************************************
 #include "stm32f373xc.h"
 #include "project_base.h"
-#include "pwm.h"
-#include "systimer.h"
-#include "usart2.h"
-#include "i2c1.h"
-#include "adc.h"
 #include "communication.h"
+#include "configurator.h"
 #include "system_monitor.h"
+#include "systimer.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -27,6 +28,7 @@ void main() {
     debug_gpio_init();
 
     sysmon_init();
+    config_init();
     communication_init();
     
     while (true) {

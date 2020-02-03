@@ -64,6 +64,7 @@ void communication_process(void) {
 
     if (driver_state == STATE_FRAME_RECEIVED) {
         
+        tx_buffer[0] = '\0';
         uint32_t bytes_for_tx = 0;
 
         // Check switch CLI sequence
@@ -79,6 +80,7 @@ void communication_process(void) {
             memset(tx_buffer, 0, sizeof(tx_buffer));
             if (is_switched_to_cli == true) {
                 bytes_for_tx = cli_process_frame((char*)rx_buffer, (char*)tx_buffer);
+                memset(rx_buffer, 0, sizeof(rx_buffer));
             }
             else {
                 bytes_for_tx = swp_process_frame(rx_buffer, received_frame_size, tx_buffer);

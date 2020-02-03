@@ -187,6 +187,10 @@ static void calculate_battery_voltage(void) {
     sysmon_battery_cell_voltage[2] = (uint32_t)(input_voltage * voltage_div_factor);
     
     sysmon_battery_voltage = sysmon_battery_cell_voltage[2];
-    sysmon_battery_cell_voltage[2] -= sysmon_battery_cell_voltage[1];
-    sysmon_battery_cell_voltage[1] -= sysmon_battery_cell_voltage[0];
+    if (sysmon_battery_cell_voltage[2] > sysmon_battery_cell_voltage[1]) {
+        sysmon_battery_cell_voltage[2] -= sysmon_battery_cell_voltage[1];
+    }
+    if (sysmon_battery_cell_voltage[1] > sysmon_battery_cell_voltage[0]) {
+        sysmon_battery_cell_voltage[1] -= sysmon_battery_cell_voltage[0];
+    }
 }

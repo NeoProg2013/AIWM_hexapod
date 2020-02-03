@@ -2448,7 +2448,16 @@
             <name>$PROJ_DIR$\src\communication.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\src\configurator.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\configurator.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\src\main.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\memory_map.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\project_base.h</name>
@@ -2467,6 +2476,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\system_monitor.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\version.h</name>
         </file>
     </group>
 </project>

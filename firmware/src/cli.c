@@ -3,11 +3,11 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "cli.h"
-//#include "memory_map.h"
 //#include "servo_driver.h"
 #include "system_monitor.h"
 #include "communication.h"
-//#include "configurator.h"
+#include "configurator.h"
+#include "version.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -119,7 +119,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     else if (strcmp(module, "system") == 0) {
 
         if (strcmp(cmd, "version") == 0) {
-            sprintf(response, CLI_MSG("Firmware version: %d.%d.%d"), 1, 0, 255);
+            sprintf(response, CLI_MSG("Firmware version: %d.%d.%d"), VERSION_MAIN, VERSION_SUB, VERSION_AUX);
         }
         else if (strcmp(cmd, "status") == 0) {
             sprintf(response, CLI_MSG("system status report")
@@ -145,10 +145,10 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     }
     /*else if (strcmp(module, "servo") == 0) {
         return servo_driver_cli_command_process(cmd, argv, argc, response);
-    }
+    }*/
     else if (strcmp(module, "config") == 0) {
         return config_cli_command_process(cmd, argv, argc, response);
-    }*/
+    }
     else {
         return false;
     }
