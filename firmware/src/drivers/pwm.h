@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define SUPPORT_PWM_CHANNELS_COUNT                  (18)
+
 
 // PWM period counter for synchronize
 extern uint64_t synchro;

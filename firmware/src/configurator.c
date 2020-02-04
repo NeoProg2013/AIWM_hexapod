@@ -58,6 +58,9 @@ void config_init(void) {
 //  ***************************************************************************
 bool config_read(uint32_t address, uint8_t* buffer, uint32_t bytes_count) {
 
+    // Clear buffer
+    memset(buffer, 0xFF, bytes_count);
+    
     if (sysmon_is_module_disable(SYSMON_MODULE_CONFIGURATOR) == true) {
         return false;
     }

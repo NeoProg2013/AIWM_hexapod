@@ -34,11 +34,12 @@
 // Configuration map for servos
 //
 #define MM_SERVO_CONFIG_BLOCK_BASE_EE_ADDRESS               (0x0200)
-#define MM_SERVO_CONFIG_BLOCK_SIZE                          (64)
+#define MM_SERVO_CONFIG_BLOCK_SIZE                          (8)
 
 #define MM_SERVO_CONFIG_OFFSET                              (0)          ///< U8  Servo configuration
 #define     MM_SERVO_CONFIG_REVERSE_DIRECTION_MASK          (0x01)
 #define     MM_SERVO_CONFIG_SERVO_TYPE_MASK                 (0xF0)
+#define MM_SERVO_PWM_CHANNEL_OFFSET                         (1)          ///< U8  PWM channel
 #define MM_SERVO_LOGIC_ZERO_OFFSET                          (2)          ///< U16 Servo logic angle
 #define MM_SERVO_PROTECTION_MIN_PHYSIC_ANGLE_OFFSET         (4)          ///< U16 Servo min physic angle (protection)
 #define MM_SERVO_PROTECTION_MAX_PHYSIC_ANGLE_OFFSET         (6)          ///< U16 Servo max physic angle (protection)

@@ -8,6 +8,7 @@
 #include "configurator.h"
 #include "system_monitor.h"
 #include "systimer.h"
+#include "servo_driver.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -30,11 +31,14 @@ void main() {
     sysmon_init();
     config_init();
     communication_init();
+    servo_driver_init();
+    
     
     while (true) {
         
         sysmon_process();
         communication_process();
+        servo_driver_process();
     }
 }
 

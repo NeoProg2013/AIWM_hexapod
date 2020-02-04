@@ -3,10 +3,11 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "cli.h"
-//#include "servo_driver.h"
+#include "stm32f373xc.h"
 #include "system_monitor.h"
 #include "communication.h"
 #include "configurator.h"
+#include "servo_driver.h"
 #include "version.h"
 #include <string.h>
 #include <stdio.h>
@@ -136,16 +137,15 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                     sysmon_battery_cell_voltage[2]);
         }
         else if (strcmp(cmd, "reset") == 0) {
-
-            // Reset MCU
+            NVIC_SystemReset();
         }
         else {
             return false;
         }
     }
-    /*else if (strcmp(module, "servo") == 0) {
+    else if (strcmp(module, "servo") == 0) {
         return servo_driver_cli_command_process(cmd, argv, argc, response);
-    }*/
+    }
     else if (strcmp(module, "config") == 0) {
         return config_cli_command_process(cmd, argv, argc, response);
     }
