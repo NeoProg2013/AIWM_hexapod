@@ -360,7 +360,7 @@ static float calculate_physic_angle(float logic_angle, const servo_config_t* con
 //  ***************************************************************************
 static uint32_t convert_angle_to_pulse_width(float physic_angle, const servo_config_t* servo_config) {
 
-    float step = (servo_config->max_pulse_width - servo_config->min_pulse_width) / servo_config->max_physic_angle;
-    float pulse_width = servo_config->min_pulse_width + physic_angle * step;
+    float step = (float)(servo_config->max_pulse_width - servo_config->min_pulse_width) / (float)servo_config->max_physic_angle;
+    float pulse_width = (float)servo_config->min_pulse_width + physic_angle * step;
     return (uint32_t)pulse_width;
 }
