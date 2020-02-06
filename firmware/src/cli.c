@@ -89,7 +89,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_HELP_MSG("Also you can use all commands from list:")
                           CLI_HELP_MSG("")
                           CLI_HELP_MSG(CLI_UNDERSCORE CLI_BRIGHT "basic commands description")
-                          CLI_HELP_MSG("    - swp                                 - switch to SWP protocol")
+                          CLI_HELP_MSG("    - exit                                - switch to SWLP protocol")
                           CLI_HELP_MSG("    - help                                - display this message again")
                           CLI_HELP_MSG("    - ?                                   - display this message again")
 						  CLI_HELP_MSG(CLI_UNDERSCORE CLI_BRIGHT "\"system\" commands description")
@@ -105,17 +105,22 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_HELP_MSG("    - set_pulse <servo> <pulse>           - set servo pulse width")
                           CLI_HELP_MSG("")
                           CLI_HELP_MSG(CLI_UNDERSCORE CLI_BRIGHT "\"config\" module commands description")
-                          CLI_HELP_MSG("    - read <page>                         - read page")
-                          CLI_HELP_MSG("    - write <address> <bytes> <data>      - write data")
-                          CLI_HELP_MSG("    - erase                               - erase all configurations")
-                          CLI_HELP_MSG("    - calc_checksum                       - calculate and write checksum")
+                          CLI_HELP_MSG("    - read <page>                         - read page (256 bytes)")
+                          CLI_HELP_MSG("    - read16 <address> <s|u>              - read 16-bit DEC value")
+                          CLI_HELP_MSG("    - read32 <address> <s|u>              - read 32-bit DEC value")
+                          CLI_HELP_MSG("    - write <address> <HEX data>          - write HEX data")
+                          CLI_HELP_MSG("    - write16 <address> <DEC value>       - write 16-bit DEC value")
+                          CLI_HELP_MSG("    - write32 <address> <DEC value>       - write 32-bit DEC value")
+                          CLI_HELP_MSG("    - erase                               - mass erase storage")
+                          CLI_HELP_MSG("    - calc_checksum <page>                - calculate page checksum")
+                          CLI_HELP_MSG("    - verify <page>                       - verify page checksum")
                           CLI_HELP_MSG("")
                           CLI_HELP_MSG("For example you can send me next command: system status")
 						  CLI_HELP_MSG("I hope now you can work with me :)"));
     }
-    else if (strcmp(module, "swp") == 0) {
+    else if (strcmp(module, "exit") == 0) {
         communication_switch_to_swp();
-        strcpy(response, CLI_MSG("Main communication protocol - SWP"));
+        strcpy(response, CLI_MSG("Main communication protocol - SWLP"));
     }
     else if (strcmp(module, "system") == 0) {
 

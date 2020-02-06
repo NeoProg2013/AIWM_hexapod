@@ -24,7 +24,7 @@ typedef enum {
 static driver_state_t driver_state = STATE_NO_INIT;
 
 static uint8_t rx_buffer[512] = {0};
-static uint8_t tx_buffer[2048] = {0};
+static uint8_t tx_buffer[3072] = {0};
 static uint32_t received_frame_size = 0;
 static bool is_switched_to_cli = false;
 
