@@ -3,11 +3,11 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "servo_driver.h"
-#include "memory_map.h"
 #include "configurator.h"
 #include "cli.h"
 #include "pwm.h"
 #include "system_monitor.h"
+#include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -105,7 +105,7 @@ void servo_driver_process(void) {
 		// We skip PWM period - this is error and calculations have long time
 		if (synchro - prev_synchro > 1) {
 			sysmon_set_error(SYSMON_SYNC_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
+            //sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
 		}
 
 		//

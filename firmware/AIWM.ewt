@@ -2513,6 +2513,12 @@
             <name>$PROJ_DIR$\src\configurator.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\src\limbs_driver.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\limbs_driver.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\src\main.c</name>
         </file>
         <file>

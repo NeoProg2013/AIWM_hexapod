@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "memory_map.h"
 #include "cli.h"
 
 
