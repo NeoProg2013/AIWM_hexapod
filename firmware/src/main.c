@@ -10,17 +10,13 @@
 #include "systimer.h"
 #include "servo_driver.h"
 #include "limbs_driver.h"
+#include "movement_engine.h"
 #include <stdbool.h>
 #include <stdio.h>
 
 
 static void system_init(void);
 static void debug_gpio_init(void);
-
-
-uint8_t rx_buffer[1024] = {0};
-uint8_t tx_buffer[1024] = {0};
-
 
 
 void main() {
@@ -33,13 +29,16 @@ void main() {
     config_init();
     communication_init();
     servo_driver_init();
-    //limbs_driver_init();
+    limbs_driver_init();
+    movement_engine_init();
     
     while (true) {
         
         sysmon_process();
         communication_process();
-        //limbs_driver_process();
+        
+        movement_engine_process();
+        limbs_driver_process();
         servo_driver_process();
     }
 }
