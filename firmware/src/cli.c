@@ -36,16 +36,16 @@ void cli_init(void) {
 //  ***************************************************************************
 uint32_t cli_process_frame(char* rx_buffer, char* tx_buffer) {
 
-    char cli_module[CLI_ARG_MAX_SIZE] = {0};
-    char cli_cmd[CLI_ARG_MAX_SIZE] = {0};
-    char cli_argv[CLI_ARG_COUNT][CLI_ARG_MAX_SIZE] = {0};
-    uint8_t cli_argc = 0;
+    char module[CLI_ARG_MAX_SIZE] = {0};
+    char cmd[CLI_ARG_MAX_SIZE] = {0};
+    char argv[CLI_ARG_COUNT][CLI_ARG_MAX_SIZE] = {0};
+    uint8_t argc = 0;
 
     // Parse command line
-    if (parse_command_line(rx_buffer, cli_module, cli_cmd, cli_argv, &cli_argc) == true) {
+    if (parse_command_line(rx_buffer, module, cmd, argv, &argc) == true) {
 
         // Process command
-        if (process_command(cli_module, cli_cmd, cli_argv, cli_argc, tx_buffer) == false) {
+        if (process_command(module, cmd, argv, argc, tx_buffer) == false) {
             if (strlen(tx_buffer) == 0) {
                 strcpy(tx_buffer, CLI_ERROR_MSG("ERROR"));
             }
@@ -121,7 +121,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
 						  CLI_HELP_MSG("I hope now you can work with me :)"));
     }
     else if (strcmp(module, "exit") == 0) {
-        communication_switch_to_swp();
+        communication_switch_to_swlp();
         strcpy(response, CLI_MSG("Main communication protocol - SWLP"));
     }
     else if (strcmp(module, "system") == 0) {

@@ -31,7 +31,7 @@ typedef struct {
 } sequence_info_t;
 
 
-static sequence_info_t sequence_down = {  
+static const sequence_info_t sequence_down = {  
     
     .is_sequence_looped      = false,
     .main_sequence_begin     = 0,
@@ -46,7 +46,7 @@ static sequence_info_t sequence_down = {
     }
 };
 
-static sequence_info_t sequence_up = {
+static const sequence_info_t sequence_up = {
 
     .is_sequence_looped      = false,
     .main_sequence_begin     = 0,
@@ -77,7 +77,7 @@ static sequence_info_t sequence_up = {
     }
 };
 
-static sequence_info_t sequence_direct_movement = {
+static const sequence_info_t sequence_direct_movement = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -111,7 +111,7 @@ static sequence_info_t sequence_direct_movement = {
     }
 };
 
-static sequence_info_t sequence_run = {
+static const sequence_info_t sequence_run = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -145,7 +145,7 @@ static sequence_info_t sequence_run = {
     }
 };
 
-static sequence_info_t sequence_reverse_movement = {
+static const sequence_info_t sequence_reverse_movement = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -180,7 +180,7 @@ static sequence_info_t sequence_reverse_movement = {
     }
 };
 
-static sequence_info_t sequence_shift_left = {
+static const sequence_info_t sequence_shift_left = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 1,
@@ -218,7 +218,7 @@ static sequence_info_t sequence_shift_left = {
     }
 };
 
-static sequence_info_t sequence_shift_right = {
+static const sequence_info_t sequence_shift_right = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 1,
@@ -256,7 +256,7 @@ static sequence_info_t sequence_shift_right = {
     }
 };
 
-static sequence_info_t sequence_rotate_left = {
+static const sequence_info_t sequence_rotate_left = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -275,7 +275,7 @@ static sequence_info_t sequence_rotate_left = {
     }
 };
 
-static sequence_info_t sequence_rotate_right = {
+static const sequence_info_t sequence_rotate_right = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -294,7 +294,7 @@ static sequence_info_t sequence_rotate_right = {
     }
 };
 
-static sequence_info_t sequence_direct_movement_slow = {
+static const sequence_info_t sequence_direct_movement_slow = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -328,7 +328,7 @@ static sequence_info_t sequence_direct_movement_slow = {
     }
 };
 
-static sequence_info_t sequence_reverse_movement_slow = {
+static const sequence_info_t sequence_reverse_movement_slow = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -363,7 +363,7 @@ static sequence_info_t sequence_reverse_movement_slow = {
     }
 };
 
-static sequence_info_t sequence_attack_left = {
+static const sequence_info_t sequence_attack_left = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 1,
@@ -401,7 +401,7 @@ static sequence_info_t sequence_attack_left = {
     }
 };
 
-static sequence_info_t sequence_attack_right = {
+static const sequence_info_t sequence_attack_right = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 1,
@@ -439,7 +439,7 @@ static sequence_info_t sequence_attack_right = {
     }
 };
 
-static sequence_info_t sequence_dance = {
+static const sequence_info_t sequence_dance = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -506,7 +506,7 @@ static sequence_info_t sequence_dance = {
 };
 
 /*
-static sequence_info_t sequence_rotate_x = {
+static const sequence_info_t sequence_rotate_x = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 4,
@@ -593,7 +593,7 @@ static sequence_info_t sequence_rotate_x = {
     }
 };*/
 
-static sequence_info_t sequence_rotate_x = {
+static const sequence_info_t sequence_rotate_x = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 1,
@@ -632,7 +632,7 @@ static sequence_info_t sequence_rotate_x = {
     }
 };
 
-static sequence_info_t sequence_rotate_z = {
+static const sequence_info_t sequence_rotate_z = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 1,

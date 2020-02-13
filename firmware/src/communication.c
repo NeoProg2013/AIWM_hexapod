@@ -4,7 +4,7 @@
 //  ***************************************************************************
 #include "communication.h"
 #include "cli.h"
-#include "swp.h"
+#include "swlp.h"
 #include "usart2.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -41,7 +41,7 @@ static void frame_transmitted_or_error_callback(void);
 void communication_init(void) {
     
     cli_init();
-    swp_init();
+    swlp_init();
 
     usart2_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
@@ -81,7 +81,7 @@ void communication_process(void) {
                 bytes_for_tx = cli_process_frame((char*)rx_buffer, (char*)tx_buffer);
             }
             else {
-                bytes_for_tx = swp_process_frame(rx_buffer, received_frame_size, tx_buffer);
+                bytes_for_tx = swlp_process_frame(rx_buffer, received_frame_size, tx_buffer);
             }
         }
 		memset(rx_buffer, 0, sizeof(rx_buffer));
@@ -105,7 +105,7 @@ void communication_process(void) {
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void communication_switch_to_swp(void) {
+void communication_switch_to_swlp(void) {
     is_switched_to_cli = false;
 }
 

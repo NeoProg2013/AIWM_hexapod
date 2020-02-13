@@ -42,8 +42,6 @@ static const sequence_info_t* current_sequence_info = NULL;
 static sequence_id_t next_sequence = SEQUENCE_NONE;
 static const sequence_info_t* next_sequence_info = NULL;
 
-static uint32_t front_distance_low_limit = 0;
-
 
 static bool read_configuration(void);
 
