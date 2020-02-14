@@ -9,8 +9,8 @@
 #include "limbs_driver.h"
 #include "movement_engine.h"
 
-#define LIMB_UP_Y                       (-110)
-#define LIMB_DOWN_Y                     (-150)
+#define LIMB_UP_Y                       (-50)
+#define LIMB_DOWN_Y                     (-90)
 
 
 typedef struct {
