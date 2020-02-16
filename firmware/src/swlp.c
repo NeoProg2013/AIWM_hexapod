@@ -46,6 +46,7 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
     swlp_response_payload_t* response = (swlp_response_payload_t*)swlp_tx_frame->payload;
 
     // Process command
+    response->command_status = SWLP_CMD_STATUS_OK;
     switch (request->command) {
 
         case SWLP_CMD_SELECT_SEQUENCE_UP:                    movement_engine_select_sequence(SEQUENCE_UP);                    break;
@@ -69,7 +70,7 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
         case SWLP_CMD_RESET:                                 NVIC_SystemReset();                                              break;
 
         default:
-            return 0;
+            response->command_status = SWLP_CMD_STATUS_ERROR;
     }
 
     // Prepare status payload
@@ -83,7 +84,7 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
     // Prepare response
     swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
     swlp_tx_frame->frame_number = swlp_rx_frame->frame_number;
-    swlp_tx_frame->crc16 = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t));
+    swlp_tx_frame->crc16 = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - 2);
 
     return sizeof(swlp_frame_t);
 }
@@ -106,6 +107,7 @@ static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size) {
     }
 
     // Check frame CRC16
+    uint16_t crc = calculate_crc16(rx_buffer, frame_size - 2);
     if (calculate_crc16(rx_buffer, frame_size) != 0) {
         return false;
     }
