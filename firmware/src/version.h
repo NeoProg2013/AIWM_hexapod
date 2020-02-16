@@ -9,7 +9,7 @@
 
 #define VERSION_MAIN                (1)
 #define VERSION_SUB                 (0)
-#define VERSION_AUX                 (1)
+#define VERSION_AUX                 (2)
 
 
 #endif // VERSION_H_

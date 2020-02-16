@@ -54,7 +54,7 @@ typedef struct {
 typedef struct {
     uint8_t command;
     uint8_t reserved[15];
-} swlp_request_payload_t;
+} swlp_command_payload_t;
 
 typedef struct {
     uint8_t  command;
@@ -63,7 +63,7 @@ typedef struct {
     uint8_t  system_status;
     uint16_t battery_cell_voltage[3];
     uint8_t reserved[6];
-} swlp_response_payload_t;
+} swlp_status_payload_t;
 #pragma pack(pop)
 
 

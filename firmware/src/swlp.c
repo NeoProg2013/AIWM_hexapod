@@ -40,10 +40,10 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
 
     // Preparing
     const swlp_frame_t* swlp_rx_frame = (const swlp_frame_t*)rx_buffer;
-    const swlp_request_payload_t* request = (const swlp_request_payload_t*)swlp_rx_frame->payload;
+    const swlp_command_payload_t* request = (const swlp_command_payload_t*)swlp_rx_frame->payload;
 
     swlp_frame_t* swlp_tx_frame = (swlp_frame_t*)tx_buffer;
-    swlp_response_payload_t* response = (swlp_response_payload_t*)swlp_tx_frame->payload;
+    swlp_status_payload_t* response = (swlp_status_payload_t*)swlp_tx_frame->payload;
 
     // Process command
     response->command_status = SWLP_CMD_STATUS_OK;
