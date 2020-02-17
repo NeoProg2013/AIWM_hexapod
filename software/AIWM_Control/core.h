@@ -54,6 +54,7 @@ public slots:
 protected:
 	Swlp m_swlp;
 	QThread m_swlpThread;
+	uint32_t m_commandForSend;
 };
 
 #endif // CORE_H

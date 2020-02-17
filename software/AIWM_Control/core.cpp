@@ -28,25 +28,23 @@ void Core::stopCommunication() {
 	m_swlpThread.exit();
 }
 
-void Core::sendGetUpCommand()                      { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_UP, 1);                    */ }
-void Core::sendGetDownCommand()                    { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_DOWN, 1);                  */ }
-void Core::sendRunCommand()						   { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_RUN, 1);                   */ }
-void Core::sendDirectMoveCommand()                 { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT, 1);       */ }
-void Core::sendReverseMoveCommand()                { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT, 1);      */ }
-void Core::sendRotateLeftCommand()                 { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_ROTATE_LEFT, 1);           */ }
-void Core::sendRotateRightCommand()                { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_ROTATE_RIGHT, 1);          */ }
-void Core::sendDirectMoveSlowCommand()             { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SLOW, 1);  */ }
-void Core::sendReverseMoveSlowCommand()            { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SLOW, 1); */ }
-void Core::sendShiftLeftCommand()                  { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_SHIFT_LEFT, 1);            */ }
-void Core::sendShiftRightCommand()                 { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_SHIFT_RIGHT, 1);           */ }
-													 /*																 */
-void Core::sendAttackLeftCommand()                 { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_ATTACK_LEFT, 1);           */ }
-void Core::sendAttackRightCommand()                { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_ATTACK_RIGHT, 1);          */ }
-void Core::sendDanceCommand()                      { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_DANCE, 1);                 */ }
-void Core::sendRotateXCommand()                    { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_ROTATE_X, 1);              */ }
-void Core::sendRotateZCommand()                    { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_ROTATE_Z, 1);              */ }
-													 /*																 */
-void Core::sendStopMoveCommand()                   { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_NONE, 5);                  */ }
+void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP; 					 }
+void Core::sendGetDownCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DOWN; 				 }
+void Core::sendRunCommand()				{ m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_RUN; 					 }
+void Core::sendDirectMoveCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT; 		 }
+void Core::sendReverseMoveCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT; 	 }
+void Core::sendRotateLeftCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_LEFT; 			 }
+void Core::sendRotateRightCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_RIGHT; 		 }
+void Core::sendDirectMoveSlowCommand()  { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SLOW;  }
+void Core::sendReverseMoveSlowCommand() { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SLOW; }
+void Core::sendShiftLeftCommand()       { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_SHIFT_LEFT; 			 }
+void Core::sendShiftRightCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_SHIFT_RIGHT; 			 }
+void Core::sendAttackLeftCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT; 			 }
+void Core::sendAttackRightCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT; 		 }
+void Core::sendDanceCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DANCE; 				 }
+void Core::sendRotateXCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_X; 			 }
+void Core::sendRotateZCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z; 			 }
+void Core::sendStopMoveCommand()        { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;					 }
 
 
 
