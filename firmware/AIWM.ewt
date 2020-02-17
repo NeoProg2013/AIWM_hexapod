@@ -2516,6 +2516,12 @@
             <name>$PROJ_DIR$\src\gait_sequences.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\src\indication.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\indication.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\src\limbs_driver.c</name>
         </file>
         <file>

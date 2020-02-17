@@ -11,6 +11,7 @@
 #include "servo_driver.h"
 #include "limbs_driver.h"
 #include "movement_engine.h"
+#include "indication.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -24,6 +25,8 @@ void main() {
     system_init();
     systimer_init();
     debug_gpio_init();
+    
+    indication_init();
 
     sysmon_init();
     config_init();
@@ -33,67 +36,27 @@ void main() {
     movement_engine_init();
     
     
-    // Front LED red pin (PC0): output mode, push-pull, high speed, no pull
-    GPIOC->BRR      =  (0x01 << (0 * 1));
-    GPIOC->MODER   |=  (0x01 << (0 * 2));
-    GPIOC->OSPEEDR |=  (0x03 << (0 * 2));
-    GPIOC->PUPDR   &= ~(0x03 << (0 * 2));
     
-    
-    // Front LED red pin (PB5): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01 << (5 * 1));
-    GPIOB->MODER   |=  (0x01 << (5 * 2));
-    GPIOB->OSPEEDR |=  (0x03 << (5 * 2));
-    GPIOB->PUPDR   &= ~(0x03 << (5 * 2));
-    
-    // Front LED green pin (PB6): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01 << (6 * 1));
-    GPIOB->MODER   |=  (0x01 << (6 * 2));
-    GPIOB->OSPEEDR |=  (0x03 << (6 * 2));
-    GPIOB->PUPDR   &= ~(0x03 << (6 * 2));
-    
-    // Front LED blue pin (PB7): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01 << (7 * 1));
-    GPIOB->MODER   |=  (0x01 << (7 * 2));
-    GPIOB->OSPEEDR |=  (0x03 << (7 * 2));
-    GPIOB->PUPDR   &= ~(0x03 << (7 * 2));
     
     
     while (true) {
         
         sysmon_process();
-        communication_process();
+        
+        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
+            movement_engine_select_sequence(SEQUENCE_DOWN);
+        }
+        if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
+            movement_engine_select_sequence(SEQUENCE_DOWN);
+        }
         
         movement_engine_process();
         limbs_driver_process();
         servo_driver_process();
         
-        static uint64_t start_time = 0;
-        if (get_time_ms() - start_time > 1000) {
-            
-            GPIOC->ODR ^= (0x01 << (0 * 1));
-            
-            static uint32_t counter = 0;
-            if (counter == 1) {
-                GPIOB->BSRR = (0x01 << (5 * 1));
-                GPIOB->BRR  = (0x01 << (6 * 1));
-                GPIOB->BRR  = (0x01 << (7 * 1));
-            }
-            if (counter == 2) {
-                GPIOB->BRR  = (0x01 << (5 * 1));
-                GPIOB->BSRR = (0x01 << (6 * 1));
-                GPIOB->BRR  = (0x01 << (7 * 1));
-            }
-            if (counter == 3) {
-                GPIOB->BRR  = (0x01 << (5 * 1));
-                GPIOB->BRR  = (0x01 << (6 * 1));
-                GPIOB->BSRR = (0x01 << (7 * 1));
-                counter = 0;
-            }
-            ++counter;
-            
-            start_time = get_time_ms();
-        }
+        communication_process();
+        
+        indication_process();
     }
 }
 
