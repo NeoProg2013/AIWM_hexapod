@@ -7,8 +7,12 @@
 Core::Core(QObject *parent) : QObject(parent) {
 	qDebug() << "Core::Core(). Thread id =" << QThread::currentThreadId();
 
+	m_commandForSend = SWLP_CMD_NONE;
+
 	// Setup SWLP
 	connect(this, &Core::swlpRunCommunication, &m_swlp, &Swlp::runCommunication, Qt::ConnectionType::QueuedConnection);
+	connect(&m_swlp, &Swlp::statusPayloadReceived, this, &Core::swlpStatusPayloadProcess, Qt::ConnectionType::QueuedConnection);
+	connect(&m_swlp, &Swlp::requestCommandPayload, this, &Core::swlpCommandPayloadPrepare, Qt::ConnectionType::QueuedConnection);
 	m_swlp.moveToThread(&m_swlpThread);
 }
 
@@ -60,6 +64,5 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
 }
 
 void Core::swlpCommandPayloadPrepare(swlp_command_payload_t* payload) {
-
-	payload->command = 0xAA;
+	payload->command = m_commandForSend;
 }
