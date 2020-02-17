@@ -15,7 +15,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     core.cpp \
-    wireless.cpp
+    swlp.cpp
 
 RESOURCES += qml.qrc
 
@@ -31,8 +31,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    swlp.h \
     swlp_protocol.h \
-    wireless.h \
     core.h
 
 contains(ANDROID_TARGET_ARCH,armeabi-v7a) {

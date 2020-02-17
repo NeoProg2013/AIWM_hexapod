@@ -4,8 +4,13 @@ import QtQuick.Layouts 1.3
 
 Item {
 
-	property real systemStatus: 0xFFFFFFFF
+	property int systemStatus: 0xFF
+	property int moduleStatus: 0xFF
+	property real cellVoltage1: 0
+	property real cellVoltage2: 0
+	property real cellVoltage3: 0
 	property real batteryVoltage: 0
+	property int batteryCharge: 0
 
 	id: root
 	width: 500
@@ -14,11 +19,20 @@ Item {
 
 	Connections {
 		target: CppCore
-		onSystemStatusUpdatedSignal: {
+		onSystemStatusUpdated: {
 			systemStatus = newSystemStatus
 		}
-		onSystemVoltageUpdatedSignal: {
-			batteryVoltage = battery / 10.0
+		onModuleStatusUpdated: {
+			moduleStatus = newModuleStatus
+		}
+		onVoltageValuesUpdated: {
+			cellVoltage1 = newCellVoltage1 / 1000.0
+			cellVoltage2 = newCellVoltage2 / 1000.0
+			cellVoltage3 = newCellVoltage3 / 1000.0
+			batteryVoltage = newBatteryVoltage / 1000.0
+		}
+		onBatteryChargeUpdated: {
+			batteryCharge = newBatteryCharge
 		}
 	}
 
@@ -238,7 +252,7 @@ Item {
 			anchors.rightMargin: 55
 			anchors.left: parent.left
 			anchors.leftMargin: 115
-			value: Math.round(((batteryVoltage - 5.6) / (8.4 - 5.6)) * 100.0)
+			value: batteryCharge
 			to: 100
 		}
 
@@ -269,12 +283,21 @@ Item {
 		columns: 2
 
 		StatusLabel {
-			text: "I2C bus\nerror"
+			text: "Connection\nlost"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0080
+			isActive: systemStatus & 0x80
+		}
+
+		StatusLabel {
+			text: "Reserved"
+			Layout.minimumHeight: 40
+			Layout.maximumHeight: 40
+			Layout.preferredWidth: 118
+			Layout.fillWidth: true
+			isActive: systemStatus & 0x40
 		}
 
 		StatusLabel {
@@ -283,7 +306,7 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0040
+			isActive: systemStatus & 0x20
 		}
 
 		StatusLabel {
@@ -292,7 +315,7 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0020
+			isActive: systemStatus & 0x10
 		}
 
 		StatusLabel {
@@ -301,7 +324,7 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0010
+			isActive: systemStatus & 0x08
 		}
 
 		StatusLabel {
@@ -310,7 +333,7 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0008
+			isActive: systemStatus & 0x04
 		}
 
 		StatusLabel {
@@ -319,25 +342,16 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0004
+			isActive: systemStatus & 0x02
 		}
 
 		StatusLabel {
-			text: "Internal\nerror"
+			text: "Fatal\nerror"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0002
-		}
-
-		StatusLabel {
-			text: "Emergency\nmode"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x0001
+			isActive: systemStatus & 0x01
 		}
 	}
 
@@ -361,7 +375,7 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x8000
+			isActive: moduleStatus & 0x80
 			//deactiveColor: "#00DD00"
 		}
 
@@ -371,27 +385,27 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x4000
+			isActive: moduleStatus & 0x40
 			//deactiveColor: "#00DD00"
 		}
 
 		StatusLabel {
-			text: "GUI"
+			text: "Reserved"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x2000
-			deactiveColor: "#00DD00"
+			isActive: moduleStatus & 0x20
+			//deactiveColor: "#00DD00"
 		}
 
 		StatusLabel {
-			text: "Monitoring"
+			text: "System\nmonitor"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x1000
+			isActive: moduleStatus & 0x10
 			deactiveColor: "#00DD00"
 		}
 
@@ -401,7 +415,7 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0800
+			isActive: moduleStatus & 0x08
 			deactiveColor: "#00DD00"
 		}
 
@@ -411,7 +425,7 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0400
+			isActive: moduleStatus & 0x04
 			deactiveColor: "#00DD00"
 		}
 
@@ -421,17 +435,17 @@ Item {
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0200
+			isActive: moduleStatus & 0x02
 			deactiveColor: "#00DD00"
 		}
 
 		StatusLabel {
-			text: "VEEPROM"
+			text: "Configurator"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
-			isActive: systemStatus & 0x0100
+			isActive: moduleStatus & 0x01
 			deactiveColor: "#00DD00"
 		}
 	}
@@ -444,24 +458,6 @@ Item {
 		anchors.leftMargin: 10
 		anchors.right: parent.right
 		anchors.rightMargin: 10
-
-		Switch {
-			id: element
-			text: qsTr("Front sensor")
-			checked: true
-			onCheckedChanged: {
-
-				if (checked) {
-					if (!CppCore.sendEnableFrontDistanceSensorCommand()) {
-						checked = false
-					}
-				} else {
-					if (!CppCore.sendDisableFrontDistanceSensorCommand()) {
-						checked = true
-					}
-				}
-			}
-		}
 
 		ImageButton {
 			Layout.fillHeight: true

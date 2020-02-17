@@ -5,46 +5,27 @@
 
 
 Core::Core(QObject *parent) : QObject(parent) {
+	qDebug() << "Core::Core(). Thread id =" << QThread::currentThreadId();
 
-	m_statusUpdateTimer.setInterval(1000);
-	connect(&m_statusUpdateTimer, &QTimer::timeout, this, &Core::statusUpdateTimer);
-
-	//m_wirelessModbus = new WirelessModbus;
-	//m_wirelessModbus->moveToThread(&m_thread);
-	//m_thread.start();
-	//
-	//connect(this, &Core::connectToServerSignal, m_wirelessModbus, &WirelessModbus::connectToServer);
-	//connect(this, &Core::disconnectFromServerSignal, m_wirelessModbus, &WirelessModbus::disconnectFromServer);
-	//connect(this, &Core::writeDataToRamSignal, m_wirelessModbus, &WirelessModbus::writeRAM);
-	//connect(this, &Core::readDataFromRamSignal, m_wirelessModbus, &WirelessModbus::readRAM);
+	// Setup SWLP
+	connect(this, &Core::swlpRunCommunication, &m_swlp, &Swlp::runCommunication, Qt::ConnectionType::QueuedConnection);
+	m_swlp.moveToThread(&m_swlpThread);
 }
 
 Core::~Core() {
+	qDebug() << "Core::~Core(). Thread id =" << QThread::currentThreadId();
 
-	m_thread.quit();
-	//delete m_wirelessModbus;
+	m_swlpThread.exit();
+	m_swlpThread.wait();
 }
 
-bool Core::connectToServer() {
-
-	/*emit connectToServerSignal();
-	this->waitOperationCompleted();
-
-	if (m_wirelessModbus->operationResult() == false) {
-		m_statusUpdateTimer.stop();
-		return false;
-	}
-
-	m_statusUpdateTimer.start();*/
-	return true;
+void Core::runCommunication() {
+	m_swlpThread.start();
+	emit swlpRunCommunication();
 }
 
-void Core::disconnectFromServer() {
-
-	m_statusUpdateTimer.stop();
-
-	emit disconnectFromServerSignal();
-	this->waitOperationCompleted();
+void Core::stopCommunication() {
+	m_swlpThread.exit();
 }
 
 void Core::sendGetUpCommand()                      { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_UP, 1);                    */ }
@@ -67,58 +48,20 @@ void Core::sendRotateZCommand()                    { /*writeToSCR(SCR_CMD_SELECT
 													 /*																 */
 void Core::sendStopMoveCommand()                   { /*writeToSCR(SCR_CMD_SELECT_SEQUENCE_NONE, 5);                  */ }
 
-bool Core::sendEnableFrontDistanceSensorCommand()  { return 0; }//return writeToSCR(SCR_CMD_ENABLE_FRONT_SENSOR, 3);             }
-bool Core::sendDisableFrontDistanceSensorCommand() { return 0; }//return writeToSCR(SCR_CMD_DISABLE_FRONT_SENSOR, 3);            }
-
-
-//
-// PROTECTED
-//
-bool Core::writeToSCR(int cmd, int retryCount) {
-
-	/*QByteArray data;
-	data.push_back(static_cast<char>(cmd));
-
-	for (int i = 0; i < retryCount; ++i) {
-
-		emit writeDataToRamSignal(SCR_REGISTER_ADDRESS, data);
-		this->waitOperationCompleted();
-
-		if (m_wirelessModbus->operationResult()) {
-			return true;
-		}
-	}*/
-
-	return false;
-}
-
-void Core::waitOperationCompleted() {
-
-	/*while (m_wirelessModbus->isOperationInProgress() == false);
-	while (m_wirelessModbus->isOperationInProgress() == true) {
-		QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-	}*/
-}
-
 
 
 //
 // SLOTS
 //
-void Core::statusUpdateTimer() {
+void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
+	emit frameReceived();
+	emit systemStatusUpdated(payload->system_status);
+	emit moduleStatusUpdated(payload->module_status);
+	emit voltageValuesUpdated(payload->battery_cell_voltage[0], payload->battery_cell_voltage[1], payload->battery_cell_voltage[2], payload->battery_voltage);
+	emit batteryChargeUpdated(payload->battery_charge);
+}
 
-	/*QByteArray buffer;
-	emit readDataFromRamSignal(MAIN_BLOCK_ADDRESS, &buffer, 10);
-	waitOperationCompleted();
+void Core::swlpCommandPayloadPrepare(swlp_command_payload_t* payload) {
 
-	if (m_wirelessModbus->operationResult() == false) {
-		return;
-	}
-
-	// Make error status
-	if (buffer.size() == 10) {
-		uint16_t errorStatus = static_cast<uint16_t>((buffer[1] << 8) | (buffer[0] << 0));
-		emit systemStatusUpdatedSignal(errorStatus);
-		emit systemVoltageUpdatedSignal(buffer[2], buffer[3], buffer[4]);
-	}*/
+	payload->command = 0xAA;
 }

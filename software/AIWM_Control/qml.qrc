@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/logo.png</file>
         <file>qtquickcontrols2.conf</file>
         <file>AndroidQML/ControlPage.qml</file>
         <file>AndroidQML/ImageButton.qml</file>
@@ -23,7 +22,6 @@
         <file>images/swordRight.svg</file>
         <file>images/getDown.svg</file>
         <file>images/getUp.svg</file>
-        <file>AndroidQML/ConnectionPage.qml</file>
         <file>images/decreaseHeight.svg</file>
         <file>images/increaseHeight.svg</file>
         <file>images/run.svg</file>
@@ -31,6 +29,8 @@
         <file>images/rotateZ.svg</file>
         <file>images/arrowRotateLeft.svg</file>
         <file>images/arrowRotateRight.svg</file>
+        <file>AndroidQML/ConnectionPage.qml</file>
+        <file>images/powerOn.svg</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

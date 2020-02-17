@@ -4,17 +4,18 @@
 #include <QObject>
 #include <QTimer>
 #include <QFuture>
-#include "wireless.h"
+#include <QThread>
+#include "swlp.h"
 
-class Core : public QObject {
-
+class Core : public QObject
+{
 	Q_OBJECT
-
 public:
 	explicit Core(QObject *parent = nullptr);
 	virtual ~Core();
-	Q_INVOKABLE bool connectToServer();
-	Q_INVOKABLE void disconnectFromServer();
+
+	Q_INVOKABLE void runCommunication();
+	Q_INVOKABLE void stopCommunication();
 
 	Q_INVOKABLE void sendGetUpCommand();
 	Q_INVOKABLE void sendGetDownCommand();
@@ -27,7 +28,6 @@ public:
 	Q_INVOKABLE void sendReverseMoveSlowCommand();
 	Q_INVOKABLE void sendShiftLeftCommand();
 	Q_INVOKABLE void sendShiftRightCommand();
-
 	Q_INVOKABLE void sendAttackLeftCommand();
 	Q_INVOKABLE void sendAttackRightCommand();
 	Q_INVOKABLE void sendDanceCommand();
@@ -35,29 +35,25 @@ public:
 	Q_INVOKABLE void sendRotateZCommand();
 	Q_INVOKABLE void sendStopMoveCommand();
 
-	Q_INVOKABLE bool sendEnableFrontDistanceSensorCommand();
-	Q_INVOKABLE bool sendDisableFrontDistanceSensorCommand();
-
 signals:
-	void systemStatusUpdatedSignal(QVariant newSystemStatus);
-	void systemVoltageUpdatedSignal(int wireless, int periph, int battery);
-	void connectToServerSignal();
-	void disconnectFromServerSignal();
-	void writeDataToRamSignal(int address, QByteArray data);
-	void readDataFromRamSignal(int address, QByteArray* data, int bytesCount);
+	// To SWLP module
+	void swlpRunCommunication();
+
+	// To QML
+	void frameReceived();
+	void systemStatusUpdated(QVariant newSystemStatus);
+	void moduleStatusUpdated(QVariant newModuleStatus);
+	void voltageValuesUpdated(QVariant newCellVoltage1, QVariant newCellVoltage2, QVariant newCellVoltage3, QVariant newBatteryVoltage);
+	void batteryChargeUpdated(QVariant newBatteryCharge);
 
 public slots:
-	void statusUpdateTimer();
+	// From SWLP module
+	void swlpStatusPayloadProcess(const swlp_status_payload_t* payload);
+	void swlpCommandPayloadPrepare(swlp_command_payload_t* payload);
 
 protected:
-	bool writeToSCR(int cmd, int retryCount);
-	void waitOperationCompleted();
-
-protected:
-	QThread m_thread;
-	//WirelessModbus* m_wirelessModbus;
-	QTimer m_statusUpdateTimer;
-	QFuture<bool> m_concurrentFuture;
+	Swlp m_swlp;
+	QThread m_swlpThread;
 };
 
 #endif // CORE_H

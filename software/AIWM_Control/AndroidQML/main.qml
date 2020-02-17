@@ -8,10 +8,9 @@ ApplicationWindow {
 	color: "#000000"
 
 	onClosing: {
-
 		if (swipeView.currentIndex != 0) {
 			close.accepted = false
-			CppCore.disconnectFromServer()
+			CppCore.stopCommunication()
 			swipeView.currentIndex = 0
 		} else {
 			close.accepted = true
@@ -29,7 +28,6 @@ ApplicationWindow {
 				swipeView.currentIndex = 1
 			}
 		}
-
 		ControlPage {
 		}
 	}

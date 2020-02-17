@@ -57,7 +57,9 @@ struct swlp_status_payload_t {
 	uint8_t  module_status;
 	uint8_t  system_status;
 	uint16_t battery_cell_voltage[3];
-	uint8_t reserved[6];
+	uint16_t battery_voltage;
+	uint8_t  battery_charge;
+	uint8_t reserved[3];
 };
 #pragma pack(pop)
 

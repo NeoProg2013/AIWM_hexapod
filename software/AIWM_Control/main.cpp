@@ -3,7 +3,8 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 #include <QDebug>
-#include "wireless.h"
+#include <QThread>
+#include "swlp.h"
 #include "core.h"
 
 
@@ -13,18 +14,14 @@ int main(int argc, char *argv[]) {
 
 	QGuiApplication app(argc, argv);
 
-	Wireless test;
-	test.start();
-	test.wait();
-
-	/*Core core;
+	Core core;
 
 	QQmlApplicationEngine engine;
 	engine.rootContext()->setContextProperty("CppCore", &core);
 	engine.load(QUrl(QStringLiteral("qrc:/AndroidQML/main.qml")));
 	if (engine.rootObjects().isEmpty()) {
 		return -1;
-	}*/
+	}
 
 	return app.exec();
 }
