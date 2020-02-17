@@ -7,8 +7,6 @@
 #include "systimer.h"
 
 #define ACCUMULATE_SAMPLES_COUNT        (50)
-#define BATTERY_VOLTAGE_THRESHOLD       (900)       // 9.00V
-#define CELL_VOLTAGE_THRESHOLD          (280)       // 2.80V
 
 
 typedef enum {
@@ -28,6 +26,7 @@ uint8_t  sysmon_system_status = 0;
 uint8_t  sysmon_module_status = 0;
 uint16_t sysmon_battery_cell_voltage[3] = {0, 0, 0};
 uint16_t sysmon_battery_voltage = 0;
+uint8_t  sysmon_battery_charge = 0;
 
 
 static void calculate_battery_voltage(void);
@@ -94,7 +93,7 @@ void sysmon_process(void) {
             acc_adc_bins[0] = 0;
             acc_adc_bins[1] = 0;
             acc_adc_bins[2] = 0;
-            if (sysmon_battery_voltage < BATTERY_VOLTAGE_THRESHOLD) {
+            if (sysmon_battery_charge == 0) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
             }
             /*if (sysmon_battery_cell_voltage[0] < CELL_VOLTAGE_THRESHOLD) {
@@ -215,12 +214,8 @@ static void calculate_battery_voltage(void) {
     int32_t cell_3 = (uint32_t)(input_voltage * voltage_div_factor);
     
     // Caclulate cells voltage
-    if (cell_3 > cell_2) {
-        cell_3 -= cell_2;
-    }
-    if (cell_2 > cell_1) {
-        cell_2 -= cell_1;
-    }
+    cell_3 -= cell_2;
+    cell_2 -= cell_1;
     
     // Avoid < 0
     if (cell_1 < 0) cell_1 = 0;
@@ -233,4 +228,14 @@ static void calculate_battery_voltage(void) {
     
     // Calculate battery voltage
     sysmon_battery_voltage = sysmon_battery_cell_voltage[0] + sysmon_battery_cell_voltage[1] + sysmon_battery_cell_voltage[2];
+    
+    // Calculate battery charge
+    float battery_charge = (sysmon_battery_voltage - 9.0f) / (12.6f - 9.0f) * 100.0f;
+    if (battery_charge < 0) {
+        battery_charge = 0;
+    }
+    if (battery_charge > 100) {
+        battery_charge = 100;
+    }
+    sysmon_battery_charge = (uint8_t)battery_charge;
 }
