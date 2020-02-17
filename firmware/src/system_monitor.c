@@ -230,7 +230,7 @@ static void calculate_battery_voltage(void) {
     sysmon_battery_voltage = sysmon_battery_cell_voltage[0] + sysmon_battery_cell_voltage[1] + sysmon_battery_cell_voltage[2];
     
     // Calculate battery charge
-    float battery_charge = (sysmon_battery_voltage - 9.0f) / (12.6f - 9.0f) * 100.0f;
+    float battery_charge = (sysmon_battery_voltage - 9000.0f) / (12600.0f - 9000.0f) * 100.0f;
     if (battery_charge < 0) {
         battery_charge = 0;
     }

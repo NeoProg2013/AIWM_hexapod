@@ -69,6 +69,9 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
         case SWLP_CMD_SELECT_SEQUENCE_NONE:                  movement_engine_select_sequence(SEQUENCE_NONE);                  break;
         case SWLP_CMD_RESET:                                 NVIC_SystemReset();                                              break;
 
+        case SWLP_CMD_NONE:
+            break;
+            
         default:
             response->command_status = SWLP_CMD_STATUS_ERROR;
     }
@@ -81,7 +84,7 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
     response->battery_cell_voltage[1] = sysmon_battery_cell_voltage[1];
     response->battery_cell_voltage[2] = sysmon_battery_cell_voltage[2];
     response->battery_voltage = sysmon_battery_voltage;
-    response->battery_charge = 77;
+    response->battery_charge = sysmon_battery_charge;
 
     // Prepare response
     swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;

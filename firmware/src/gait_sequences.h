@@ -10,7 +10,7 @@
 #include "movement_engine.h"
 
 #define LIMB_UP_Y                       (-50)
-#define LIMB_DOWN_Y                     (-90)
+#define LIMB_DOWN_Y                     (-65)
 
 
 typedef struct {
@@ -40,7 +40,7 @@ static const sequence_info_t sequence_down = {
     
     {
         { 
-            {{130, -35, 65}, {142, -35, 0}, {130, -35, -65}, {130, -35, 65}, {142, -35, 0}, {130, -35, -65}},
+            {{135, -35, 70}, {150, -35, 0}, {135, -35, -70}, {135, -35, 70}, {150, -35, 0}, {135, -35, -70}},
             { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR }, 80
         },    
     }
@@ -90,11 +90,11 @@ static const sequence_info_t sequence_direct_movement = {
         //
         {
             {{130, LIMB_UP_Y, 110}, {130, LIMB_DOWN_Y, -45}, {130, LIMB_UP_Y,  -20}, {110, LIMB_DOWN_Y,  20}, {130, LIMB_UP_Y,  45}, {110, LIMB_DOWN_Y, -110}},
-            { PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR}, 200
+            { PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR}, 60
         },
         {
             {{110, LIMB_DOWN_Y,  20}, {130, LIMB_UP_Y,  45}, {110, LIMB_DOWN_Y, -110}, {130, LIMB_UP_Y, 110}, {130, LIMB_DOWN_Y, -45}, {130, LIMB_UP_Y,  -20}},
-            { PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS}, 200
+            { PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS}, 60
         },
 
         //
@@ -102,11 +102,11 @@ static const sequence_info_t sequence_direct_movement = {
         //
         {
             {{130, LIMB_UP_Y, 65}, {130, LIMB_DOWN_Y, 0}, {130, LIMB_UP_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_UP_Y, 0}, {110, LIMB_DOWN_Y, -65}},
-            { PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR}, 40
+            { PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR}, 60
         },
         {
             {{110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
+            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 60
         },
     }
 };
@@ -136,11 +136,11 @@ static const sequence_info_t sequence_run = {
         //
         { 
             {{130, LIMB_UP_Y, 65}, {130, LIMB_DOWN_Y, 0}, {130, LIMB_UP_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_UP_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
-            { PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR}, 40
+            { PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR, PATH_XZ_ELLIPTICAL_Y_SINUS, PATH_LINEAR}, 60
         },
         { 
             {{110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
+            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 60
         },
     }
 };
