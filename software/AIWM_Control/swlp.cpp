@@ -114,9 +114,6 @@ void Swlp::sendCommandPayloadEvent() {
 	// Request command payload
 	emit requestCommandPayload(&m_commandPayload);
 
-	// Make command payload
-	m_commandPayload.command = 0xEE;
-
 	// Make SWLP frame
 	swlp_frame_t frame;
 	memset(&frame, 0, sizeof(frame));
