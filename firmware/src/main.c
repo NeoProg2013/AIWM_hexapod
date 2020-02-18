@@ -26,20 +26,20 @@ void main() {
     systimer_init();
     debug_gpio_init();
     
-    //indication_init();
+    indication_init();
 
     sysmon_init();
     config_init();
-    //communication_init();
+    communication_init();
     servo_driver_init();
-    //limbs_driver_init();
-    //movement_engine_init();
+    limbs_driver_init();
+    movement_engine_init();
     
     while (true) {
         
         sysmon_process();
         
-        /*if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
+        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
             movement_engine_select_sequence(SEQUENCE_DOWN);
         }
         if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
@@ -47,12 +47,12 @@ void main() {
         }
         
         movement_engine_process();
-        limbs_driver_process();*/
+        limbs_driver_process();
         servo_driver_process();
         
-        /*communication_process();
+        communication_process();
         
-        indication_process();*/
+        indication_process();
     }
 }
 

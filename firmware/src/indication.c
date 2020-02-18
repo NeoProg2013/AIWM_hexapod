@@ -178,13 +178,14 @@ static void blink_red_led_with_buzzer(uint32_t switch_time) {
         
         if (state == false) {
             LED_TURN_ON(LED_R_PIN);
+            BUZZER_TURN_ON();
         }
         else {
             LED_TURN_OFF(LED_R_PIN);
+            BUZZER_TURN_OFF();
         }
         LED_TURN_OFF(LED_G_PIN);
         LED_TURN_OFF(LED_B_PIN);
-        BUZZER_TURN_OFF();
         
         state = !state;
         start_time = get_time_ms();
