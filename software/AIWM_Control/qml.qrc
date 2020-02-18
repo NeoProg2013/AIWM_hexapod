@@ -31,6 +31,7 @@
         <file>images/arrowRotateRight.svg</file>
         <file>AndroidQML/ConnectionPage.qml</file>
         <file>images/powerOn.svg</file>
+        <file>images/light.svg</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

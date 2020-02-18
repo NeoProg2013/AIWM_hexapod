@@ -49,6 +49,7 @@ void Core::sendDanceCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQ
 void Core::sendRotateXCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_X; 			 }
 void Core::sendRotateZCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z; 			 }
 void Core::sendStopMoveCommand()        { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;					 }
+void Core::sendSwitchLightCommand()     { m_commandForSend = SWLP_CMD_SWITCH_LIGHT;					         }
 
 
 

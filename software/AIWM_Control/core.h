@@ -34,6 +34,7 @@ public:
 	Q_INVOKABLE void sendRotateXCommand();
 	Q_INVOKABLE void sendRotateZCommand();
 	Q_INVOKABLE void sendStopMoveCommand();
+	Q_INVOKABLE void sendSwitchLightCommand();
 
 signals:
 	// To SWLP module

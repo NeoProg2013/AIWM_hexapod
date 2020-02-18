@@ -495,5 +495,15 @@ Item {
 				CppCore.sendStopMoveCommand()
 			}
 		}
+
+		ImageButton {
+			imageSrc: "qrc:/images/light.svg"
+			Layout.fillHeight: true
+			Layout.fillWidth: true
+
+			onButtonPressed: {
+				CppCore.sendSwitchLightCommand()
+			}
+		}
 	}
 }
