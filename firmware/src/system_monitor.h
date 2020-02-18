@@ -13,18 +13,18 @@
 typedef enum {
 
     // General
-    SYSMON_NO_ERROR          = 0x00,
-    SYSMON_ANY_ERROR         = 0xFF,
-    SYSMON_FATAL_ERROR       = 0x01,
+    SYSMON_NO_ERROR                 = 0x00,
+    SYSMON_ANY_ERROR                = 0xFF,
+    SYSMON_FATAL_ERROR              = 0x01,
 
     // User defined errors
-    SYSMON_CONFIG_ERROR      = 0x02 | SYSMON_FATAL_ERROR,     // Not resettable
-    SYSMON_MEMORY_ERROR      = 0x04 | SYSMON_FATAL_ERROR,     // Not resettable
-    SYSMON_VOLTAGE_ERROR     = 0x08,                          // Not resettable
-    SYSMON_SYNC_ERROR        = 0x10,                          // Not resettable
-    SYSMON_MATH_ERROR        = 0x20,                          // Not resettable
+    SYSMON_CONFIG_ERROR             = 0x02 | SYSMON_FATAL_ERROR,     // Not resettable
+    SYSMON_MEMORY_ERROR             = 0x04 | SYSMON_FATAL_ERROR,     // Not resettable
+    SYSMON_VOLTAGE_ERROR            = 0x08,                          // Not resettable
+    SYSMON_SYNC_ERROR               = 0x10,                          // Not resettable
+    SYSMON_MATH_ERROR               = 0x20,                          // Not resettable
     // RESERVED
-    SYSMON_CONN_LOST_ERROR   = 0x80                           // Resettable
+    SYSMON_CONN_LOST_ERROR          = 0x80                           // Resettable
 
 } sysmon_error_t;
 

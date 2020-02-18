@@ -34,6 +34,10 @@
 //#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_Y               (0x32)
 #define SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z               (0x33)
 #define SWLP_CMD_SELECT_SEQUENCE_NONE                   (0x90)
+
+#define SWLP_CMD_ENABLE_LIGHT                           (0xA0)
+#define SWLP_CMD_DISABLE_LIGHT                          (0xA1)
+
 #define SWLP_CMD_RESET                                  (0xFE)
 
 //

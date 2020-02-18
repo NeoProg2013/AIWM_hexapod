@@ -5,6 +5,7 @@
 #include "pwm.h"
 #include "stm32f373xc.h"
 #include "project_base.h"
+#include <string.h>
 
 #define PWM_CHANNEL_DISABLE_VALUE       (0xFFFF)
 #define PWM_CHANNEL_PULSE_TRIM          (3)
@@ -24,8 +25,9 @@ typedef struct {
 } pwm_channel_t;
 
 
-static pwm_channel_t active_buffer[SUPPORT_PWM_CHANNELS_COUNT];     // Sorted buffer by ticks value. Using for load data to timer registers
-static pwm_channel_t shadow_buffer[SUPPORT_PWM_CHANNELS_COUNT] = {  // Not sorted buffer. Using for write data from user.
+static pwm_channel_t* active_buffer_ptr[SUPPORT_PWM_CHANNELS_COUNT]; // Array of pointers to active buffer. For fast sorting
+static pwm_channel_t active_buffer[SUPPORT_PWM_CHANNELS_COUNT];      // Mirror of shadow buffer
+static pwm_channel_t shadow_buffer[SUPPORT_PWM_CHANNELS_COUNT] = {   // Not sorted buffer. Using for write data from user.
 	{ .gpio_port = GPIOD, .gpio_pin =  8, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOB, .gpio_pin = 15, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOB, .gpio_pin = 14, .ticks = PWM_CHANNEL_DISABLE_VALUE },
@@ -61,6 +63,7 @@ void pwm_init(void) {
     // Initialization active buffer
     for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
 		active_buffer[i] = shadow_buffer[i];
+        active_buffer_ptr[i] = &active_buffer[i];
 	}
 
     
@@ -169,19 +172,21 @@ void TIM17_IRQHandler(void) {
         while (ch_cursor < SUPPORT_PWM_CHANNELS_COUNT) {
 
             // Find equal time for PWM outputs. First iteration not should be pass this check
-            if (TIM17->CCR1 != active_buffer[ch_cursor].ticks) {
-                TIM17->CCR1 = active_buffer[ch_cursor].ticks; // Load time for next PWM output
+            if (TIM17->CCR1 != active_buffer_ptr[ch_cursor]->ticks) {
+                TIM17->CCR1 = active_buffer_ptr[ch_cursor]->ticks; // Load time for next PWM output
                 break;
             }
 
             // Set LOW level for PWM output
-            active_buffer[ch_cursor].gpio_port->BRR = (0x01 << active_buffer[ch_cursor].gpio_pin);
+            active_buffer_ptr[ch_cursor]->gpio_port->BRR = (0x01 << active_buffer_ptr[ch_cursor]->gpio_pin);
 
             // Go to next PWM channel
             ++ch_cursor;
         }
     }
     if (status & TIM_SR_UIF) {  // We are reached end of PWM period
+        
+        DEBUG_TP1_PIN_SET;
 
         // Check disable PWM request
         if (pwm_disable_is_requested == true) {
@@ -190,9 +195,7 @@ void TIM17_IRQHandler(void) {
 
         // Sync shadow buffer with active buffer if it unlock
         if (shadow_buffer_is_lock == false) {
-            for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
-                active_buffer[i] = shadow_buffer[i];
-            }
+            memcpy(active_buffer, shadow_buffer, sizeof(active_buffer));
         }
 
         // Sorting PWM channels: bubble sorting method
@@ -200,24 +203,26 @@ void TIM17_IRQHandler(void) {
 
             for (uint32_t j = 0; j < SUPPORT_PWM_CHANNELS_COUNT - i - 1; ++j) {
 
-                if (active_buffer[j].ticks > active_buffer[j + 1].ticks) {
-                    pwm_channel_t temp = active_buffer[j];
-                    active_buffer[j] = active_buffer[j + 1];
-                    active_buffer[j + 1] = temp;
+                if (active_buffer_ptr[j]->ticks > active_buffer_ptr[j + 1]->ticks) {
+                    pwm_channel_t* temp = active_buffer_ptr[j];
+                    active_buffer_ptr[j] = active_buffer_ptr[j + 1];
+                    active_buffer_ptr[j + 1] = temp;
                 }
             }
         }
 
         // Set HIGH level for PWM outputs
         for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
-            active_buffer[i].gpio_port->BSRR = (0x01 << active_buffer[i].gpio_pin);
+            active_buffer_ptr[i]->gpio_port->BSRR = (0x01 << active_buffer_ptr[i]->gpio_pin);
         }
         
         // Reset and enable PWM timer
         ch_cursor = 0;
-        TIM17->CCR1 = active_buffer[ch_cursor].ticks;
+        TIM17->CCR1 = active_buffer_ptr[ch_cursor]->ticks;
         TIM17->CR1 |= TIM_CR1_CEN;
 
         ++synchro;
+        
+        DEBUG_TP1_PIN_CLR;
     }
 }

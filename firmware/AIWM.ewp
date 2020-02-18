@@ -244,7 +244,7 @@
                 </option>
                 <option>
                     <name>CCListCMnemonics</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCListCMessages</name>
@@ -256,7 +256,7 @@
                 </option>
                 <option>
                     <name>CCListAssSource</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCEnableRemarks</name>
@@ -325,7 +325,7 @@
                 </option>
                 <option>
                     <name>CCCompilerRuntimeInfo</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>IFpuProcessor</name>
@@ -640,7 +640,7 @@
                 <option>
                     <name>OOCOutputFormat</name>
                     <version>3</version>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
@@ -648,7 +648,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>AIWM.srec</state>
+                    <state>AIWM.hex</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -656,7 +656,7 @@
                 </option>
                 <option>
                     <name>OOCObjCopyEnable</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
             </data>
         </settings>
@@ -946,7 +946,7 @@
                 </option>
                 <option>
                     <name>IlinkStackAnalysisEnable</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>IlinkStackControlFile</name>
@@ -2197,7 +2197,7 @@
                             </option>
                             <option>
                                 <name>CCListCMnemonics</name>
-                                <state>0</state>
+                                <state>1</state>
                             </option>
                             <option>
                                 <name>CCListCMessages</name>
@@ -2209,7 +2209,7 @@
                             </option>
                             <option>
                                 <name>CCListAssSource</name>
-                                <state>0</state>
+                                <state>1</state>
                             </option>
                             <option>
                                 <name>CCEnableRemarks</name>
@@ -2278,7 +2278,7 @@
                             </option>
                             <option>
                                 <name>CCCompilerRuntimeInfo</name>
-                                <state>0</state>
+                                <state>1</state>
                             </option>
                             <option>
                                 <name>IFpuProcessor</name>

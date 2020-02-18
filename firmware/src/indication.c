@@ -20,8 +20,11 @@
 #define BUZZER_TURN_ON()            ( GPIOC->BSRR = (uint32_t)(0x01 << (BUZZER_PIN * 1)) )
 
 
+static bool is_light_enabled = false;
+
+
 static void blink_red_led_with_buzzer(uint32_t period);
-static void blink_yellow_led(uint32_t period);
+static void blink_blue_led(uint32_t period);
 
 
 //  ***************************************************************************
@@ -30,6 +33,8 @@ static void blink_yellow_led(uint32_t period);
 /// @return none
 //  ***************************************************************************
 void indication_init(void) {
+    
+    is_light_enabled = false;
 
     // Front LED red pin (PB5): output mode, push-pull, high speed, no pull
     GPIOB->BRR      =  (0x01 << (LED_R_PIN * 1));
@@ -98,8 +103,17 @@ void indication_init(void) {
         BUZZER_TURN_OFF();
         delay_ms(100);
     }
-    
 }
+
+//  ***************************************************************************
+/// @brief  Set light state
+/// @param  is_enabled: true - light enable, false - light disable
+/// @return none
+//  ***************************************************************************
+void indication_set_light_state(bool is_enabled) {
+    is_light_enabled = is_enabled;
+}
+
 
 //  ***************************************************************************
 /// @brief  Driver process
@@ -109,27 +123,39 @@ void indication_init(void) {
 void indication_process(void) {
     
     if (sysmon_is_error_set(SYSMON_ANY_ERROR) == false) {
-        LED_TURN_OFF(LED_R_PIN);
-        LED_TURN_ON(LED_G_PIN);
-        LED_TURN_OFF(LED_B_PIN);
+        
+        if (is_light_enabled == true) {
+            LED_TURN_ON(LED_R_PIN);
+            LED_TURN_ON(LED_G_PIN);
+            LED_TURN_ON(LED_B_PIN);
+        }
+        else {
+            LED_TURN_OFF(LED_R_PIN);
+            LED_TURN_ON(LED_G_PIN);
+            LED_TURN_OFF(LED_B_PIN);
+        }
         BUZZER_TURN_OFF();
     }
     else {
         
-        if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
-             blink_red_led_with_buzzer(200);
-        } 
-        else if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
+        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
              blink_red_led_with_buzzer(500);
         }
         else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
-             blink_yellow_led(500);
+             blink_blue_led(500);
         }
-        else {
+        else if (sysmon_is_error_set(SYSMON_CONFIG_ERROR) == true) {
             LED_TURN_ON(LED_R_PIN);
             LED_TURN_ON(LED_G_PIN);
             LED_TURN_OFF(LED_B_PIN);
             BUZZER_TURN_OFF();
+        }
+        else {
+            // SYSMON_FATAL_ERROR
+            // SYSMON_MEMORY_ERROR
+            // SYSMON_SYNC_ERROR
+            // SYSMON_MATH_ERROR
+            blink_red_led_with_buzzer(100);
         }
     }
 }
@@ -137,49 +163,56 @@ void indication_process(void) {
 
 
 
-static void blink_red_led_with_buzzer(uint32_t period) {
+
+//  ***************************************************************************
+/// @brief  Blink red LED with buzzer beep
+/// @param  switch_time: blink and buzzer beep switch time
+/// @return none
+//  ***************************************************************************
+static void blink_red_led_with_buzzer(uint32_t switch_time) {
     
     static uint32_t start_time = 0;
     static bool state = false;
     
-    if (get_time_ms() - start_time > period) {
+    if (get_time_ms() - start_time > switch_time) {
         
         if (state == false) {
             LED_TURN_ON(LED_R_PIN);
-            LED_TURN_OFF(LED_G_PIN);
-            LED_TURN_OFF(LED_B_PIN);
-            BUZZER_TURN_ON();
         }
         else {
             LED_TURN_OFF(LED_R_PIN);
-            LED_TURN_OFF(LED_G_PIN);
-            LED_TURN_OFF(LED_B_PIN);
-            BUZZER_TURN_OFF();
         }
+        LED_TURN_OFF(LED_G_PIN);
+        LED_TURN_OFF(LED_B_PIN);
+        BUZZER_TURN_OFF();
+        
         state = !state;
         start_time = get_time_ms();
     }
 }
 
-static void blink_yellow_led(uint32_t period) {
+//  ***************************************************************************
+/// @brief  Blink blue LED
+/// @param  switch_time: LED switch time
+/// @return none
+//  ***************************************************************************
+static void blink_blue_led(uint32_t switch_time) {
     
     static uint32_t start_time = 0;
     static bool state = false;
     
-    if (get_time_ms() - start_time > period) {
+    if (get_time_ms() - start_time > switch_time) {
         
         if (state == false) {
-            LED_TURN_ON(LED_R_PIN);
-            LED_TURN_ON(LED_G_PIN);
             LED_TURN_OFF(LED_B_PIN);
-            BUZZER_TURN_OFF();
         }
         else {
-            LED_TURN_OFF(LED_R_PIN);
-            LED_TURN_OFF(LED_G_PIN);
-            LED_TURN_OFF(LED_B_PIN);
-            BUZZER_TURN_OFF();
+            LED_TURN_ON(LED_B_PIN);
         }
+        LED_TURN_OFF(LED_R_PIN);
+        LED_TURN_OFF(LED_G_PIN);
+        BUZZER_TURN_OFF();
+        
         state = !state;
         start_time = get_time_ms();
     }
