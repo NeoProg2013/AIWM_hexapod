@@ -106,12 +106,12 @@ void indication_init(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Set light state
-/// @param  is_enabled: true - light enable, false - light disable
+/// @brief  Switch light state
+/// @param  none
 /// @return none
 //  ***************************************************************************
-void indication_set_light_state(bool is_enabled) {
-    is_light_enabled = is_enabled;
+void indication_switch_light_state(void) {
+    is_light_enabled = !is_light_enabled;
 }
 
 

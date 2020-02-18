@@ -10,7 +10,7 @@
 
 
 extern void indication_init(void);
-extern void indication_set_light_state(bool is_enabled);
+extern void indication_switch_light_state(void);
 extern void indication_process(void);
 
 
