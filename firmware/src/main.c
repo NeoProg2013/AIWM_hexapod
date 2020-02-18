@@ -20,6 +20,11 @@ static void system_init(void);
 static void debug_gpio_init(void);
 
 
+//  ***************************************************************************
+/// @brief  Program entry point
+/// @param  none
+/// @return none
+//  ***************************************************************************
 void main() {
     
     system_init();
@@ -56,6 +61,11 @@ void main() {
     }
 }
 
+//  ***************************************************************************
+/// @brief  System initialization
+/// @param  none
+/// @return none
+//  ***************************************************************************
 static void system_init(void) {
     
     // Enable HSE
