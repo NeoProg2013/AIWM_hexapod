@@ -1,7 +1,6 @@
 #include <QGuiApplication>
 #include <QHostAddress>
 #include <QNetworkDatagram>
-#include <QDebug>
 #include <QThread>
 #include "swlp.h"
 #define SERVER_IP_ADDRESS					("111.111.111.111")
@@ -9,7 +8,6 @@
 
 
 Swlp::Swlp(QObject* parent) : QObject(parent) {
-	qDebug() << "Swlp::Swlp()";
 
 	m_socket = nullptr;
 	m_sendTimer = nullptr;
@@ -21,7 +19,6 @@ Swlp::Swlp(QObject* parent) : QObject(parent) {
 }
 
 Swlp::~Swlp() {
-	qDebug() << "Swlp::~Swlp(). Thread id =" << QThread::currentThreadId();
 
 	if (m_socket != nullptr) {
 		m_sendTimer->stop();
@@ -34,7 +31,7 @@ Swlp::~Swlp() {
 }
 
 void Swlp::runCommunication() {
-	qDebug() << "Swlp::start(). Thread id =" << QThread::currentThreadId();
+
 	if (m_isRunning == true) {
 		return;
 	}
@@ -43,19 +40,16 @@ void Swlp::runCommunication() {
 	// Setup UDP socket
 	m_socket = new (std::nothrow) QUdpSocket();
 	if (m_socket == nullptr) {
-		qDebug() << "Cannot create QUdpSocket";
 		return;
 	}
 	connect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent);
 	if (m_socket->bind(SERVER_PORT) == false) {
-		qDebug() << "Bind false";
-		qDebug() << m_socket->errorString();
+		return;
 	}
 
 	// Setup send command payload timer
 	m_sendTimer = new (std::nothrow) QTimer();
 	if (m_sendTimer == nullptr) {
-		qDebug() << "Cannot create QTimer";
 		return;
 	}
 	connect(m_sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent);
@@ -66,17 +60,13 @@ void Swlp::runCommunication() {
 	// Start event loop
 	m_eventLoop = new QEventLoop;
 	m_eventLoop->exec();
-	qDebug() << "Exit from event loop";
 
 	// Stop send command payload timer
 	m_sendTimer->stop();
-
 	m_isRunning = false;
-	qDebug() << "Swlp::start() leaved";
 }
 
 void Swlp::datagramReceivedEvent() {
-	qDebug() << "Swlp::datagramReceivedEvent(). Thread id =" << QThread::currentThreadId();
 
 	swlp_frame_t swlp_frame;
 
@@ -84,7 +74,6 @@ void Swlp::datagramReceivedEvent() {
 	qint64 datagram_size = m_socket->pendingDatagramSize();
 	if (datagram_size != sizeof(swlp_frame_t)) {
 		m_socket->readDatagram(reinterpret_cast<char*>(&swlp_frame), 0);
-		qDebug() << "Wrong datagram size";
 		return;
 	}
 
@@ -93,23 +82,18 @@ void Swlp::datagramReceivedEvent() {
 
 	// Verify SWLP frame
 	if (swlp_frame.start_mark != SWLP_START_MARK_VALUE) {
-		qDebug() << "Wrong SWLP_START_MARK_VALUE";
 		return;
 	}
 	if (this->calculateCRC16(reinterpret_cast<const uint8_t*>(&swlp_frame), sizeof(swlp_frame)) != 0) {
-		qDebug() << "Wrong CRC16";
 		return;
 	}
 
 	// Process status payload
 	memcpy(&m_statusPayload, swlp_frame.payload, sizeof(m_statusPayload));
 	emit statusPayloadReceived(&m_statusPayload);
-
-	qDebug() << "Status payload received";
 }
 
 void Swlp::sendCommandPayloadEvent() {
-	qDebug() << "Swlp::sendCommandPayloadEvent(). Thread id =" << QThread::currentThreadId();
 
 	// Request command payload
 	emit requestCommandPayload(&m_commandPayload);

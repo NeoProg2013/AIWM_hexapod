@@ -2,8 +2,6 @@
 #define CORE_H
 
 #include <QObject>
-#include <QTimer>
-#include <QFuture>
 #include <QThread>
 #include "swlp.h"
 

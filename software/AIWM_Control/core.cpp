@@ -1,11 +1,9 @@
 #include "core.h"
 #include <QGuiApplication>
-#include <QDebug>
 #include <QEventLoop>
 
 
 Core::Core(QObject *parent) : QObject(parent) {
-	qDebug() << "Core::Core(). Thread id =" << QThread::currentThreadId();
 
 	m_commandForSend = SWLP_CMD_NONE;
 
@@ -17,8 +15,6 @@ Core::Core(QObject *parent) : QObject(parent) {
 }
 
 Core::~Core() {
-	qDebug() << "Core::~Core(). Thread id =" << QThread::currentThreadId();
-
 	m_swlpThread.exit();
 	m_swlpThread.wait();
 }

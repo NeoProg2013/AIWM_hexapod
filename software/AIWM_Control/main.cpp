@@ -2,7 +2,6 @@
 #include <QQmlApplicationEngine>
 #include <QQmlEngine>
 #include <QQmlContext>
-#include <QDebug>
 #include <QThread>
 #include "swlp.h"
 #include "core.h"
