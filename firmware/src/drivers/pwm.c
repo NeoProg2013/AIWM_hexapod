@@ -186,8 +186,6 @@ void TIM17_IRQHandler(void) {
     }
     if (status & TIM_SR_UIF) {  // We are reached end of PWM period
         
-        DEBUG_TP1_PIN_SET;
-
         // Check disable PWM request
         if (pwm_disable_is_requested == true) {
             return;
@@ -222,7 +220,5 @@ void TIM17_IRQHandler(void) {
         TIM17->CR1 |= TIM_CR1_CEN;
 
         ++synchro;
-        
-        DEBUG_TP1_PIN_CLR;
     }
 }
