@@ -25,7 +25,7 @@ void Core::runCommunication() {
 }
 
 void Core::stopCommunication() {
-	m_swlpThread.exit();
+	m_swlpThread.quit();
 }
 
 void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP; 					 }

@@ -9,6 +9,7 @@ Item {
     clip: true
 
     signal showControlPage
+    signal showTerminalPage
 
     Connections {
         target: CppCore
@@ -34,18 +35,6 @@ Item {
 
             CppCore.stopCommunication()
         }
-    }
-
-    function connectToDevice() {
-
-        labelText.text = "Подключение к устройству..."
-        labelText.color = "#FFFFFF"
-        labelText.visible = true
-        connectButton.visible = false
-        progressBar.visible = true
-
-        CppCore.runCommunication()
-        timeoutTimer.start()
     }
 
     Label {
@@ -89,7 +78,14 @@ Item {
             }
         }
         onClicked: {
-            connectToDevice()
+            labelText.text = "Подключение к устройству..."
+            labelText.color = "#FFFFFF"
+            labelText.visible = true
+            connectButton.visible = false
+            progressBar.visible = true
+
+            CppCore.runCommunication()
+            timeoutTimer.start()
         }
     }
 
@@ -104,14 +100,13 @@ Item {
 
     Label {
         y: 863
+        width: 120
         height: 20
-        text: qsTr("Версия: 1.00.001")
+        text: qsTr("Версия: 1.00")
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
         anchors.left: parent.left
         anchors.leftMargin: 5
-        anchors.right: parent.right
-        anchors.rightMargin: 5
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignLeft
     }
@@ -131,6 +126,20 @@ Item {
         font.pointSize: 14
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
+    }
+
+    Button {
+        x: 409
+        y: 835
+        text: qsTr("Терминал")
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 5
+        onClicked: {
+            CppTerminal.runCommunication()
+            showTerminalPage()
+        }
     }
 }
 

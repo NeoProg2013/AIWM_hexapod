@@ -1,5 +1,5 @@
-#ifndef WIRELESS_H
-#define WIRELESS_H
+#ifndef SWLP_H
+#define SWLP_H
 
 #include <QObject>
 #include <QUdpSocket>
@@ -39,4 +39,4 @@ private:
 	swlp_status_payload_t m_statusPayload;
 };
 
-#endif // WIRELESSMODBUS_H
+#endif // SWLP_H

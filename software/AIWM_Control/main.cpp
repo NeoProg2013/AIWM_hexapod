@@ -5,6 +5,7 @@
 #include <QThread>
 #include "swlp.h"
 #include "core.h"
+#include "terminal.h"
 
 
 int main(int argc, char *argv[]) {
@@ -13,10 +14,12 @@ int main(int argc, char *argv[]) {
 
 	QGuiApplication app(argc, argv);
 
+	Terminal terminal;
 	Core core;
 
 	QQmlApplicationEngine engine;
 	engine.rootContext()->setContextProperty("CppCore", &core);
+	engine.rootContext()->setContextProperty("CppTerminal", &terminal);
 	engine.load(QUrl(QStringLiteral("qrc:/AndroidQML/main.qml")));
 	if (engine.rootObjects().isEmpty()) {
 		return -1;

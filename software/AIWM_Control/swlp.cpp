@@ -63,6 +63,17 @@ void Swlp::runCommunication() {
 
 	// Stop send command payload timer
 	m_sendTimer->stop();
+
+	// Free UDP socket
+	disconnect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent);
+	delete m_socket;
+	m_socket = nullptr;
+
+	// Free send command payload timer
+	disconnect(m_sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent);
+	delete m_sendTimer;
+	m_sendTimer = nullptr;
+
 	m_isRunning = false;
 }
 

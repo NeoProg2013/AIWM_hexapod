@@ -32,6 +32,13 @@
         <file>AndroidQML/ConnectionPage.qml</file>
         <file>images/powerOn.svg</file>
         <file>images/light.svg</file>
+        <file>swlp.cpp</file>
+        <file>swlp.h</file>
+        <file>swlp_protocol.h</file>
+        <file>terminal.cpp</file>
+        <file>terminal.h</file>
+        <file>fonts/RobotoMono-Regular.ttf</file>
+        <file>AndroidQML/TerminalPage.qml</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>
