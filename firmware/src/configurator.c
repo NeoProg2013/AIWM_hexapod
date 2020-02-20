@@ -177,7 +177,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
         // Read data
         if (config_read(page * CONFIG_SECTION_PAGE_SIZE, cli_buffer, CONFIG_SECTION_PAGE_SIZE) == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot read data from memory"));
+            strcpy(response, CLI_MSG("Cannot read data from memory"));
             return false;
         }
 
@@ -185,7 +185,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         response += sprintf(response, CLI_MSG("      00 01 02 03  04 05 06 07  08 09 0A 0B  0C 0D 0E 0F"));
         for (uint32_t i = 0; i < CONFIG_SECTION_PAGE_SIZE; i += 16) {
 
-            response += sprintf(response, CLI_MSG("%04X: " CLI_YELLOW "%02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X"),
+            response += sprintf(response, CLI_MSG("%04X: %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X"),
                                 i + page * CONFIG_SECTION_PAGE_SIZE, 
                                 cli_buffer[i +  0], cli_buffer[i +  1], cli_buffer[i +  2], cli_buffer[i +  3],
                                 cli_buffer[i +  4], cli_buffer[i +  5], cli_buffer[i +  6], cli_buffer[i +  7],
@@ -207,7 +207,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Read data
         uint16_t data = 0;
         if (config_read_16(address, &data) == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot read data from memory"));
+            strcpy(response, CLI_MSG("Cannot read data from memory"));
             return false;
         }
 
@@ -232,7 +232,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Read data
         uint32_t data = 0;
         if (config_read_32(address, &data) == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot read data from memory"));
+            strcpy(response, CLI_MSG("Cannot read data from memory"));
             return false;
         }
 
@@ -272,7 +272,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
             uint8_t byte = strtol(hex_value, NULL, 16);
             if (config_write_8(address, byte) == false) {
-                strcpy(response, CLI_ERROR_MSG("Cannot write data to memory"));
+                strcpy(response, CLI_MSG("Cannot write data to memory"));
                 return false;
             }
         }
@@ -292,7 +292,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
         // Write data
         if (config_write_16(address, data) == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("Cannot write data to memory"));
             return false;
         }
     }
@@ -311,14 +311,14 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
         // Write data
         if (config_write_32(address, data) == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("Cannot write data to memory"));
             return false;
         }
     }
     else if (strcmp(cmd, "erase") == 0) {
 
         if (config_erase() == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("Cannot write data to memory"));
             return false;
         }
     }
@@ -333,7 +333,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         }
 
         if (config_verify_checksum(page) == false) {
-            strcpy(response, CLI_ERROR_MSG("Verify failed"));
+            strcpy(response, CLI_MSG("Verify failed"));
             return false;
         }
     }
@@ -350,13 +350,13 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Calculate checksum
         uint32_t checksum = 0;
         if (config_calc_checksum(page, &checksum) == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot read data from memory"));
+            strcpy(response, CLI_MSG("Cannot read data from memory"));
             return false;
         }
 
         // Write checksum value
         if (config_write_32(page * CONFIG_SECTION_PAGE_SIZE + MM_PAGE_CHECKSUM_OFFSET, checksum) == false) {
-            strcpy(response, CLI_ERROR_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("Cannot write data to memory"));
             return false;
         }
     }

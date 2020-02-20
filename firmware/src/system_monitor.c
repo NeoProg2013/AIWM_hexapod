@@ -93,9 +93,9 @@ void sysmon_process(void) {
             acc_adc_bins[0] = 0;
             acc_adc_bins[1] = 0;
             acc_adc_bins[2] = 0;
-            if (sysmon_battery_charge == 0) {
+            /*if (sysmon_battery_charge == 0) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
-            }
+            }*/
             /*if (sysmon_battery_cell_voltage[0] < CELL_VOLTAGE_THRESHOLD) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
             }

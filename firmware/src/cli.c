@@ -47,17 +47,17 @@ uint32_t cli_process_frame(char* rx_buffer, char* tx_buffer) {
         // Process command
         if (process_command(module, cmd, argv, argc, tx_buffer) == false) {
             if (strlen(tx_buffer) == 0) {
-                strcpy(tx_buffer, CLI_ERROR_MSG("ERROR"));
+                strcpy(tx_buffer, CLI_MSG("ERROR"));
             }
         }
         else {
             if (strlen(tx_buffer) == 0) {
-                strcpy(tx_buffer, CLI_OK_MSG("OK"));
+                strcpy(tx_buffer, CLI_MSG("OK"));
             }
         }
     }
     else {
-        strcpy(tx_buffer, CLI_ERROR_MSG("ERROR"));
+        strcpy(tx_buffer, CLI_MSG("ERROR"));
     }
 
     // Return response size
@@ -81,44 +81,44 @@ uint32_t cli_process_frame(char* rx_buffer, char* tx_buffer) {
 static bool process_command(const char* module, const char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t argc, char* response) {
 
     if (strcmp(module, "help") == 0 || strcmp(module, "?") == 0) {
-        sprintf(response, CLI_HELP_MSG("+------------------------------------------------------------------------+")
-                          CLI_HELP_MSG("| Artificial intelligence walking machine - CLI help subsystem           |")
-                          CLI_HELP_MSG("+------------------------------------------------------------------------+")
-                          CLI_HELP_MSG("")
-                          CLI_HELP_MSG("Hello. I think you don't understand how work with?")
-                          CLI_HELP_MSG("Don't worry! I can help you")
-                          CLI_HELP_MSG("You can send me command in next format [module] [cmd] [arg 1] ... [arg N]")
-                          CLI_HELP_MSG("Also you can use all commands from list:")
-                          CLI_HELP_MSG("")
-                          CLI_HELP_MSG(CLI_UNDERSCORE CLI_BRIGHT "basic commands description")
-                          CLI_HELP_MSG("    - exit                                - switch to SWLP protocol")
-                          CLI_HELP_MSG("    - help                                - display this message again")
-                          CLI_HELP_MSG("    - ?                                   - display this message again")
-						  CLI_HELP_MSG(CLI_UNDERSCORE CLI_BRIGHT "\"system\" commands description")
-                          CLI_HELP_MSG("    - version                             - print firmware version")
-                          CLI_HELP_MSG("    - status                              - get current system status")
-                          CLI_HELP_MSG("    - reset                               - reset MCU")
-                          CLI_HELP_MSG("")
-                          CLI_HELP_MSG(CLI_UNDERSCORE CLI_BRIGHT "\"servo\" driver commands description")
-						  CLI_HELP_MSG("    - attach <servo>                      - attach servo to driver")
-                          CLI_HELP_MSG("    - detach <servo>                      - detach servo from driver")
-                          CLI_HELP_MSG("    - status <servo>                      - get current servo status")
-						  CLI_HELP_MSG("    - set_angle <servo> <log|phy> <angle> - set servo angle")
-                          CLI_HELP_MSG("    - set_pulse <servo> <pulse>           - set servo pulse width")
-                          CLI_HELP_MSG("")
-                          CLI_HELP_MSG(CLI_UNDERSCORE CLI_BRIGHT "\"config\" module commands description")
-                          CLI_HELP_MSG("    - read <page>                         - read page (256 bytes)")
-                          CLI_HELP_MSG("    - read16 <address> <s|u>              - read 16-bit DEC value")
-                          CLI_HELP_MSG("    - read32 <address> <s|u>              - read 32-bit DEC value")
-                          CLI_HELP_MSG("    - write <address> <HEX data>          - write HEX data")
-                          CLI_HELP_MSG("    - write16 <address> <DEC value>       - write 16-bit DEC value")
-                          CLI_HELP_MSG("    - write32 <address> <DEC value>       - write 32-bit DEC value")
-                          CLI_HELP_MSG("    - erase                               - mass erase storage")
-                          CLI_HELP_MSG("    - calc_checksum <page>                - calculate page checksum")
-                          CLI_HELP_MSG("    - verify <page>                       - verify page checksum")
-                          CLI_HELP_MSG("")
-                          CLI_HELP_MSG("For example you can send me next command: system status")
-						  CLI_HELP_MSG("I hope now you can work with me :)"));
+        sprintf(response, CLI_MSG("+------------------------------------------------------------------------+")
+                          CLI_MSG("| Artificial intelligence walking machine - CLI help subsystem           |")
+                          CLI_MSG("+------------------------------------------------------------------------+")
+                          CLI_MSG("")
+                          CLI_MSG("Hello. I think you don't understand how work with?")
+                          CLI_MSG("Don't worry! I can help you")
+                          CLI_MSG("You can send me command in next format [module] [cmd] [arg 1] ... [arg N]")
+                          CLI_MSG("Also you can use all commands from list:")
+                          CLI_MSG("")
+                          CLI_MSG("basic commands description")
+                          CLI_MSG("    - exit                                - switch to SWLP protocol")
+                          CLI_MSG("    - help                                - display this message again")
+                          CLI_MSG("    - ?                                   - display this message again")
+						  CLI_MSG("\"system\" commands description")
+                          CLI_MSG("    - version                             - print firmware version")
+                          CLI_MSG("    - status                              - get current system status")
+                          CLI_MSG("    - reset                               - reset MCU")
+                          CLI_MSG("")
+                          CLI_MSG("\"servo\" driver commands description")
+						  CLI_MSG("    - attach <servo>                      - attach servo to driver")
+                          CLI_MSG("    - detach <servo>                      - detach servo from driver")
+                          CLI_MSG("    - status <servo>                      - get current servo status")
+						  CLI_MSG("    - set_angle <servo> <log|phy> <angle> - set servo angle")
+                          CLI_MSG("    - set_pulse <servo> <pulse>           - set servo pulse width")
+                          CLI_MSG("")
+                          CLI_MSG("\"config\" module commands description")
+                          CLI_MSG("    - read <page>                         - read page (256 bytes)")
+                          CLI_MSG("    - read16 <address> <s|u>              - read 16-bit DEC value")
+                          CLI_MSG("    - read32 <address> <s|u>              - read 32-bit DEC value")
+                          CLI_MSG("    - write <address> <HEX data>          - write HEX data")
+                          CLI_MSG("    - write16 <address> <DEC value>       - write 16-bit DEC value")
+                          CLI_MSG("    - write32 <address> <DEC value>       - write 32-bit DEC value")
+                          CLI_MSG("    - erase                               - mass erase storage")
+                          CLI_MSG("    - calc_checksum <page>                - calculate page checksum")
+                          CLI_MSG("    - verify <page>                       - verify page checksum")
+                          CLI_MSG("")
+                          CLI_MSG("For example you can send me next command: system status")
+						  CLI_MSG("I hope now you can work with me :)"));
     }
     else if (strcmp(module, "exit") == 0) {
         communication_switch_to_swlp();
