@@ -126,11 +126,11 @@ void Core::pathCalculatePoint(const path_3d_t* info, uint32_t current_iteration,
 bool Core::kinematic_calculate_angles(point_3d_t& position) {
 
 	int32_t coxa_zero_rotate_deg = 45;
-	int32_t femur_zero_rotate_deg = 101;
-	int32_t tibia_zero_rotate_deg = 47;
-	uint32_t coxa_length = 40;
-	uint32_t femur_length = 84;
-	uint32_t tibia_length = 141;
+	int32_t femur_zero_rotate_deg = 125;
+	int32_t tibia_zero_rotate_deg = 45;
+	uint32_t coxa_length = 53;
+	uint32_t femur_length = 76;
+	uint32_t tibia_length = 137;
 
 	float x = position.x;
 	float y = position.y;

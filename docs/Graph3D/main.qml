@@ -206,7 +206,7 @@ ApplicationWindow {
 			y: 0
 			width: 50
 			height: 50
-			text: qsTr("130")
+			text: qsTr("135")
 			horizontalAlignment: Text.AlignHCenter
 		}
 
@@ -216,7 +216,7 @@ ApplicationWindow {
 			y: 0
 			width: 50
 			height: 50
-			text: qsTr("-85")
+			text: qsTr("-35")
 			horizontalAlignment: Text.AlignHCenter
 		}
 
@@ -226,7 +226,7 @@ ApplicationWindow {
 			y: 0
 			width: 50
 			height: 50
-			text: qsTr("0")
+			text: qsTr("70")
 			horizontalAlignment: Text.AlignHCenter
 		}
 
