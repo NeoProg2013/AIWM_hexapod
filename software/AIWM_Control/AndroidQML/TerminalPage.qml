@@ -67,9 +67,10 @@ Item {
             verticalAlignment: Text.AlignVCenter
             font.family: fontFromResources.name
             Keys.onReturnPressed: {
-                terminalLog.text += "TERMINAL: " + messageText.text + "\n\n"
-                CppTerminal.sendMessage(messageText.text)
+                var message = messageText.text.toLowerCase()
                 messageText.text = ""
+                terminalLog.text += "TERMINAL: " + message + "\n"
+                CppTerminal.sendMessage(message)
             }
         }
     }
@@ -85,7 +86,7 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: 5
         onClicked: {
-            terminalLog.text += "TERMINAL: " + messageText.text + "\n\n"
+            terminalLog.text += "TERMINAL: " + messageText.text + "\n"
             CppTerminal.sendMessage(messageText.text)
             messageText.text = ""
         }
