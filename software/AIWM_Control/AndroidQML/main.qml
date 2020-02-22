@@ -4,8 +4,8 @@ import QtQuick.Controls 2.5
 ApplicationWindow {
     id: applicationWindow
     visible: true
-    width: 500
-    height: 888
+    width: 600
+    height: 600
     color: "#000000"
 
     onClosing: {
