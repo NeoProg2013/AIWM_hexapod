@@ -85,7 +85,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_MSG("| Artificial intelligence walking machine - CLI help subsystem           |")
                           CLI_MSG("+------------------------------------------------------------------------+")
                           CLI_MSG("")
-                          CLI_MSG("Hello. I think you don't understand how work with?")
+                          CLI_MSG("Hello. I think you don't understand how work with me?")
                           CLI_MSG("Don't worry! I can help you")
                           CLI_MSG("You can send me command in next format [module] [cmd] [arg 1] ... [arg N]")
                           CLI_MSG("Also you can use all commands from list:")
