@@ -34,15 +34,15 @@ typedef struct {
 typedef struct {
 	float logic_angle;
 	float physic_angle;
-	uint32_t pulse_width;
+    uint32_t pulse_width;
+    
+    uint8_t override_level;
+    int32_t override_value;
 } servo_info_t;
 
 
-static servo_config_t servo_config_list[SUPPORT_SERVO_COUNT] = { 0 };
-static servo_info_t   servo_info_list[SUPPORT_SERVO_COUNT] = { 0 };
-
-uint32_t override_control = 0;
-servo_info_t servo_info_override_list[SUPPORT_SERVO_COUNT] = { 0 };
+static servo_config_t servo_config_list[SUPPORT_SERVO_COUNT];
+static servo_info_t   servo_info_list[SUPPORT_SERVO_COUNT];
 
 
 static bool read_configuration(void);
@@ -55,6 +55,10 @@ static uint32_t convert_angle_to_pulse_width(float physic_angle, const servo_con
 /// @return none
 //  ***************************************************************************
 void servo_driver_init(void) {
+    
+    // Clear variables
+    memset(&servo_config_list, 0, sizeof(servo_config_list));
+    memset(&servo_info_list, 0, sizeof(servo_info_list));
 
     if (read_configuration() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
@@ -84,7 +88,7 @@ void servo_driver_move(uint32_t ch, float angle) {
         sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
         return;
     }
-
+    
     servo_info_list[ch].logic_angle = angle;
 }
 
@@ -115,27 +119,22 @@ void servo_driver_process(void) {
 		for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
 
 			servo_info_t* info = &servo_info_list[i];
-			servo_info_t* info_override = &servo_info_override_list[i];
 
 			// Override logic angle if need
-			if (override_control & (1 << i)) {
-				info->logic_angle = info_override->logic_angle;
+			if (info->override_level == 1) {
+				info->logic_angle = info->override_value;
 			}
 
 			// Calculate physic angle
 			info->physic_angle = calculate_physic_angle(info->logic_angle, &servo_config_list[i]);
-
-			// Override physic angle if need
-			if (override_control & (1 << i)) {
-				info->physic_angle = info_override->physic_angle;
+			if (info->override_level == 2) {
+				info->physic_angle = info->override_value;
 			}
 
 			// Calculate pulse width
 			info->pulse_width = convert_angle_to_pulse_width(info->physic_angle, &servo_config_list[i]);
-
-			// Override pulse width if need
-			if (override_control & (1 << i)) {
-				info->pulse_width = info_override->pulse_width;
+			if (info->override_level == 3) {
+				info->pulse_width = info->override_value;
 			}
 
 			// Load pulse width
@@ -164,35 +163,6 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
 	else if (strcmp(cmd, "disable") == 0) {
     	sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
 	}
-    else if (strcmp(cmd, "detach") == 0) {
-
-		if (argc != 1) return false;
-
-		// Get servo index
-		uint32_t servo_index = atoi(argv[0]);
-		if (servo_index > SUPPORT_SERVO_COUNT) return false;
-
-		// Detach servo from driver control
-		override_control |= (1 << servo_index);
-		servo_info_override_list[servo_index] = servo_info_list[servo_index];
-        
-        // Make response
-        sprintf(response, CLI_MSG("servo [%lu] detached from driver"), servo_index);
-	}
-	else if (strcmp(cmd, "attach") == 0) {
-
-		if (argc != 1) return false;
-
-		// Get servo index
-		uint32_t servo_index = atoi(argv[0]);
-		if (servo_index > SUPPORT_SERVO_COUNT) return false;
-
-		// Attach servo to driver control
-		override_control &= ~(1 << servo_index);
-        
-        // Make response
-        sprintf(response, CLI_MSG("servo [%lu] attached to driver"), servo_index);
-	}
 	else if (strcmp(cmd, "status") == 0) {
 
 		if (argc != 1) return false;
@@ -205,38 +175,28 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
 
         // Make response
 		sprintf(response, CLI_MSG("servo status report")
-		                  CLI_MSG("    - control status: %s")
 		                  CLI_MSG("    - logic_angle: %ld")
 		                  CLI_MSG("    - physic_angle: %ld")
 		                  CLI_MSG("    - pulse_width: %lu"),
-                (override_control & (1 << servo_index)) ? "user" : "driver",
 				(int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
 	}
-	else if (strcmp(cmd, "set_angle") == 0) {
+    else if (strcmp(cmd, "calibration") == 0) {
+        
+        if (argc != 1) return false;
 
-		if (argc != 3) return false;
-		
-		// Get servo index
-		uint32_t servo_index = atoi(argv[0]);
-		if (servo_index > SUPPORT_SERVO_COUNT) return false;
+		// Get pulse width
+		uint32_t pulse_width = atoi(argv[0]);
+        
+        // Set pulse width for all servo
+        for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
+            servo_info_list[i].override_level = 3;
+            servo_info_list[i].override_value = pulse_width;
+        }
 
-		// Get angle
-		float angle = atof(argv[2]);
-		
-		// Get angle type
-		if (strcmp(argv[1], "log") == 0) {
-			servo_info_override_list[servo_index].logic_angle = angle;
-			sprintf(response, CLI_MSG("servo [%lu] have new logic angle (rouded) [%ld]"), servo_index, (int32_t)angle);
-		}
-		else if (strcmp(argv[1], "phy") == 0) {
-			servo_info_override_list[servo_index].physic_angle = angle;
-			sprintf(response, CLI_MSG("servo [%lu] have new physic angle (rouded) [%ld]"), servo_index, (int32_t)angle);
-		}
-		else {
-			return false;
-		}
+        // Make response
+		strcpy(response, CLI_MSG("servo calibration mode enabled"));
 	}
-	else if (strcmp(cmd, "set_pulse") == 0) {
+    else if (strcmp(cmd, "set_override_level") == 0) {
 
 		if (argc != 2) return false;
 
@@ -244,14 +204,33 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
 		uint32_t servo_index = atoi(argv[0]);
 		if (servo_index > SUPPORT_SERVO_COUNT) return false;
 
-		// Get angle
-		uint32_t pulse_width = atoi(argv[1]);
-
-		// Set new servo angle
-		servo_info_override_list[servo_index].pulse_width = pulse_width;
+		// Get override level
+        uint32_t override_level = atoi(argv[1]);
+		if (override_level > 3) return false;
+        
+        // Set override level
+		servo_info_list[servo_index].override_level = override_level;
+        
+        // Copy current value to override
+        servo_info_t* info = &servo_info_list[servo_index];
+        if (info->override_level == 1) info->override_value = (int32_t)info->logic_angle;
+        if (info->override_level == 2) info->override_value = (int32_t)info->physic_angle;
+        if (info->override_level == 3) info->override_value = (int32_t)info->pulse_width;
         
         // Make response
-        sprintf(response, CLI_MSG("servo [%lu] have new pulse width [%lu]"), servo_index, pulse_width);
+        sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, override_level);
+	}
+	else if (strcmp(cmd, "set_override_value") == 0) {
+
+		if (argc != 2) return false;
+		
+		// Get servo index
+		uint32_t servo_index = atoi(argv[0]);
+		if (servo_index > SUPPORT_SERVO_COUNT) return false;
+
+		// Get override value
+		servo_info_list[servo_index].override_value = atoi(argv[1]);
+        sprintf(response, CLI_MSG("[%lu] has new override value %ld"), servo_index, servo_info_list[servo_index].override_value);
 	}
 	else {
 		return false;
