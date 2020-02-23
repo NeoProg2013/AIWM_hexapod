@@ -40,7 +40,7 @@ static const sequence_info_t sequence_down = {
     
     {
         { 
-            {{140, -35, 65}, {150, -35, 0}, {140, -35, -65}, {140, -35, 65}, {150, -35, 0}, {140, -35, -65}},
+            {{140, -25, 65}, {150, -25, 0}, {140, -25, -65}, {140, -25, 65}, {150, -25, 0}, {140, -25, -65}},
             { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR }, 80
         },    
     }
