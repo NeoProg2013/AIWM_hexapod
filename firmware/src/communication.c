@@ -6,11 +6,14 @@
 #include "cli.h"
 #include "swlp.h"
 #include "usart2.h"
+#include "system_monitor.h"
+#include "systimer.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 
 #define COMMUNICATION_BAUD_RATE                     (115200)
+#define COMMUNICATION_TIMEOUT                       (1000)
 
 
 typedef enum {
@@ -61,7 +64,10 @@ void communication_init(void) {
 /// @return none
 //  ***************************************************************************
 void communication_process(void) {
+    
+    static uint64_t frame_received_time = 0;
 
+    
     if (driver_state == STATE_FRAME_RECEIVED) {
         
         uint32_t bytes_for_tx = 0;
@@ -95,6 +101,18 @@ void communication_process(void) {
             driver_state = STATE_WAIT_FRAME;
             usart2_start_rx(rx_buffer, sizeof(rx_buffer)); 
         }
+        
+        // Update frame receive time
+        frame_received_time = get_time_ms();
+    }
+    
+    
+    //
+    // Process communication timeout feature
+    //
+    sysmon_clear_error(SYSMON_CONN_LOST_ERROR);
+    if (get_time_ms() - frame_received_time > COMMUNICATION_TIMEOUT && is_switched_to_cli == false) {
+        sysmon_set_error(SYSMON_CONN_LOST_ERROR);
     }
 }
 

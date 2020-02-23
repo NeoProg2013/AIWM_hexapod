@@ -18,6 +18,7 @@
 
 static void system_init(void);
 static void debug_gpio_init(void);
+static void emergency_loop(void);
 
 
 //  ***************************************************************************
@@ -43,11 +44,9 @@ void main() {
     while (true) {
         
         sysmon_process();
+        communication_process();
         
-        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
-            movement_engine_select_sequence(SEQUENCE_DOWN);
-        }
-        if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
+        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR | SYSMON_CONN_LOST_ERROR) == true) {
             movement_engine_select_sequence(SEQUENCE_DOWN);
         }
         
@@ -55,8 +54,24 @@ void main() {
         limbs_driver_process();
         servo_driver_process();
         
-        communication_process();
+        indication_process();
         
+        if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
+            emergency_loop();
+        }
+    }
+}
+
+//  ***************************************************************************
+/// @brief  Emergency loop
+/// @param  none
+/// @return none
+//  ***************************************************************************
+static void emergency_loop(void) {
+    
+    while (true) {
+        sysmon_process();
+        communication_process();
         indication_process();
     }
 }

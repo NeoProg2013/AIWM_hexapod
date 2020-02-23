@@ -114,7 +114,6 @@ void Swlp::sendCommandPayloadEvent() {
 	memset(&frame, 0, sizeof(frame));
 
 	frame.start_mark = SWLP_START_MARK_VALUE;
-	frame.frame_number = 1;
 	memcpy(frame.payload, &m_commandPayload, sizeof(m_commandPayload));
 	frame.crc16 = 0;
 

@@ -310,9 +310,9 @@ static bool read_configuration(void) {
     // X^FEMUR = 125
     // FEMUR^TIBIA = 45
     
-    limbs[0].position.x = limbs[3].position.x = 135;
-    limbs[0].position.y = limbs[3].position.y = -35;
-    limbs[0].position.z = limbs[3].position.z = 70;
+    limbs[0].position.x = limbs[3].position.x = 140;
+    limbs[0].position.y = limbs[3].position.y = -25;
+    limbs[0].position.z = limbs[3].position.z = 65;
     limbs[0].links[LINK_COXA].length       = limbs[3].links[LINK_COXA].length       = 53;
     limbs[0].links[LINK_COXA].zero_rotate  = limbs[3].links[LINK_COXA].zero_rotate  = 45;
     limbs[0].links[LINK_FEMUR].length      = limbs[3].links[LINK_FEMUR].length      = 76;
@@ -321,7 +321,7 @@ static bool read_configuration(void) {
     limbs[0].links[LINK_TIBIA].zero_rotate = limbs[3].links[LINK_TIBIA].zero_rotate = 45;
     
     limbs[1].position.x = limbs[4].position.x = 150;
-    limbs[1].position.y = limbs[4].position.y = -35;
+    limbs[1].position.y = limbs[4].position.y = -25;
     limbs[1].position.z = limbs[4].position.z = 0;
     limbs[1].links[LINK_COXA].length       = limbs[4].links[LINK_COXA].length       = 53;
     limbs[1].links[LINK_COXA].zero_rotate  = limbs[4].links[LINK_COXA].zero_rotate  = 0;
@@ -330,9 +330,9 @@ static bool read_configuration(void) {
     limbs[1].links[LINK_TIBIA].length      = limbs[4].links[LINK_TIBIA].length      = 137;
     limbs[1].links[LINK_TIBIA].zero_rotate = limbs[4].links[LINK_TIBIA].zero_rotate = 45;
     
-    limbs[2].position.x = limbs[5].position.x = 135;
-    limbs[2].position.y = limbs[5].position.y = -35;
-    limbs[2].position.z = limbs[5].position.z = -70;
+    limbs[2].position.x = limbs[5].position.x = 140;
+    limbs[2].position.y = limbs[5].position.y = -25;
+    limbs[2].position.z = limbs[5].position.z = -65;
     limbs[2].links[LINK_COXA].length       = limbs[5].links[LINK_COXA].length       = 53;
     limbs[2].links[LINK_COXA].zero_rotate  = limbs[5].links[LINK_COXA].zero_rotate  = -45;
     limbs[2].links[LINK_FEMUR].length      = limbs[5].links[LINK_FEMUR].length      = 76;

@@ -3,9 +3,7 @@
 #include <QEventLoop>
 
 
-Core::Core(QObject *parent) : QObject(parent) {
-
-	m_commandForSend = SWLP_CMD_NONE;
+Core::Core(QObject *parent) : QObject(parent), m_commandForSend(SWLP_CMD_NONE) {
 
 	// Setup SWLP
 	connect(this, &Core::swlpRunCommunication, &m_swlp, &Swlp::runCommunication, Qt::ConnectionType::QueuedConnection);
@@ -20,6 +18,7 @@ Core::~Core() {
 }
 
 void Core::runCommunication() {
+	m_commandForSend = SWLP_CMD_NONE;
 	m_swlpThread.start();
 	emit swlpRunCommunication();
 }

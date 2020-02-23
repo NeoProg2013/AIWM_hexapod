@@ -15,11 +15,11 @@ typedef enum {
     // General
     SYSMON_NO_ERROR                 = 0x00,
     SYSMON_ANY_ERROR                = 0xFF,
-    SYSMON_FATAL_ERROR              = 0x01,
+    SYSMON_FATAL_ERROR              = 0x01,                          // Not resettable (enter to emergency loop)
 
     // User defined errors
-    SYSMON_CONFIG_ERROR             = 0x02 | SYSMON_FATAL_ERROR,     // Not resettable
-    SYSMON_MEMORY_ERROR             = 0x04 | SYSMON_FATAL_ERROR,     // Not resettable
+    SYSMON_CONFIG_ERROR             = 0x02 | SYSMON_FATAL_ERROR,     // Not resettable (enter to emergency loop)
+    SYSMON_MEMORY_ERROR             = 0x04 | SYSMON_FATAL_ERROR,     // Not resettable (enter to emergency loop)
     SYSMON_VOLTAGE_ERROR            = 0x08,                          // Not resettable
     SYSMON_SYNC_ERROR               = 0x10,                          // Not resettable
     SYSMON_MATH_ERROR               = 0x20,                          // Not resettable

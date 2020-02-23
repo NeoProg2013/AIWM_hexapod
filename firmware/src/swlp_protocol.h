@@ -49,14 +49,13 @@
 #pragma pack(push, 1)
 typedef struct {
     uint32_t start_mark;
-    uint16_t frame_number;
-    uint8_t  payload[16];
+    uint8_t  payload[18];
     uint16_t crc16;
 } swlp_frame_t;
 
 typedef struct {
     uint8_t command;
-    uint8_t reserved[15];
+    uint8_t reserved[17];
 } swlp_command_payload_t;
 
 typedef struct {
@@ -67,7 +66,7 @@ typedef struct {
     uint16_t battery_cell_voltage[3];
     uint16_t battery_voltage;
 	uint8_t  battery_charge;
-	uint8_t  reserved[3];
+	uint8_t  reserved[5];
 } swlp_status_payload_t;
 #pragma pack(pop)
 

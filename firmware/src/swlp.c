@@ -90,7 +90,6 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
 
     // Prepare response
     swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
-    swlp_tx_frame->frame_number = swlp_rx_frame->frame_number;
     swlp_tx_frame->crc16 = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - 2);
 
     return sizeof(swlp_frame_t);
