@@ -2,10 +2,11 @@
 #include <QQmlApplicationEngine>
 #include <QQmlEngine>
 #include <QQmlContext>
-#include <QThread>
+#include <QClipboard>
 #include "swlp.h"
 #include "core.h"
 #include "terminal.h"
+#include "clipboardproxy.h"
 
 
 int main(int argc, char *argv[]) {
@@ -16,8 +17,10 @@ int main(int argc, char *argv[]) {
 
 	Terminal terminal;
 	Core core;
+	ClipboardProxy clipboard;
 
 	QQmlApplicationEngine engine;
+	engine.rootContext()->setContextProperty("CppClipboard", &clipboard);
 	engine.rootContext()->setContextProperty("CppCore", &core);
 	engine.rootContext()->setContextProperty("CppTerminal", &terminal);
 	engine.load(QUrl(QStringLiteral("qrc:/AndroidQML/main.qml")));
