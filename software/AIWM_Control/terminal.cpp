@@ -23,7 +23,7 @@ void Terminal::runCommunication() {
 	connect(&m_socket, &QUdpSocket::readyRead, this, &Terminal::datagramReceivedEvent);
 
 	// Switch to CLI interface
-	sendMessage("CLI");
+	sendMessage("cli");
 }
 
 void Terminal::stopCommunication() {
@@ -40,7 +40,7 @@ void Terminal::sendMessage(QVariant message) {
 	// Send SWLP frame
 	QNetworkDatagram datagram;
 	datagram.setDestination(QHostAddress(SERVER_IP_ADDRESS), SERVER_PORT);
-	datagram.setData(message.toString().toUtf8());
+	datagram.setData(message.toString().toLower().toUtf8());
 	m_socket.writeDatagram(datagram);
 
 	m_socket.waitForBytesWritten(1000);

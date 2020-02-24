@@ -12,10 +12,6 @@ Swlp::Swlp(QObject* parent) : QObject(parent) {
 	m_socket = nullptr;
 	m_sendTimer = nullptr;
 	m_isRunning = false;
-
-	// Clear payloads
-	memset(&m_commandPayload, 0, sizeof(m_commandPayload));
-	memset(&m_statusPayload, 0, sizeof(m_statusPayload));
 }
 
 Swlp::~Swlp() {
@@ -36,6 +32,10 @@ void Swlp::runCommunication() {
 		return;
 	}
 	m_isRunning = true;
+
+	// Clear payloads
+	memset(&m_commandPayload, 0, sizeof(m_commandPayload));
+	memset(&m_statusPayload, 0, sizeof(m_statusPayload));
 
 	// Setup UDP socket
 	m_socket = new (std::nothrow) QUdpSocket();

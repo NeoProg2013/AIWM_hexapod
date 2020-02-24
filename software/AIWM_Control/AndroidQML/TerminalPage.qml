@@ -35,9 +35,12 @@ Item {
 		contentHeight: terminalLog.contentHeight
 		contentWidth: terminalLog.contentWidth
 
-		Label {
+		TextEdit {
 			id: terminalLog
+			readOnly: true
+			selectByMouse: true
 			font.family: fontFromResources.name
+			color: "#FFFFFF"
 			text: "TERMINAL LOG STARTED\n\n"
 			onContentHeightChanged: {
 				logFlickable.contentX = 0
@@ -66,9 +69,10 @@ Item {
 			horizontalAlignment: Text.AlignLeft
 			verticalAlignment: Text.AlignVCenter
 			font.family: fontFromResources.name
+			selectByMouse: true
 			Keys.onReturnPressed: {
-				terminalLog.text += "TERMINAL: " + messageText.text + "\n"
-				CppTerminal.sendMessage(messageText.text)
+				terminalLog.text += "TERMINAL: " + text + "\n"
+				CppTerminal.sendMessage(text)
 				messageText.text = ""
 			}
 		}
