@@ -91,18 +91,15 @@ void indication_init(void) {
     delay_ms(100);
     
     // Blink RGB leds
-    for (uint32_t i = 0; i < 3; ++i) {
-        LED_TURN_ON(LED_R_PIN);
-        LED_TURN_ON(LED_G_PIN);
-        LED_TURN_ON(LED_B_PIN);
-        BUZZER_TURN_ON();
-        delay_ms(100);
-        LED_TURN_OFF(LED_R_PIN);
-        LED_TURN_OFF(LED_G_PIN);
-        LED_TURN_OFF(LED_B_PIN);
-        BUZZER_TURN_OFF();
-        delay_ms(100);
-    }
+    LED_TURN_ON(LED_R_PIN);
+    LED_TURN_ON(LED_G_PIN);
+    LED_TURN_ON(LED_B_PIN);
+    BUZZER_TURN_ON();
+    delay_ms(500);
+    LED_TURN_OFF(LED_R_PIN);
+    LED_TURN_OFF(LED_G_PIN);
+    LED_TURN_OFF(LED_B_PIN);
+    BUZZER_TURN_OFF();
 }
 
 //  ***************************************************************************

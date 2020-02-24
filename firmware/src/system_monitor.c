@@ -39,7 +39,7 @@ static void calculate_battery_voltage(void);
 //  ***************************************************************************
 void sysmon_init(void) {
 
-    sysmon_system_status = 0;
+    sysmon_system_status = SYSMON_CONN_LOST_ERROR;
     sysmon_module_status = 0;
 
     // ADC initialization

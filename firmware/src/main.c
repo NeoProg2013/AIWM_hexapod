@@ -46,7 +46,8 @@ void main() {
         sysmon_process();
         communication_process();
         
-        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR | SYSMON_CONN_LOST_ERROR) == true) {
+        if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true ||
+            sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
             movement_engine_select_sequence(SEQUENCE_DOWN);
         }
         

@@ -188,8 +188,8 @@ void limbs_driver_process(void) {
                 
                 if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0xFFFFFFFF) {
                     sysmon_set_error(SYSMON_SYNC_ERROR);
-                    sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
-                    return;
+                    //sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+                    //return;
                 }
                 prev_synchro_value = synchro;
                 driver_state = STATE_CALC;

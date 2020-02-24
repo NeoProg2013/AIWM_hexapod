@@ -110,6 +110,7 @@ void servo_driver_process(void) {
 		if (synchro - prev_synchro > 1) {
 			sysmon_set_error(SYSMON_SYNC_ERROR);
             //sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
+            //return;
 		}
 
 		//
