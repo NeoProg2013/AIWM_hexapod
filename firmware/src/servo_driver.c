@@ -180,22 +180,6 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
 		                  CLI_MSG("    - pulse_width: %lu"),
 				(int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
 	}
-    else if (strcmp(cmd, "calibration") == 0) {
-        
-        if (argc != 1) return false;
-
-		// Get pulse width
-		uint32_t pulse_width = atoi(argv[0]);
-        
-        // Set pulse width for all servo
-        for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-            servo_info_list[i].override_level = 3;
-            servo_info_list[i].override_value = pulse_width;
-        }
-
-        // Make response
-		strcpy(response, CLI_MSG("servo calibration mode enabled"));
-	}
     else if (strcmp(cmd, "set_override_level") == 0) {
 
 		if (argc != 2) return false;
