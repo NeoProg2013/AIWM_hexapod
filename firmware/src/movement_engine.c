@@ -43,9 +43,6 @@ static sequence_id_t next_sequence = SEQUENCE_NONE;
 static const sequence_info_t* next_sequence_info = NULL;
 
 
-static bool read_configuration(void);
-
-
 //  ***************************************************************************
 /// @brief  Movement driver initialization
 /// @param  none
@@ -53,19 +50,19 @@ static bool read_configuration(void);
 //  ***************************************************************************
 void movement_engine_init(void) {
     
-    if (read_configuration() == false) {
-        sysmon_set_error(SYSMON_CONFIG_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOVEMENT_ENGINE);
-        return;
-    }
-    
-    // Force select DOWN sequence. It automatically executed in movement_engine_process() function
-    current_sequence      = SEQUENCE_NONE;
-    current_sequence_info = NULL;
+    // Select DOWN sequence as start position
+    current_sequence      = SEQUENCE_DOWN;
+    current_sequence_info = &sequence_down;
     next_sequence         = SEQUENCE_DOWN;
     next_sequence_info    = &sequence_down;
+    hexapod_state         = HEXAPOD_STATE_DOWN;
     
-    driver_state          = STATE_IDLE;
+    // Initialize limbs driver
+    uint32_t last_iteration_index = sequence_down.total_iteration_count - 1;
+    limbs_driver_set_start_position(sequence_down.iteration_list[last_iteration_index].point_list);
+    
+    // Initialization driver state
+    driver_state = STATE_IDLE;
 }
 
 //  ***************************************************************************
@@ -156,14 +153,6 @@ void movement_engine_process(void) {
             sysmon_disable_module(SYSMON_MODULE_MOVEMENT_ENGINE);
             break;
     }
-    
-    // Stop hexapod direct movement if distance to object very low
-    /*if (current_sequence == SEQUENCE_DIRECT_MOVEMENT || current_sequence == SEQUENCE_DIRECT_MOVEMENT_SLOW) {
-        
-        if (current_orientation.front_distance < front_distance_low_limit) {
-            movement_engine_select_sequence(SEQUENCE_NONE);
-        }
-    }*/
 }
 
 //  ***************************************************************************
@@ -305,18 +294,4 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             sysmon_disable_module(SYSMON_MODULE_MOVEMENT_ENGINE);
             return;
     }
-}
-
-
-
-
-//  ***************************************************************************
-/// @brief  Read configuration
-/// @param  none
-/// @return true - read success, false - fail
-//  ***************************************************************************
-static bool read_configuration(void) {
-   
-    //front_distance_low_limit = veeprom_read_32(FRONT_DISTANCE_LOW_LIMIT_EE_ADDRESS);
-    return true;
 }

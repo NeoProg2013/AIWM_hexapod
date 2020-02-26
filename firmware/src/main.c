@@ -37,6 +37,7 @@ void main() {
     sysmon_init();
     config_init();
     communication_init();
+    
     servo_driver_init();
     limbs_driver_init();
     movement_engine_init();

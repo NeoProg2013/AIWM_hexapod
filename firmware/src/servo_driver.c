@@ -41,8 +41,8 @@ typedef struct {
 } servo_info_t;
 
 
-static servo_config_t servo_config_list[SUPPORT_SERVO_COUNT];
-static servo_info_t   servo_info_list[SUPPORT_SERVO_COUNT];
+static servo_config_t servo_config_list[SUPPORT_SERVO_COUNT] = {0};
+static servo_info_t   servo_info_list[SUPPORT_SERVO_COUNT] = {0};
 
 
 static bool read_configuration(void);
@@ -56,10 +56,6 @@ static uint32_t convert_angle_to_pulse_width(float physic_angle, const servo_con
 //  ***************************************************************************
 void servo_driver_init(void) {
     
-    // Clear variables
-    memset(&servo_config_list, 0, sizeof(servo_config_list));
-    memset(&servo_info_list, 0, sizeof(servo_info_list));
-
     if (read_configuration() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
@@ -68,11 +64,6 @@ void servo_driver_init(void) {
 
     pwm_init();
     pwm_enable();
-
-    // Move servos to zero position
-    for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-        servo_driver_move(i, 0);
-    }
 }
 
 //  ***************************************************************************
