@@ -7,6 +7,7 @@
 #include "cli.h"
 #include "pwm.h"
 #include "system_monitor.h"
+#include "systimer.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -84,6 +85,15 @@ void servo_driver_move(uint32_t ch, float angle) {
 }
 
 //  ***************************************************************************
+/// @brief  Servo driver safe shutdown
+/// @note   Call before system reset
+//  ***************************************************************************
+void servo_driver_safe_shutdown(void) {
+    pwm_disable();
+    delay_ms(30);
+}
+
+//  ***************************************************************************
 /// @brief  Servo driver process
 /// @note   Call from main loop
 //  ***************************************************************************
@@ -107,7 +117,7 @@ void servo_driver_process(void) {
 		//
 		// Calculate servo state and update PWM driver
 		//
-		pwm_lock_shadow_buffer(false);
+		pwm_set_shadow_buffer_lock_state(false);
 		for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
 
 			servo_info_t* info = &servo_info_list[i];
@@ -132,7 +142,7 @@ void servo_driver_process(void) {
 			// Load pulse width
 			pwm_set_width(servo_config_list[i].pwm_channel, info->pulse_width);
 		}
-		pwm_lock_shadow_buffer(false);
+		pwm_set_shadow_buffer_lock_state(false);
 
 		prev_synchro = synchro;
 	}

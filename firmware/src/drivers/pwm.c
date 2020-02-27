@@ -126,7 +126,7 @@ void pwm_disable(void) {
 /// @param  is_locked: true - buffer is lock, false - buffer is unlock
 /// @return none
 //  ***************************************************************************
-void pwm_lock_shadow_buffer(bool is_locked) {
+void pwm_set_shadow_buffer_lock_state(bool is_locked) {
 
     shadow_buffer_is_lock = is_locked;
 }

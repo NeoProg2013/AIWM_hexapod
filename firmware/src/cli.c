@@ -142,6 +142,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                     sysmon_battery_cell_voltage[2]);
         }
         else if (strcmp(cmd, "reset") == 0) {
+            servo_driver_safe_shutdown();
             NVIC_SystemReset();
         }
         else {

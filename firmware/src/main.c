@@ -38,8 +38,6 @@ void main() {
     config_init();
     communication_init();
     
-    servo_driver_init();
-    limbs_driver_init();
     movement_engine_init();
     
     while (true) {
@@ -47,11 +45,14 @@ void main() {
         sysmon_process();
         communication_process();
         
+        // Override select sequence if need
         if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true ||
             sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
             movement_engine_select_sequence(SEQUENCE_DOWN);
         }
         
+        // Movement engine process
+        // This 3 functions should be call in this sequence
         movement_engine_process();
         limbs_driver_process();
         servo_driver_process();

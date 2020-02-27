@@ -15,7 +15,7 @@
 
 
 extern void servo_driver_init(void); 
-extern void pwm_lock_shadow_buffer(bool is_lock);
+extern void servo_driver_safe_shutdown(void);
 extern void servo_driver_move(uint32_t ch, float angle);
 extern void servo_driver_process(void);
 

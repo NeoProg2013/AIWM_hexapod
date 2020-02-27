@@ -59,7 +59,7 @@ void movement_engine_init(void) {
     
     // Initialize limbs driver
     uint32_t last_iteration_index = sequence_down.total_iteration_count - 1;
-    limbs_driver_set_start_position(sequence_down.iteration_list[last_iteration_index].point_list);
+    limbs_driver_init(sequence_down.iteration_list[last_iteration_index].point_list);
     
     // Initialization driver state
     driver_state = STATE_IDLE;

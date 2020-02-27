@@ -77,10 +77,10 @@ static bool kinematic_calculate_angles(limb_info_t* info);
 
 //  ***************************************************************************
 /// @brief  Limbs driver initialize
-/// @param  none
+/// @param  point_list: start points list
 /// @return none
 //  ***************************************************************************
-void limbs_driver_init(void) {
+void limbs_driver_init(const point_3d_t* point_list) {
     
     if (read_configuration() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
@@ -92,13 +92,6 @@ void limbs_driver_init(void) {
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT * 3; ++i) {
         link_angles_override[i] = OVERRIDE_DISABLE_VALUE;
     }
-}
-    
-//  ***************************************************************************
-/// @brief  Set limbs start position
-/// @param  point_list: start points list
-//  ***************************************************************************
-void limbs_driver_set_start_position(const point_3d_t* point_list) {
     
     // Set start points and calculate start link angles
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
@@ -112,7 +105,8 @@ void limbs_driver_set_start_position(const point_3d_t* point_list) {
         }
     }
     
-    // Set start servo angles
+    // Initialize servo driver
+    servo_driver_init();
     for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
         servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
         servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
@@ -274,81 +268,54 @@ void limbs_driver_process(void) {
 //  ***************************************************************************
 static bool read_configuration(void) {
     
-    /*for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-        
-        uint32_t base_address = MM_LIMB_CONFIG_BLOCK_BASE_EE_ADDRESS + i * MM_LIMB_CONFIG_BLOCK_SIZE;
-        
-        // Read coxa, femur and tibia lengths
-        config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &limbs[i].links[LINK_COXA].length);
-        config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &limbs[i].links[LINK_FEMUR].length);
-        config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &limbs[i].links[LINK_TIBIA].length);
-        if (limbs[i].links[LINK_COXA].length == 0xFFFF || limbs[i].links[LINK_FEMUR].length == 0xFFFF || limbs[i].links[LINK_TIBIA].length == 0xFFFF) {
-            return false;
-        }
-        
-        // Read coxa, femur and tibia zero rotate
-        config_read_16(base_address + MM_LIMB_COXA_ZERO_ROTATE_OFFSET,  (uint16_t*)&limbs[i].links[LINK_COXA].zero_rotate);
-        config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&limbs[i].links[LINK_FEMUR].zero_rotate);
-        config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&limbs[i].links[LINK_TIBIA].zero_rotate);
-        
-        if (limbs[i].links[LINK_COXA].zero_rotate < -360  || limbs[i].links[LINK_COXA].zero_rotate > 360  || 
-            limbs[i].links[LINK_FEMUR].zero_rotate < -360 || limbs[i].links[LINK_FEMUR].zero_rotate > 360 ||
-            limbs[i].links[LINK_TIBIA].zero_rotate < -360 || limbs[i].links[LINK_TIBIA].zero_rotate > 360) {
-            return false;
-        }
-
-        // Read coxa, femur and tibia start position
-        uint16_t buffer[3];
-        config_read_16(base_address + MM_LIMB_START_POSITION_X_OFFSET, &buffer[0]);
-        config_read_16(base_address + MM_LIMB_START_POSITION_Y_OFFSET, &buffer[1]);
-        config_read_16(base_address + MM_LIMB_START_POSITION_Z_OFFSET, &buffer[2]);
-        if (buffer[0] == 0xFFFF || buffer[1] == 0xFFFF || buffer[2] == 0xFFFF) {
-            return false;
-        }
-        
-        // Convert int16_t to float
-        limbs[i].position.x = (int16_t)buffer[0];
-        limbs[i].position.y = (int16_t)buffer[1];
-        limbs[i].position.z = (int16_t)buffer[2];
-    }*/
+    uint32_t base_address = MM_LIMB_CONFIG_BASE_EE_ADDRESS;
     
-    // COXA = 53mm
-    // FEMUR = 76mm
-    // TIBIA = 137mm
+    // Read and set COXA, FEMUR, TIBIA length
+    uint16_t length[3] = {0};
+    config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &length[LINK_COXA]);
+    config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &length[LINK_FEMUR]);
+    config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &length[LINK_TIBIA]);
     
-    // X^FEMUR = 125
-    // FEMUR^TIBIA = 45
+    if (length[0] == 0xFFFF || length[1] == 0xFFFF || length[2] == 0xFFFF) {
+        return false;
+    }
     
-   /*limbs[0].position.x = limbs[3].position.x = 140;
-    limbs[0].position.y = limbs[3].position.y = -25;
-    limbs[0].position.z = limbs[3].position.z = 65;*/
-    limbs[0].links[LINK_COXA].length       = limbs[3].links[LINK_COXA].length       = 53;
-    limbs[0].links[LINK_COXA].zero_rotate  = limbs[3].links[LINK_COXA].zero_rotate  = 45;
-    limbs[0].links[LINK_FEMUR].length      = limbs[3].links[LINK_FEMUR].length      = 76;
-    limbs[0].links[LINK_FEMUR].zero_rotate = limbs[3].links[LINK_FEMUR].zero_rotate = 125;
-    limbs[0].links[LINK_TIBIA].length      = limbs[3].links[LINK_TIBIA].length      = 137;
-    limbs[0].links[LINK_TIBIA].zero_rotate = limbs[3].links[LINK_TIBIA].zero_rotate = 45;
+    for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
+        limbs[i].links[LINK_COXA].length  = length[LINK_COXA];
+        limbs[i].links[LINK_FEMUR].length = length[LINK_FEMUR];
+        limbs[i].links[LINK_TIBIA].length = length[LINK_TIBIA];
+    }
     
-    /*limbs[1].position.x = limbs[4].position.x = 150;
-    limbs[1].position.y = limbs[4].position.y = -25;
-    limbs[1].position.z = limbs[4].position.z = 0;*/
-    limbs[1].links[LINK_COXA].length       = limbs[4].links[LINK_COXA].length       = 53;
-    limbs[1].links[LINK_COXA].zero_rotate  = limbs[4].links[LINK_COXA].zero_rotate  = 0;
-    limbs[1].links[LINK_FEMUR].length      = limbs[4].links[LINK_FEMUR].length      = 76;
-    limbs[1].links[LINK_FEMUR].zero_rotate = limbs[4].links[LINK_FEMUR].zero_rotate = 125;
-    limbs[1].links[LINK_TIBIA].length      = limbs[4].links[LINK_TIBIA].length      = 137;
-    limbs[1].links[LINK_TIBIA].zero_rotate = limbs[4].links[LINK_TIBIA].zero_rotate = 45;
+    // Read and set COXA zero rotate
+    int16_t coxa_zero_rotate_0_3 = 0;
+    int16_t coxa_zero_rotate_1_4 = 0;
+    int16_t coxa_zero_rotate_2_5 = 0;
+    config_read_16(base_address + MM_LIMB_COXA_0_3_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_0_3);
+    config_read_16(base_address + MM_LIMB_COXA_1_4_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_1_4);
+    config_read_16(base_address + MM_LIMB_COXA_2_5_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_2_5);
+    if (abs(coxa_zero_rotate_0_3) > 360 || abs(coxa_zero_rotate_1_4) > 360 || abs(coxa_zero_rotate_2_5) > 360) {
+        return false;
+    }
+    limbs[0].links[LINK_COXA].zero_rotate = coxa_zero_rotate_0_3;
+    limbs[3].links[LINK_COXA].zero_rotate = coxa_zero_rotate_0_3;
+    limbs[1].links[LINK_COXA].zero_rotate = coxa_zero_rotate_1_4;
+    limbs[4].links[LINK_COXA].zero_rotate = coxa_zero_rotate_1_4;
+    limbs[2].links[LINK_COXA].zero_rotate = coxa_zero_rotate_2_5;
+    limbs[5].links[LINK_COXA].zero_rotate = coxa_zero_rotate_2_5;
     
-    /*limbs[2].position.x = limbs[5].position.x = 140;
-    limbs[2].position.y = limbs[5].position.y = -25;
-    limbs[2].position.z = limbs[5].position.z = -65;*/
-    limbs[2].links[LINK_COXA].length       = limbs[5].links[LINK_COXA].length       = 53;
-    limbs[2].links[LINK_COXA].zero_rotate  = limbs[5].links[LINK_COXA].zero_rotate  = -45;
-    limbs[2].links[LINK_FEMUR].length      = limbs[5].links[LINK_FEMUR].length      = 76;
-    limbs[2].links[LINK_FEMUR].zero_rotate = limbs[5].links[LINK_FEMUR].zero_rotate = 125;
-    limbs[2].links[LINK_TIBIA].length      = limbs[5].links[LINK_TIBIA].length      = 137;
-    limbs[2].links[LINK_TIBIA].zero_rotate = limbs[5].links[LINK_TIBIA].zero_rotate = 45;
-
+    // Read and set FEMUR, TIBIA 1-6 zero rotate
+    int16_t femur_zero_rotate_femur = 0;
+    int16_t tibia_zero_rotate_femur = 0;
+    config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&femur_zero_rotate_femur);
+    config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&tibia_zero_rotate_femur);
+    if (abs(femur_zero_rotate_femur) > 360 || abs(tibia_zero_rotate_femur) > 360) {
+        return false;
+    }
+    for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
+        limbs[i].links[LINK_FEMUR].zero_rotate = femur_zero_rotate_femur;
+        limbs[i].links[LINK_TIBIA].zero_rotate = tibia_zero_rotate_femur;
+    }
+    
     return true;
 }
 
