@@ -3,8 +3,8 @@
 /// @author  NeoProg
 /// @brief   Hexapod limbs driver
 //  ***************************************************************************
-#ifndef LIMB_H_
-#define LIMB_H_
+#ifndef _LIMB_H_
+#define _LIMB_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -34,4 +34,4 @@ extern void limbs_driver_process(void);
 extern bool limbs_driver_is_move_complete(void);
 
 
-#endif /* LIMB_H_ */
+#endif /* _LIMB_H_ */

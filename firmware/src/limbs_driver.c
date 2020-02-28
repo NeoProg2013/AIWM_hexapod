@@ -272,9 +272,9 @@ static bool read_configuration(void) {
     
     // Read and set COXA, FEMUR, TIBIA length
     uint16_t length[3] = {0};
-    config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &length[LINK_COXA]);
-    config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &length[LINK_FEMUR]);
-    config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &length[LINK_TIBIA]);
+    if (config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &length[LINK_COXA])  == false) return false;
+    if (config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &length[LINK_FEMUR]) == false) return false;
+    if (config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &length[LINK_TIBIA]) == false) return false;
     
     if (length[0] == 0xFFFF || length[1] == 0xFFFF || length[2] == 0xFFFF) {
         return false;
@@ -290,9 +290,9 @@ static bool read_configuration(void) {
     int16_t coxa_zero_rotate_0_3 = 0;
     int16_t coxa_zero_rotate_1_4 = 0;
     int16_t coxa_zero_rotate_2_5 = 0;
-    config_read_16(base_address + MM_LIMB_COXA_0_3_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_0_3);
-    config_read_16(base_address + MM_LIMB_COXA_1_4_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_1_4);
-    config_read_16(base_address + MM_LIMB_COXA_2_5_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_2_5);
+    if (config_read_16(base_address + MM_LIMB_COXA_0_3_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_0_3) == false) return false;
+    if (config_read_16(base_address + MM_LIMB_COXA_1_4_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_1_4) == false) return false;
+    if (config_read_16(base_address + MM_LIMB_COXA_2_5_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_2_5) == false) return false;
     if (abs(coxa_zero_rotate_0_3) > 360 || abs(coxa_zero_rotate_1_4) > 360 || abs(coxa_zero_rotate_2_5) > 360) {
         return false;
     }
@@ -306,8 +306,8 @@ static bool read_configuration(void) {
     // Read and set FEMUR, TIBIA 1-6 zero rotate
     int16_t femur_zero_rotate_femur = 0;
     int16_t tibia_zero_rotate_femur = 0;
-    config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&femur_zero_rotate_femur);
-    config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&tibia_zero_rotate_femur);
+    if (config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&femur_zero_rotate_femur) == false ) return false;
+    if (config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&tibia_zero_rotate_femur) == false ) return false;
     if (abs(femur_zero_rotate_femur) > 360 || abs(tibia_zero_rotate_femur) > 360) {
         return false;
     }

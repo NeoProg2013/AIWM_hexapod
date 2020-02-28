@@ -3,8 +3,8 @@
 /// @author  NeoProg
 /// @brief   Servo driver
 //  ***************************************************************************
-#ifndef SERVO_DRIVER_H_
-#define SERVO_DRIVER_H_
+#ifndef _SERVO_DRIVER_H_
+#define _SERVO_DRIVER_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -23,4 +23,4 @@ extern bool servo_driver_cli_command_process(const char* cmd, const char (*argv)
 									         uint32_t argc, char* response);
 
 
-#endif // SERVO_DRIVER_H_
+#endif // _SERVO_DRIVER_H_

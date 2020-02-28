@@ -125,7 +125,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     else if (strcmp(module, "system") == 0) {
 
         if (strcmp(cmd, "version") == 0) {
-            sprintf(response, CLI_MSG("Firmware version: %d.%d.%d"), VERSION_MAIN, VERSION_SUB, VERSION_AUX);
+            sprintf(response, CLI_MSG("Firmware version: %s"), FIRMWARE_VERSION);
         }
         else if (strcmp(cmd, "status") == 0) {
             sprintf(response, CLI_MSG("system status report")

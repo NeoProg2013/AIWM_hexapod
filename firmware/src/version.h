@@ -3,13 +3,11 @@
 /// @author  NeoProg
 /// @brief   Firmware version information
 //  ***************************************************************************
-#ifndef VERSION_H_
-#define VERSION_H_
-
-
-#define VERSION_MAIN                (1)
-#define VERSION_SUB                 (0)
-#define VERSION_AUX                 (7)
-
-
-#endif // VERSION_H_
+#ifndef _VERSION_H_
+#define _VERSION_H_
+ 
+ 
+#define FIRMWARE_VERSION				("29022020 4202")
+ 
+ 
+#endif // _VERSION_H_

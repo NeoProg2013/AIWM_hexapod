@@ -243,7 +243,7 @@ static bool read_configuration(void) {
         uint32_t base_address = MM_SERVO_CONFIG_BLOCK_BASE_EE_ADDRESS + servo_index * MM_SERVO_CONFIG_BLOCK_SIZE;
 
         // Read servo configuration
-        config_read_8(base_address + MM_SERVO_CONFIG_OFFSET, &servo_config->config);
+        if (config_read_8(base_address + MM_SERVO_CONFIG_OFFSET, &servo_config->config) == false) return false;
         if (servo_config->config == 0xFF) {
             return false;
         }
@@ -261,25 +261,25 @@ static bool read_configuration(void) {
         }
 
         // Read PWM channel
-        config_read_8(base_address + MM_SERVO_PWM_CHANNEL_OFFSET, &servo_config->pwm_channel);
+        if (config_read_8(base_address + MM_SERVO_PWM_CHANNEL_OFFSET, &servo_config->pwm_channel) == false) return false;
         if (servo_config->pwm_channel >= SUPPORT_PWM_CHANNELS_COUNT) {
             return false;
         }
 
         // Read protection min physic angle
-        config_read_16(base_address + MM_SERVO_PROTECTION_MIN_PHYSIC_ANGLE_OFFSET, &servo_config->protection_min_physic_angle);
+        if (config_read_16(base_address + MM_SERVO_PROTECTION_MIN_PHYSIC_ANGLE_OFFSET, &servo_config->protection_min_physic_angle) == false) return false;
         if (servo_config->protection_min_physic_angle == 0xFFFF || servo_config->protection_min_physic_angle > servo_config->max_physic_angle) {
             return false;
         }
 
         // Read protection max physic angle
-        config_read_16(base_address + MM_SERVO_PROTECTION_MAX_PHYSIC_ANGLE_OFFSET, &servo_config->protection_max_physic_angle);
+        if (config_read_16(base_address + MM_SERVO_PROTECTION_MAX_PHYSIC_ANGLE_OFFSET, &servo_config->protection_max_physic_angle) == false) return false;
         if (servo_config->protection_max_physic_angle == 0xFFFF || servo_config->protection_max_physic_angle > servo_config->max_physic_angle) {
             return false;
         }
 
         // Read servo logic zero
-        config_read_16(base_address + MM_SERVO_LOGIC_ZERO_OFFSET, &servo_config->logic_zero);
+        if (config_read_16(base_address + MM_SERVO_LOGIC_ZERO_OFFSET, &servo_config->logic_zero) == false) return false;
         if (servo_config->logic_zero == 0xFFFF ||
             servo_config->logic_zero < servo_config->protection_min_physic_angle ||
             servo_config->logic_zero > servo_config->protection_max_physic_angle) {
