@@ -678,7 +678,7 @@
             <name>BUILDACTION</name>
             <archiveVersion>1</archiveVersion>
             <data>
-                <prebuild>D:\Hexapod\AIWM_hexapod\firmware\pre-build.bat</prebuild>
+                <prebuild>$PROJ_DIR$\pre-build.bat</prebuild>
                 <postbuild></postbuild>
             </data>
         </settings>
