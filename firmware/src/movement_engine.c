@@ -178,10 +178,8 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             break;
 
         case SEQUENCE_DOWN:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_DOWN;
-                next_sequence_info = &sequence_down;
-            }
+            next_sequence = SEQUENCE_DOWN;
+            next_sequence_info = &sequence_down;
             break;
             
         case SEQUENCE_RUN:

@@ -6,7 +6,8 @@
 #include "adc.h"
 #include "systimer.h"
 
-#define ACCUMULATE_SAMPLES_COUNT        (50)
+#define PAUSE_BETWEEN_CONVERSIONS       (5)
+#define ACCUMULATE_SAMPLES_COUNT        (100)
 
 
 typedef enum {
@@ -86,6 +87,10 @@ void sysmon_process(void) {
                 accumulate_counter = 0;
                 monitor_state = STATE_CALCULATION;
             }
+            else {
+                pause_start_time = get_time_ms();
+                monitor_state = STATE_PAUSE;
+            }
             break;
 
         case STATE_CALCULATION:
@@ -93,9 +98,9 @@ void sysmon_process(void) {
             acc_adc_bins[0] = 0;
             acc_adc_bins[1] = 0;
             acc_adc_bins[2] = 0;
-            /*if (sysmon_battery_charge == 0) {
+            if (sysmon_battery_charge == 0) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
-            }*/
+            }
             /*if (sysmon_battery_cell_voltage[0] < CELL_VOLTAGE_THRESHOLD) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
             }
@@ -110,7 +115,7 @@ void sysmon_process(void) {
             break;
             
         case STATE_PAUSE:
-            if (get_time_ms() - pause_start_time > 200) {
+            if (get_time_ms() - pause_start_time > PAUSE_BETWEEN_CONVERSIONS) {
                 monitor_state = STATE_START_CONVERSION;
             }
             break;
