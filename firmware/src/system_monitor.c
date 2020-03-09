@@ -22,6 +22,7 @@ typedef enum {
 
 static monitor_state_t monitor_state = STATE_NO_INIT;
 static uint32_t acc_adc_bins[3] = {0, 0, 0};
+static int16_t  battery_voltage_offset = 1050;
 
 uint8_t  sysmon_system_status = 0;
 uint8_t  sysmon_module_status = 0;
@@ -233,6 +234,7 @@ static void calculate_battery_voltage(void) {
     
     // Calculate battery voltage
     sysmon_battery_voltage = sysmon_battery_cell_voltage[0] + sysmon_battery_cell_voltage[1] + sysmon_battery_cell_voltage[2];
+    sysmon_battery_voltage += battery_voltage_offset;
     
     // Calculate battery charge
     float battery_charge = (sysmon_battery_voltage - 9000.0f) / (12600.0f - 9000.0f) * 100.0f;
