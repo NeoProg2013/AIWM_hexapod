@@ -8,22 +8,23 @@
 #include "systimer.h"
 #include "pwm.h"
 #include "system_monitor.h"
-#include <stdlib.h>
 #include <math.h>
-#define M_PI                                (3.14159265f)
-#define RAD_TO_DEG(rad)                     ((rad) * 180.0f / M_PI)
-#define DEG_TO_RAD(deg)                     ((deg) * M_PI / 180.0f)
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#define SMOOTH_DEFAULT_TOTAL_POINT_COUNT    (30)
-#define OVERRIDE_DISABLE_VALUE              (0x7F)
+#define MOTION_TIME_MAX_VALUE                      (100)
+#define MOTION_TIME_START_VALUE                    (MOTION_TIME_MAX_VALUE / 2)
 
 
-// Servo driver states
 typedef enum {
     STATE_NOINIT,
-    STATE_WAIT,
-    STATE_CALC
-} driver_state_t;
+    STATE_SYNC,
+    STATE_CALCULATIONS,
+    STATE_UPDATE_CONFIG
+} state_t;
 
 typedef enum {
     LINK_COXA,
@@ -31,48 +32,57 @@ typedef enum {
     LINK_TIBIA
 } link_id_t;
 
-typedef struct {
-    
-    // Current link state
-    float angle;
-    
-    // Link configuration
-    uint16_t length;
-    int16_t  zero_rotate;
-    int16_t  min_angle;
-    int16_t  max_angle;
-    
-} link_info_t;
+typedef enum {
+    DIRECTION_REVERSE = -1,
+    DIRECTION_HOLD = 0,
+    DIRECTION_DIRECT = 1,
+} direction_t;
+
+typedef enum {
+    OVERRIDE_LEVEL_NO,
+    OVERRIDE_LEVEL_POSITION
+} override_level_t;
+
+/*typedef struct {
+    float x;
+    float y;
+    float z;
+} point_3d_t;*/
 
 typedef struct {
 
-    path_type_t path_type;
-    point_3d_t  start_point;
-    point_3d_t  dest_point;
+    // Adaptive path algorithm
+    point_3d_t start_position;      // Initialize once after system startup
+    point_3d_t current_position;
+    
+    override_level_t override_level;
+    point_3d_t override_position;
 
-} path_3d_t;
+    // Inverse kinematic
+    float    link_servo_angle[3];
+    uint16_t link_length[3];        // Initialize once after system startup
+    int16_t  link_zero_rotate[3];   // Initialize once after system startup
 
-typedef struct {
-    
-    point_3d_t position;
-    path_3d_t  movement_path;
-    
-    link_info_t links[3];
-    
 } limb_info_t;
 
-
-static int16_t link_angles_override[SUPPORT_LIMB_COUNT * 3] = {0}; 
-
-static driver_state_t driver_state = STATE_NOINIT;
-static limb_info_t    limbs[SUPPORT_LIMB_COUNT] = {0};
-static bool           is_limbs_move_started = false;
-static uint32_t       smooth_total_point_count = SMOOTH_DEFAULT_TOTAL_POINT_COUNT;
+typedef struct {
+    direction_t direction;
+    uint32_t speed;
+    uint32_t step_length;
+    int32_t  curvature;
+} motion_config_t;
 
 
 static bool read_configuration(void);
-static void path_calculate_point(const path_3d_t* info, point_3d_t* point, uint32_t smooth_current_point);
-static bool kinematic_calculate_angles(limb_info_t* info);
+static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_config, limb_info_t* limb_info);
+static bool kinematic_calculate_angles(limb_info_t* limb_info);
+
+
+static state_t core_state = STATE_NOINIT;
+static limb_info_t limbs[SUPPORT_LIMBS_COUNT] = {0};
+static motion_config_t current_motion_config;
+static motion_config_t next_motion_config;
+
 
 
 //  ***************************************************************************
@@ -88,34 +98,35 @@ void limbs_driver_init(const point_3d_t* point_list) {
         return;
     }
     
-    // Initialization override variables
-    for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT * 3; ++i) {
-        link_angles_override[i] = OVERRIDE_DISABLE_VALUE;
+    // Initialize motion config to default values
+    current_motion_config.direction   = next_motion_config.direction   = DIRECTION_HOLD;
+    current_motion_config.speed       = next_motion_config.speed       = 1;
+    current_motion_config.step_length = next_motion_config.step_length = 90;
+    current_motion_config.curvature   = next_motion_config.curvature   = 1;
+    
+    // Set start points
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        limbs[i].start_position = limbs[i].current_position = point_list[i]; 
     }
     
-    // Set start points and calculate start link angles
-    for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-        
-        limbs[i].position = point_list[i];
-        
-        if (kinematic_calculate_angles(&limbs[i]) == false) {
-            sysmon_set_error(SYSMON_CONFIG_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
-            return;
-        }
+    // Calculate start link angles
+    if (kinematic_calculate_angles(limbs) == false) {
+        sysmon_set_error(SYSMON_CONFIG_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+        return;
     }
     
     // Initialize servo driver
     servo_driver_init();
-    for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-        servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
-        servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
-        servo_driver_move(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        servo_driver_move(i * 3 + 0, limbs[i].link_servo_angle[LINK_COXA]);
+        servo_driver_move(i * 3 + 1, limbs[i].link_servo_angle[LINK_FEMUR]);
+        servo_driver_move(i * 3 + 2, limbs[i].link_servo_angle[LINK_TIBIA]);
     }
     
     // Initialization driver state
-    is_limbs_move_started = false;
-    driver_state = STATE_WAIT;
+    //is_limbs_move_started = false;
+    core_state = STATE_SYNC;
 }
 
 //  ***************************************************************************
@@ -124,12 +135,12 @@ void limbs_driver_init(const point_3d_t* point_list) {
 //  ***************************************************************************
 void limbs_driver_set_smooth_config(uint32_t point_count) {
     
-    smooth_total_point_count = point_count;
+    /*smooth_total_point_count = point_count;
 
     if (smooth_total_point_count == 0) {
         sysmon_set_error(SYSMON_FATAL_ERROR);
         sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
-    }
+    }*/
 }
 
 //  ***************************************************************************
@@ -139,7 +150,7 @@ void limbs_driver_set_smooth_config(uint32_t point_count) {
 //  ***************************************************************************
 void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* path_type_list) {
     
-    if (point_list == NULL) {
+    /*if (point_list == NULL) {
         sysmon_set_error(SYSMON_FATAL_ERROR);
         sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
         return;
@@ -159,7 +170,7 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
         }
         
         is_limbs_move_started = true;
-    }
+    }*/
 }
 
 //  ***************************************************************************
@@ -169,7 +180,8 @@ void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* pa
 //  ***************************************************************************
 bool limbs_driver_is_move_complete(void) {
     
-    return is_limbs_move_started == false;
+    //return is_limbs_move_started == false;
+    return true;
 }
 
 //  ***************************************************************************
@@ -181,80 +193,139 @@ void limbs_driver_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_LIMBS_DRIVER) == true) return;  // Module disabled
     
 
-    static uint32_t smooth_current_point = 0;
-    static uint32_t prev_synchro_value = 0xFFFFFFFF;
-    
-    switch (driver_state) {
-        
-        case STATE_WAIT:
-            if (synchro != prev_synchro_value) {
-                
-                if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0xFFFFFFFF) {
-                    sysmon_set_error(SYSMON_SYNC_ERROR);
-                    //sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
-                    //return;
+    static int32_t motion_time = MOTION_TIME_START_VALUE;
+    static uint64_t prev_syncho_value = 0;
+
+    static bool is_direct = true;
+    switch (core_state) {
+
+        case STATE_SYNC:
+            if (synchro != prev_syncho_value) {
+
+                if (synchro - prev_syncho_value != 0) {
+                    // SYNC ERROR!!!
                 }
-                prev_synchro_value = synchro;
-                driver_state = STATE_CALC;
+                prev_syncho_value = synchro;
+                core_state = STATE_CALCULATIONS;
             }
             break;
-        
-        case STATE_CALC:
-            //
-            // Calculate new servo angles
-            //
-            if (is_limbs_move_started == true) {
-                
-                for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-                
-                    // Calculate next point
-                    path_calculate_point(&limbs[i].movement_path, &limbs[i].position, smooth_current_point);
-                    
-                    // Calculate angles for point
-                    if (kinematic_calculate_angles(&limbs[i]) == false) {
-                        sysmon_set_error(SYSMON_MATH_ERROR);
-                        sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
-                        return;
-                    }
-                }
-                ++smooth_current_point;
-                
-                if (smooth_current_point > smooth_total_point_count) {
-                    is_limbs_move_started = false;
-                    smooth_current_point = 0;
-                }
-            }            
-               
-            //
-            // Load new angles to servo driver
-            //
-            for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-                 
-                // Override process
-                if (link_angles_override[i * 3 + 0] != OVERRIDE_DISABLE_VALUE) {
-                    limbs[i].links[LINK_COXA].angle = link_angles_override[i * 3 + 0];
-                }
-                if (link_angles_override[i * 3 + 1] != OVERRIDE_DISABLE_VALUE) {
-                    limbs[i].links[LINK_FEMUR].angle = link_angles_override[i * 3 + 1];
-                }
-                if (link_angles_override[i * 3 + 2] != OVERRIDE_DISABLE_VALUE) {
-                    limbs[i].links[LINK_TIBIA].angle = link_angles_override[i * 3 + 2];
-                }
-                                
-                // Move servos to destination angles
-                servo_driver_move(i * 3 + 0, limbs[i].links[LINK_COXA].angle);
-                servo_driver_move(i * 3 + 1, limbs[i].links[LINK_FEMUR].angle);
-                servo_driver_move(i * 3 + 2, limbs[i].links[LINK_TIBIA].angle);
+
+        case STATE_CALCULATIONS:
+            calc_points_by_time(motion_time, &current_motion_config, limbs);
+            kinematic_calculate_angles(limbs);
+
+            for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+                servo_driver_move(i * 3 + 0, limbs[i].link_servo_angle[LINK_COXA]);
+                servo_driver_move(i * 3 + 1, limbs[i].link_servo_angle[LINK_FEMUR]);
+                servo_driver_move(i * 3 + 2, limbs[i].link_servo_angle[LINK_TIBIA]);
             }
-            driver_state = STATE_WAIT;
+
+
+            if (motion_time >= MOTION_TIME_MAX_VALUE) {
+                is_direct = false;
+            }
+            else if (motion_time <= 0) {
+                is_direct = true;
+            }
+
+            if (is_direct) {
+                motion_time += current_motion_config.speed;
+            }
+            else {
+                motion_time -= current_motion_config.speed;
+            }
+           /* if (time == 50) {
+                core_state = STATE_UPDATE_CONFIG;
+            }
+            else {
+                core_state = STATE_SYNC;
+            }*/
+
+            core_state = STATE_SYNC;
             break;
-        
+
+        case STATE_UPDATE_CONFIG:
+            current_motion_config.direction   = next_motion_config.direction;
+            current_motion_config.speed       = next_motion_config.speed;
+            current_motion_config.step_length = next_motion_config.step_length;
+            current_motion_config.curvature   = next_motion_config.curvature;
+            core_state = STATE_SYNC;
+            break;
+
         case STATE_NOINIT:
         default:
-            sysmon_set_error(SYSMON_FATAL_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
             break;
     }
+}
+
+//  ***************************************************************************
+/// @brief  CLI command process
+/// @param  cmd: command string
+/// @param  argv: argument list
+/// @param  argc: arguments count
+/// @param  response: response
+/// @retval response
+/// @return true - success, false - fail
+//  ***************************************************************************
+bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
+
+    // Get limb index
+    if (argc == 0) return false;
+    uint32_t limb_index = atoi(argv[0]);
+    if (limb_index > SUPPORT_LIMBS_COUNT) return false;
+
+
+    //
+    // Process command
+    //
+    if (strcmp(cmd, "status") == 0 && argc == 1) {
+
+        sprintf(response, CLI_MSG("limb status report")
+                          CLI_MSG("    - override level: %ld")
+                          CLI_MSG("    - override position: %ld %ld %ld")
+                          CLI_MSG("    - current position: %ld %ld %ld"),
+                limbs[limb_index].override_level,
+                (int32_t)limbs[limb_index].override_position.x, 
+                (int32_t)limbs[limb_index].override_position.y, 
+                (int32_t)limbs[limb_index].override_position.z, 
+                (int32_t)limbs[limb_index].current_position.x,  
+                (int32_t)limbs[limb_index].current_position.y,  
+                (int32_t)limbs[limb_index].current_position.z);
+    }
+    else if (strcmp(cmd, "set_override_level") == 0 && argc == 2) {
+
+        // Set override level
+        if (strcmp(argv[1], "no") == 0) {
+           limbs[limb_index].override_level = OVERRIDE_LEVEL_NO;
+           limbs[limb_index].override_position.x = 0;
+           limbs[limb_index].override_position.y = 0;
+           limbs[limb_index].override_position.z = 0;
+        }
+        else if (strcmp(argv[1], "position") == 0) {
+           limbs[limb_index].override_level = OVERRIDE_LEVEL_POSITION;
+           limbs[limb_index].override_position.x = limbs[limb_index].current_position.x;
+           limbs[limb_index].override_position.y = limbs[limb_index].current_position.y;
+           limbs[limb_index].override_position.z = limbs[limb_index].current_position.z;
+        }
+        else {
+           return false;
+        }
+        sprintf(response, CLI_MSG("[%lu] has new override level %lu"), limb_index, limbs[limb_index].override_level);
+    }
+    else if (strcmp(cmd, "set_override_value") == 0 && argc == 4) {
+        
+        limbs[limb_index].override_position.x = atoi(argv[1]);
+        limbs[limb_index].override_position.y = atoi(argv[2]);
+        limbs[limb_index].override_position.z = atoi(argv[3]);
+        sprintf(response, CLI_MSG("[%lu] has new override value %ld %ld %ld"), limb_index, 
+                (int32_t)limbs[limb_index].override_position.x, 
+                (int32_t)limbs[limb_index].override_position.y, 
+                (int32_t)limbs[limb_index].override_position.z);
+    }
+    else {
+        return false;
+    }
+    return true;
 }
 
 
@@ -275,15 +346,14 @@ static bool read_configuration(void) {
     if (config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &length[LINK_COXA])  == false) return false;
     if (config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &length[LINK_FEMUR]) == false) return false;
     if (config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &length[LINK_TIBIA]) == false) return false;
-    
     if (length[0] == 0xFFFF || length[1] == 0xFFFF || length[2] == 0xFFFF) {
         return false;
     }
     
-    for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-        limbs[i].links[LINK_COXA].length  = length[LINK_COXA];
-        limbs[i].links[LINK_FEMUR].length = length[LINK_FEMUR];
-        limbs[i].links[LINK_TIBIA].length = length[LINK_TIBIA];
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        limbs[i].link_length[LINK_COXA]  = length[LINK_COXA];
+        limbs[i].link_length[LINK_FEMUR] = length[LINK_FEMUR];
+        limbs[i].link_length[LINK_TIBIA] = length[LINK_TIBIA];
     }
     
     // Read and set COXA zero rotate
@@ -296,12 +366,12 @@ static bool read_configuration(void) {
     if (abs(coxa_zero_rotate_0_3) > 360 || abs(coxa_zero_rotate_1_4) > 360 || abs(coxa_zero_rotate_2_5) > 360) {
         return false;
     }
-    limbs[0].links[LINK_COXA].zero_rotate = coxa_zero_rotate_0_3;
-    limbs[3].links[LINK_COXA].zero_rotate = coxa_zero_rotate_0_3;
-    limbs[1].links[LINK_COXA].zero_rotate = coxa_zero_rotate_1_4;
-    limbs[4].links[LINK_COXA].zero_rotate = coxa_zero_rotate_1_4;
-    limbs[2].links[LINK_COXA].zero_rotate = coxa_zero_rotate_2_5;
-    limbs[5].links[LINK_COXA].zero_rotate = coxa_zero_rotate_2_5;
+    limbs[0].link_zero_rotate[LINK_COXA] = 135;//coxa_zero_rotate_0_3;
+    limbs[3].link_zero_rotate[LINK_COXA] = 180;//coxa_zero_rotate_0_3;
+    limbs[1].link_zero_rotate[LINK_COXA] = 225;//coxa_zero_rotate_1_4;
+    limbs[4].link_zero_rotate[LINK_COXA] = 315;//coxa_zero_rotate_1_4;
+    limbs[2].link_zero_rotate[LINK_COXA] = 0;//coxa_zero_rotate_2_5;
+    limbs[5].link_zero_rotate[LINK_COXA] = 45;//coxa_zero_rotate_2_5;
     
     // Read and set FEMUR, TIBIA 1-6 zero rotate
     int16_t femur_zero_rotate_femur = 0;
@@ -311,153 +381,167 @@ static bool read_configuration(void) {
     if (abs(femur_zero_rotate_femur) > 360 || abs(tibia_zero_rotate_femur) > 360) {
         return false;
     }
-    for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
-        limbs[i].links[LINK_FEMUR].zero_rotate = femur_zero_rotate_femur;
-        limbs[i].links[LINK_TIBIA].zero_rotate = tibia_zero_rotate_femur;
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        limbs[i].link_zero_rotate[LINK_FEMUR] = femur_zero_rotate_femur;
+        limbs[i].link_zero_rotate[LINK_TIBIA] = tibia_zero_rotate_femur;
     }
     
     return true;
 }
 
+#define M_PI                                (3.14159265f)
+#define RAD_TO_DEG(rad)                     ((rad) * 180.0f / M_PI)
+#define DEG_TO_RAD(deg)                     ((deg) * M_PI / 180.0f)
 //  ***************************************************************************
-/// @brief  Calculate path point
-/// @param  info: path info @ref path_3d_t
-/// @param  point: calculated point
-/// @retval point
+/// @brief  Calculate limbs coordinates according trajectory parameters
+/// @param  time: current movement time [0; 100]
+/// @param  motion_config: @ref motion_config_t
+/// @param  limb_info_list: @ref limb_info_t
+/// @param  points_list: @ref point_3d_t
+/// @retval limb_info_list::current_position
+/// @return true - calculation success, false - no
 //  ***************************************************************************
-static void path_calculate_point(const path_3d_t* info, point_3d_t* point, uint32_t smooth_current_point) {
-    
-    float t_max = RAD_TO_DEG(M_PI); // [0; Pi]
-    float t = smooth_current_point * (t_max / smooth_total_point_count); // iter_index * dt
+static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_config, limb_info_t* limbs_info_list) {
 
-    float x0 = info->start_point.x;
-    float y0 = info->start_point.y;
-    float z0 = info->start_point.z;
-    float x1 = info->dest_point.x;
-    float y1 = info->dest_point.y;
-    float z1 = info->dest_point.z;
-
-
-    if (info->path_type == PATH_LINEAR) {
-        point->x = t * (x1 - x0) / t_max + x0;
-        point->y = t * (y1 - y0) / t_max + y0;
-        point->z = t * (z1 - z0) / t_max + z0;
+    if (motion_config->curvature == 0 || motion_config->curvature > 1999 || motion_config->curvature < -1999) {
+        return false; // Wrong curvature value
     }
-    else
-    if (info->path_type == PATH_XZ_ARC_Y_LINEAR) {
 
-        float R = sqrt(x0 * x0 + z0 * z0);
-        float atan0 = RAD_TO_DEG(atan2f(x0, z0));
-        float atan1 = RAD_TO_DEG(atan2f(x1, z1));
 
-        float t_mapped_rad = DEG_TO_RAD(t * (atan1 - atan0) / t_max + atan0);
-        point->x = R * sinf(t_mapped_rad);                   // Arc Y
-        point->y = t * (y1 - y0) / t_max + y0;
-        point->z = R * cosf(t_mapped_rad);                   // Arc X
+    float curvature   = (float)motion_config->curvature / 1000.0f;
+    float step_length = (float)motion_config->step_length;
+
+    // Calculation radius of curvature
+    float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * step_length;
+
+
+
+    //
+    // Common calculations
+    //
+    float trajectory_radius[6] = {0};
+    float start_angle_rad[6] = {0};
+    float max_trajectory_radius = 0;
+    for (uint32_t limb_id = 0; limb_id < SUPPORT_LIMBS_COUNT; ++limb_id) {
+
+        // Save start point to separate variables for short code
+        float x0 = limbs_info_list[limb_id].start_position.x;
+        float z0 = limbs_info_list[limb_id].start_position.z;
+
+        // Calculation trajectory radius
+        trajectory_radius[limb_id] = sqrtf((curvature_radius - x0) * (curvature_radius - x0) + z0 * z0);
+
+        // Search max trajectory radius
+        if (trajectory_radius[limb_id] > max_trajectory_radius) {
+            max_trajectory_radius = trajectory_radius[limb_id];
+        }
+
+        // Calculation limb start angle
+        start_angle_rad[limb_id] = atan2f(z0, -(curvature_radius - x0));
     }
-    else
-    if (info->path_type == PATH_XZ_ARC_Y_SINUS) {
-        
-        float R = sqrt(x0 * x0 + z0 * z0);
-        float atan0 = RAD_TO_DEG(atan2f(x0, z0));
-        float atan1 = RAD_TO_DEG(atan2f(x1, z1));
-
-        float t_mapped_rad = DEG_TO_RAD(t * (atan1 - atan0) / t_max + atan0);
-        point->x = R * sinf(t_mapped_rad);                   // Arc Y
-        point->y = (y1 - y0) * sinf(DEG_TO_RAD(t)) + y0;
-        point->z = R * cosf(t_mapped_rad);                   // Arc X
+    if (max_trajectory_radius == 0) {
+        return false; // Avoid division by zero
     }
-    else
-    if (info->path_type == PATH_XZ_ELLIPTICAL_Y_SINUS) {
 
-        float a = (z1 - z0) / 2.0f;
-        float b = (x1 - x0);
-        float c = (y1 - y0);
+    // Calculation max angle of arc
+    int32_t curvature_radius_sign = (curvature_radius > 0) ? 1 : -1;
+    float max_arc_angle = curvature_radius_sign * step_length / max_trajectory_radius;
 
-        point->x = b * sinf(DEG_TO_RAD(t_max - t)) + x0;     // Ellipse Y
-        point->y = c * sinf(DEG_TO_RAD(t)) + y0;
-        point->z = a * cosf(DEG_TO_RAD(t_max - t)) + z0 + a; // Ellipse X
+
+
+    //
+    // Calculation points by time
+    //
+    float move_time = ((float)time - 50.0f) / 100.0f;
+    for (uint32_t limb_id = 0; limb_id < SUPPORT_LIMBS_COUNT; ++limb_id) {
+
+        // Calculation arc angle for current time
+        float arc_angle_rad = move_time * max_arc_angle + start_angle_rad[limb_id];
+
+        // Calculation point by time
+        limbs_info_list[limb_id].current_position.x = curvature_radius + trajectory_radius[limb_id] * cosf(arc_angle_rad);
+        limbs_info_list[limb_id].current_position.z =                    trajectory_radius[limb_id] * sinf(arc_angle_rad);
     }
-    else
-    if (info->path_type == PATH_YZ_ELLIPTICAL_X_SINUS) {
 
-		float a = (x1 - x0) / 2.0f;
-		float b = (z1 - z0);
-		float c = (y1 - y0);
-
-		point->x = a * cosf(DEG_TO_RAD(t_max - t)) + x0 + a; // Ellipse X
-		point->y = c * sinf(DEG_TO_RAD(t)) + y0;
-		point->z = b * sinf(DEG_TO_RAD(t_max - t)) + z0;     // Ellipse Y
-	}
+    return true;
 }
 
 //  ***************************************************************************
 /// @brief  Calculate angles
-/// @param  info: limb info @ref limb_info_t
+/// @param  limbs_info_list: @ref limb_info_t
+/// @retval limbs_info_list::servo_angle
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-static bool kinematic_calculate_angles(limb_info_t* info) {
-    
-    float coxa_zero_rotate_deg  = info->links[LINK_COXA].zero_rotate;
-    float femur_zero_rotate_deg = info->links[LINK_FEMUR].zero_rotate;
-    float tibia_zero_rotate_deg = info->links[LINK_TIBIA].zero_rotate;
-    float coxa_length  = info->links[LINK_COXA].length;
-    float femur_length = info->links[LINK_FEMUR].length;
-    float tibia_length = info->links[LINK_TIBIA].length;
-    
-    float x = info->position.x;
-    float y = info->position.y;
-    float z = info->position.z;
-    
-    
-    // Move to (X*, Y*, Z*) coordinate system - rotate
-    float coxa_zero_rotate_rad = DEG_TO_RAD(coxa_zero_rotate_deg);
-    float x1 = x * cosf(coxa_zero_rotate_rad) + z * sinf(coxa_zero_rotate_rad);
-    float y1 = y;
-    float z1 = -x * sinf(coxa_zero_rotate_rad) + z * cosf(coxa_zero_rotate_rad);
+static bool kinematic_calculate_angles(limb_info_t* limbs_info_list) {
+
+    for (uint32_t limb_id = 0; limb_id < SUPPORT_LIMBS_COUNT; ++limb_id) {
+
+        limb_info_t* info = &limbs_info_list[limb_id];
+
+        float coxa_zero_rotate_deg  = info->link_zero_rotate[LINK_COXA];
+        float femur_zero_rotate_deg = info->link_zero_rotate[LINK_FEMUR];
+        float tibia_zero_rotate_deg = info->link_zero_rotate[LINK_TIBIA];
+        float coxa_length  = info->link_length[LINK_COXA];
+        float femur_length = info->link_length[LINK_FEMUR];
+        float tibia_length = info->link_length[LINK_TIBIA];
+
+        float x = info->current_position.x;
+        float y = info->current_position.y;
+        float z = info->current_position.z;
 
 
-    //
-    // Calculate COXA angle
-    //
-    float coxa_angle_rad = atan2f(z1, x1);
-    info->links[LINK_COXA].angle = RAD_TO_DEG(coxa_angle_rad);
+        // Move to (X*, Y*, Z*) coordinate system - rotate
+        float coxa_zero_rotate_rad = DEG_TO_RAD(coxa_zero_rotate_deg);
+        float x1 = x * cosf(coxa_zero_rotate_rad) + z * sinf(coxa_zero_rotate_rad);
+        float y1 = y;
+        float z1 = -x * sinf(coxa_zero_rotate_rad) + z * cosf(coxa_zero_rotate_rad);
 
 
-    //
-    // Prepare for calculation FEMUR and TIBIA angles
-    //
-    // Move to (X*, Y*) coordinate system (rotate on axis Y)
-    x1 = x1 * cosf(coxa_angle_rad) + z1 * sinf(coxa_angle_rad);
+        //
+        // Calculate COXA angle
+        //
+        float coxa_angle_rad = atan2f(z1, x1);
+        info->link_servo_angle[LINK_COXA] = RAD_TO_DEG(coxa_angle_rad);
 
-    // Move to (X**, Y**) coordinate system (remove coxa from calculations)
-    x1 = x1 - coxa_length;
-    
-    // Calculate angle between axis X and destination point
-    float fi = atan2f(y1, x1);
 
-    // Calculate distance to destination point
-    float d = sqrt(x1 * x1 + y1 * y1);
-    if (d > femur_length + tibia_length) {
-        return false; // Point not attainable
+        //
+        // Prepare for calculation FEMUR and TIBIA angles
+        //
+        // Move to (X*, Y*) coordinate system (rotate on axis Y)
+        x1 = x1 * cosf(coxa_angle_rad) + z1 * sinf(coxa_angle_rad);
+
+        // Move to (X**, Y**) coordinate system (remove coxa from calculations)
+        x1 = x1 - coxa_length;
+
+        // Calculate angle between axis X and destination point
+        float fi = atan2f(y1, x1);
+
+        // Calculate distance to destination point
+        float d = sqrt(x1 * x1 + y1 * y1);
+        if (d > femur_length + tibia_length) {
+            return false; // Point not attainable
+        }
+
+
+        //
+        // Calculate triangle angles
+        //
+        float a = tibia_length;
+        float b = femur_length;
+        float c = d;
+
+        float alpha = acosf( (b * b + c * c - a * a) / (2.0f * b * c) );
+        float gamma = acosf( (a * a + b * b - c * c) / (2.0f * a * b) );
+
+
+        //
+        // Calculate FEMUR and TIBIA angle
+        //
+        info->link_servo_angle[LINK_FEMUR] = femur_zero_rotate_deg - RAD_TO_DEG(alpha) - RAD_TO_DEG(fi);
+        info->link_servo_angle[LINK_TIBIA] = RAD_TO_DEG(gamma) - tibia_zero_rotate_deg;
     }
-    
-    
-    //
-    // Calculate triangle angles
-    //
-    float a = tibia_length;
-    float b = femur_length;
-    float c = d;
-
-    float alpha = acosf( (b * b + c * c - a * a) / (2.0f * b * c) );
-    float gamma = acosf( (a * a + b * b - c * c) / (2.0f * a * b) );
-
-
-    //
-    // Calculate FEMUR and TIBIA angle
-    //
-    info->links[LINK_FEMUR].angle = femur_zero_rotate_deg - RAD_TO_DEG(alpha) - RAD_TO_DEG(fi);
-    info->links[LINK_TIBIA].angle = RAD_TO_DEG(gamma) - tibia_zero_rotate_deg;
     return true;
 }
+#undef M_PI
+#undef RAD_TO_DEG
+#undef DEG_TO_RAD

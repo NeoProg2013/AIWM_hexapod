@@ -88,7 +88,7 @@ void movement_engine_process(void) {
         
         case STATE_MOVE:
             limbs_driver_set_smooth_config(current_sequence_info->iteration_list[current_iteration].smooth_point_count);
-            for (uint32_t i = 0; i < SUPPORT_LIMB_COUNT; ++i) {
+            for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
                 limbs_driver_start_move(current_sequence_info->iteration_list[current_iteration].point_list, 
                                         current_sequence_info->iteration_list[current_iteration].path_list);
             }

@@ -8,6 +8,7 @@
 #include "communication.h"
 #include "configurator.h"
 #include "servo_driver.h"
+#include "limbs_driver.h"
 #include "version.h"
 #include <string.h>
 #include <stdio.h>
@@ -152,19 +153,13 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     else if (strcmp(module, "servo") == 0) {
         return servo_driver_cli_command_process(cmd, argv, argc, response);
     }
+    else if (strcmp(module, "motion") == 0) {
+        return motion_core_cli_command_process(cmd, argv, argc, response);
+    }
     else if (strcmp(module, "config") == 0) {
         return config_cli_command_process(cmd, argv, argc, response);
     }
     
-    else if (strcmp(module, "UP") == 0) {
-        movement_engine_select_sequence(SEQUENCE_UP);
-    }
-    else if (strcmp(module, "DIRECT") == 0) {
-        movement_engine_select_sequence(SEQUENCE_DIRECT_MOVEMENT);
-    }
-    else if (strcmp(module, "NONE") == 0) {
-        movement_engine_select_sequence(SEQUENCE_NONE);
-    }
     
     else {
         return false;

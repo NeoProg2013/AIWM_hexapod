@@ -165,9 +165,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
     else if (strcmp(cmd, "disable") == 0) {
         sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
     }
-    else if (strcmp(cmd, "read") == 0) {
-
-        if (argc != 1) return false;
+    else if (strcmp(cmd, "read") == 0 && argc == 1) {
 
         // Get page number
         uint32_t page = atoi(argv[0]);
@@ -194,9 +192,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         }
 
     }
-    else if (strcmp(cmd, "read16") == 0) {
-
-        if (argc != 2) return false;
+    else if (strcmp(cmd, "read16") == 0 && argc == 2) {
 
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
@@ -219,9 +215,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             sprintf(response, CLI_MSG("value = %d"), (uint16_t)data);
         }
     }
-    else if (strcmp(cmd, "read32") == 0) {
-
-        if (argc != 2) return false;
+    else if (strcmp(cmd, "read32") == 0 && argc == 2) {
 
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
@@ -244,9 +238,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             sprintf(response, CLI_MSG("value = %u"), (uint32_t)data);
         }
     }
-    else if (strcmp(cmd, "write") == 0) {
-
-        if (argc != 2) return false;
+    else if (strcmp(cmd, "write") == 0 && argc == 2) {
 
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
@@ -277,9 +269,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             }
         }
     }
-    else if (strcmp(cmd, "write16") == 0) {
-
-        if (argc != 2) return false;
+    else if (strcmp(cmd, "write16") == 0 && argc == 2) {
 
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
@@ -296,9 +286,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             return false;
         }
     }
-    else if (strcmp(cmd, "write32") == 0) {
-
-        if (argc != 2) return false;
+    else if (strcmp(cmd, "write32") == 0 && argc == 2) {
 
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
@@ -315,16 +303,14 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             return false;
         }
     }
-    else if (strcmp(cmd, "erase") == 0) {
+    else if (strcmp(cmd, "erase") == 0 && argc == 0) {
 
         if (config_erase() == false) {
             strcpy(response, CLI_MSG("Cannot write data to memory"));
             return false;
         }
     }
-    else if (strcmp(cmd, "verify") == 0) {
-
-        if (argc != 1) return false;
+    else if (strcmp(cmd, "verify") == 0 && argc == 1) {
 
         // Get page number
         uint32_t page = atoi(argv[0]);
@@ -337,9 +323,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             return false;
         }
     }
-    else if (strcmp(cmd, "calc_checksum") == 0) {
-
-        if (argc != 1) return false;
+    else if (strcmp(cmd, "calc_checksum") == 0 && argc == 1) {
 
         // Get page number
         uint32_t page = atoi(argv[0]);

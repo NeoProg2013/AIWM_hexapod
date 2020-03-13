@@ -14,8 +14,8 @@
 
 
 typedef struct {
-    point_3d_t   point_list[SUPPORT_LIMB_COUNT];
-    path_type_t  path_list[SUPPORT_LIMB_COUNT];
+    point_3d_t   point_list[SUPPORT_LIMBS_COUNT];
+    path_type_t  path_list[SUPPORT_LIMBS_COUNT];
     uint32_t     smooth_point_count;
 } sequence_iteration_t;
 
@@ -39,10 +39,14 @@ static const sequence_info_t sequence_down = {
     .total_iteration_count   = 1,
     
     {
-        { 
-            {{140, -25, 65}, {150, -25, 0}, {140, -25, -65}, {140, -25, 65}, {150, -25, 0}, {140, -25, -65}},
+        /*{ 
+            {{-140, -25, 65}, {150, -25, 0}, {140, -25, -65}, {140, -25, 65}, {150, -25, 0}, {140, -25, -65}},
             { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR }, 80
-        },    
+        },*/ 
+        {   // Down all legs
+            {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
+            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+        },
     }
 };
 

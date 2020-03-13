@@ -8,8 +8,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "cli.h"
 
-#define SUPPORT_LIMB_COUNT                (6)
+#define SUPPORT_LIMBS_COUNT                (6)
 
 
 typedef struct {
@@ -32,6 +33,9 @@ extern void limbs_driver_set_smooth_config(uint32_t point_count);
 extern void limbs_driver_start_move(const point_3d_t* point_list, const path_type_t* path_type_list);
 extern void limbs_driver_process(void);
 extern bool limbs_driver_is_move_complete(void);
+
+extern bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], 
+									        uint32_t argc, char* response);
 
 
 #endif /* _LIMB_H_ */
