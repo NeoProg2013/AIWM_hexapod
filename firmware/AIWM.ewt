@@ -2522,16 +2522,16 @@
             <name>$PROJ_DIR$\src\indication.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\limbs_driver.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\limbs_driver.h</name>
-        </file>
-        <file>
             <name>$PROJ_DIR$\src\main.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\memory_map.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\motion_core.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\motion_core.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\movement_engine.c</name>

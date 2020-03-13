@@ -8,7 +8,7 @@
 #include "communication.h"
 #include "configurator.h"
 #include "servo_driver.h"
-#include "limbs_driver.h"
+#include "motion_core.h"
 #include "version.h"
 #include <string.h>
 #include <stdio.h>

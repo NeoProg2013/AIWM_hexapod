@@ -6,7 +6,7 @@
 #ifndef GAIT_SEQUENCES_H_
 #define GAIT_SEQUENCES_H_
 
-#include "limbs_driver.h"
+#include "motion_core.h"
 #include "movement_engine.h"
 
 #define LIMB_UP_Y                       (-50)
@@ -14,8 +14,8 @@
 
 
 typedef struct {
-    point_3d_t   point_list[SUPPORT_LIMBS_COUNT];
-    path_type_t  path_list[SUPPORT_LIMBS_COUNT];
+    point_3d_t   point_list[6];
+    //path_type_t  path_list[SUPPORT_LIMBS_COUNT];
     uint32_t     smooth_point_count;
 } sequence_iteration_t;
 
@@ -45,7 +45,7 @@ static const sequence_info_t sequence_down = {
         },*/ 
         {   // Down all legs
             {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+            //{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
         },
     }
 };
@@ -60,28 +60,28 @@ static const sequence_info_t sequence_up = {
     {
         {   // Down all legs
             {{110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
+            //{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
         },
         {    // Up 0, 2, 4 legs
             {{110, LIMB_UP_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_UP_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_UP_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
+            //{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
         },
         {    // Down 0, 2, 4 legs
             {{110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
+            //{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
         },
         {    // Up 1, 3, 5 legs
             {{110, LIMB_DOWN_Y, 65}, {130, LIMB_UP_Y, 0}, {110, LIMB_DOWN_Y, -65}, {110, LIMB_UP_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_UP_Y, -65}}, 
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
+            //{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
         },
         {   // Down 0, 2, 4 legs
             {{110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
-            { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
+            //{ PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 40
         },
     }
 };
 
-static const sequence_info_t sequence_direct_movement = {
+/*static const sequence_info_t sequence_direct_movement = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 0,
@@ -507,7 +507,7 @@ static const sequence_info_t sequence_dance = {
             { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 30
         }
     }
-};
+};*/
 
 /*
 static const sequence_info_t sequence_rotate_x = {
@@ -597,7 +597,7 @@ static const sequence_info_t sequence_rotate_x = {
     }
 };*/
 
-static const sequence_info_t sequence_rotate_x = {
+/*static const sequence_info_t sequence_rotate_x = {
 
     .is_sequence_looped      = true,
     .main_sequence_begin     = 1,
@@ -673,7 +673,7 @@ static const sequence_info_t sequence_rotate_z = {
             { PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR, PATH_LINEAR}, 45
         },
     }
-};
+};*/
 
 
 #endif /* GAIT_SEQUENCES_H_ */

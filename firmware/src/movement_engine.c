@@ -3,7 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "movement_engine.h"
-#include "limbs_driver.h"
+#include "motion_core.h"
 #include "gait_sequences.h"
 #include "system_monitor.h"
 #include "systimer.h"
@@ -32,7 +32,7 @@ typedef enum {
     HEXAPOD_STATE_UP
 } hexapod_state_t;
 
-
+/*
 static driver_state_t driver_state = STATE_NOINIT;
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
 
@@ -40,7 +40,7 @@ static sequence_id_t current_sequence = SEQUENCE_NONE;
 static const sequence_info_t* current_sequence_info = NULL;
 
 static sequence_id_t next_sequence = SEQUENCE_NONE;
-static const sequence_info_t* next_sequence_info = NULL;
+static const sequence_info_t* next_sequence_info = NULL;*/
 
 
 //  ***************************************************************************
@@ -49,20 +49,10 @@ static const sequence_info_t* next_sequence_info = NULL;
 /// @return none
 //  ***************************************************************************
 void movement_engine_init(void) {
-    
-    // Select DOWN sequence as start position
-    current_sequence      = SEQUENCE_DOWN;
-    current_sequence_info = &sequence_down;
-    next_sequence         = SEQUENCE_DOWN;
-    next_sequence_info    = &sequence_down;
-    hexapod_state         = HEXAPOD_STATE_DOWN;
-    
+
     // Initialize limbs driver
     uint32_t last_iteration_index = sequence_down.total_iteration_count - 1;
-    limbs_driver_init(sequence_down.iteration_list[last_iteration_index].point_list);
-    
-    // Initialization driver state
-    driver_state = STATE_IDLE;
+    motion_core_init(sequence_down.iteration_list[last_iteration_index].point_list);
 }
 
 //  ***************************************************************************
@@ -72,7 +62,7 @@ void movement_engine_init(void) {
 //  ***************************************************************************
 void movement_engine_process(void) {
     
-    if (sysmon_is_module_disable(SYSMON_MODULE_MOVEMENT_ENGINE) == true) return; // Module disabled
+    /*if (sysmon_is_module_disable(SYSMON_MODULE_MOVEMENT_ENGINE) == true) return; // Module disabled
     
 
     static sequence_stage_t sequence_stage = SEQUENCE_STAGE_PREPARE;
@@ -152,7 +142,7 @@ void movement_engine_process(void) {
             sysmon_set_error(SYSMON_FATAL_ERROR);
             sysmon_disable_module(SYSMON_MODULE_MOVEMENT_ENGINE);
             break;
-    }
+    }*/
 }
 
 //  ***************************************************************************
@@ -163,7 +153,7 @@ void movement_engine_process(void) {
 void movement_engine_select_sequence(sequence_id_t sequence) {
     
     // Request switch current sequence
-    switch (sequence) {
+   /* switch (sequence) {
         
         case SEQUENCE_NONE:
             next_sequence = SEQUENCE_NONE;
@@ -271,7 +261,7 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
                 next_sequence = SEQUENCE_ROTATE_X;
                 next_sequence_info = &sequence_rotate_x;
             }
-            break;
+            break;*/
             
         /*case SEQUENCE_ROTATE_Y:
             if (hexapod_state == HEXAPOD_STATE_UP) {
@@ -280,7 +270,7 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             }
             break;*/
             
-        case SEQUENCE_ROTATE_Z:
+        /*case SEQUENCE_ROTATE_Z:
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_Z;
                 next_sequence_info = &sequence_rotate_z;
@@ -291,5 +281,5 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             sysmon_set_error(SYSMON_FATAL_ERROR);
             sysmon_disable_module(SYSMON_MODULE_MOVEMENT_ENGINE);
             return;
-    }
+    }*/
 }

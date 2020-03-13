@@ -9,7 +9,7 @@
 #include "system_monitor.h"
 #include "systimer.h"
 #include "servo_driver.h"
-#include "limbs_driver.h"
+#include "motion_core.h"
 #include "movement_engine.h"
 #include "indication.h"
 #include <stdbool.h>
@@ -54,7 +54,7 @@ void main() {
         // Movement engine process
         // This 3 functions should be call in this sequence
         movement_engine_process();
-        limbs_driver_process();
+        motion_core_process();
         servo_driver_process();
         
         indication_process();
