@@ -70,6 +70,11 @@ void servo_driver_init(void) {
         return;
     }
     servo_config_list[0].config = 1;
+    servo_config_list[3].config = 1;
+    servo_config_list[6].config = 1;
+    servo_config_list[9].config = 1;
+    servo_config_list[12].config = 1;
+    servo_config_list[15].config = 1;
 
     pwm_init();
     pwm_enable();
@@ -126,7 +131,7 @@ void servo_driver_process(void) {
         // Calculate servo state and update PWM driver
         //
         pwm_set_shadow_buffer_lock_state(false);
-        for (uint32_t i = 0; i < 3/*SUPPORT_SERVO_COUNT*/; ++i) {
+        for (uint32_t i = 0; i < 18/*SUPPORT_SERVO_COUNT*/; ++i) {
 
             servo_info_t* info = &servo_info_list[i];
 

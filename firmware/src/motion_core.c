@@ -16,7 +16,8 @@
 #include <stdio.h>
 
 #define SUPPORT_LIMBS_COUNT                 (6)
-#define MOTION_TIME_MAX_VALUE               (100)
+#define MOTION_TIME_SCALE                   (100)
+#define MOTION_TIME_MAX_VALUE               (1 * MOTION_TIME_SCALE)
 #define MOTION_TIME_START_VALUE             (MOTION_TIME_MAX_VALUE / 2)
 
 
@@ -91,11 +92,14 @@ void motion_core_init(const point_3d_t* point_list) {
     current_motion_config.direction   = next_motion_config.direction   = DIRECTION_HOLD;
     current_motion_config.speed       = next_motion_config.speed       = 1;
     current_motion_config.step_length = next_motion_config.step_length = 90;
-    current_motion_config.curvature   = next_motion_config.curvature   = 1;
+    current_motion_config.curvature   = next_motion_config.curvature   = 500;
     
     // Set start points
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        limbs_list[i].start_position = limbs_list[i].current_position = point_list[i]; 
+        limbs_list[i].start_position = limbs_list[i].current_position = point_list[i];
+        if ((i % 2) == 0) {
+            limbs_list[i].is_up = true;
+        }
     }
     
     // Calculate start link angles
@@ -178,7 +182,7 @@ void motion_core_process(void) {
             else {
                 motion_time -= current_motion_config.speed;
             }
-            if (motion_time == 50) {
+            if (motion_time == MOTION_TIME_MAX_VALUE || motion_time == 0) {
                 for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
                     limbs_list[i].is_up = !limbs_list[i].is_up;
                 }
@@ -312,9 +316,9 @@ static bool read_configuration(void) {
     limbs_list[0].coxa.zero_rotate = 135;//coxa_zero_rotate_0_3;
     limbs_list[1].coxa.zero_rotate = 180;//coxa_zero_rotate_0_3;
     limbs_list[2].coxa.zero_rotate = 225;//coxa_zero_rotate_1_4;
-    limbs_list[3].coxa.zero_rotate = 315;//coxa_zero_rotate_1_4;
+    limbs_list[3].coxa.zero_rotate = 45;//coxa_zero_rotate_1_4;
     limbs_list[4].coxa.zero_rotate = 0;//coxa_zero_rotate_2_5;
-    limbs_list[5].coxa.zero_rotate = 45;//coxa_zero_rotate_2_5;
+    limbs_list[5].coxa.zero_rotate = 315;//coxa_zero_rotate_2_5;
     
     // Read and set FEMUR, TIBIA 1-6 zero rotate
     int16_t femur_zero_rotate_femur = 0;
@@ -388,8 +392,15 @@ static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_con
     float max_arc_angle = curvature_radius_sign * step_length / max_trajectory_radius;
 
     // Calculation points by time
-    float motion_time = ((float)time - 50.0f) / 100.0f;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        
+        float motion_time = 0;
+        if ((i % 2) == 0) {
+            motion_time = -((float)time / MOTION_TIME_SCALE - 0.5f);
+        }
+        else {
+            motion_time = ((float)time / MOTION_TIME_SCALE - 0.5f);
+        }
 
         // Calculation arc angle for current time
         float arc_angle_rad = motion_time * max_arc_angle + start_angle_rad[i];
@@ -405,7 +416,7 @@ static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_con
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         
         if (limbs_list[i].is_up == true) {
-            float angle = M_PI * motion_time;
+            float angle = M_PI * ((float)time / MOTION_TIME_SCALE);
             limbs_list[i].current_position.y = limbs_list[i].start_position.y + sin(angle) * 25;
         }
         else {
