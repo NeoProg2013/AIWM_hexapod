@@ -39,6 +39,12 @@ typedef enum {
     OVERRIDE_LEVEL_POSITION
 } override_level_t;
 
+typedef enum {
+    MOTION_STATE_START,
+    MOTION_STATE_NORMAL,
+    MOTION_STATE_STOP
+} motion_stage_t;
+
 typedef struct {
     float    angle;
     uint16_t length;      // Initialize once after system startup
@@ -46,7 +52,7 @@ typedef struct {
 } link_t;
 
 typedef struct {
-    bool is_up;
+    bool is_stage_move_up;
     point_3d_t start_position; // Initialize once after system startup
     point_3d_t current_position;
     override_level_t override_level;
@@ -97,9 +103,7 @@ void motion_core_init(const point_3d_t* point_list) {
     // Set start points
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         limbs_list[i].start_position = limbs_list[i].current_position = point_list[i];
-        if ((i % 2) == 0) {
-            limbs_list[i].is_up = true;
-        }
+        limbs_list[i].is_stage_move_up = ((i % 2) == 0);
     }
     
     // Calculate start link angles
@@ -140,7 +144,7 @@ void motion_core_process(void) {
             if (synchro != prev_syncho_value) {
 
                 if (synchro - prev_syncho_value != 0) {
-                    // SYNC ERROR!!!
+                    sysmon_set_error(SYSMON_SYNC_ERROR);
                 }
                 prev_syncho_value = synchro;
                 core_state = STATE_CALCULATIONS;
@@ -149,7 +153,11 @@ void motion_core_process(void) {
 
         case STATE_CALCULATIONS:
             // Calculate points for adaptive trajectory
-            calc_points_by_time(motion_time, &current_motion_config, limbs_list);
+            if (calc_points_by_time(motion_time, &current_motion_config, limbs_list) == false) {
+                sysmon_set_error(SYSMON_MATH_ERROR);
+                sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+                return;
+            }
             
             // Position override process
             for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
@@ -159,7 +167,11 @@ void motion_core_process(void) {
             }
             
             // Calculate links angles
-            kinematic_calculate_angles(limbs_list);
+            if (kinematic_calculate_angles(limbs_list) == false) {
+                sysmon_set_error(SYSMON_MATH_ERROR);
+                sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+                return;
+            }
 
             // Load angles to servo driver
             for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
@@ -169,33 +181,37 @@ void motion_core_process(void) {
             }
 
 
+            
             if (motion_time >= MOTION_TIME_MAX_VALUE) {
                 is_direct = false;
             }
             else if (motion_time <= 0) {
                 is_direct = true;
             }
-
             if (is_direct) {
                 motion_time += current_motion_config.speed;
             }
             else {
                 motion_time -= current_motion_config.speed;
             }
+            
+            
+            
             if (motion_time == MOTION_TIME_MAX_VALUE || motion_time == 0) {
                 for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-                    limbs_list[i].is_up = !limbs_list[i].is_up;
+                    limbs_list[i].is_stage_move_up = !limbs_list[i].is_stage_move_up;
                 }
+                //current_motion_stage = MOTION_STAGE_NORMAL;
             }
-
+            
             core_state = STATE_SYNC;
+            if (motion_time == MOTION_TIME_START_VALUE) {
+                core_state = STATE_UPDATE_CONFIG;
+            }
             break;
 
         case STATE_UPDATE_CONFIG:
-            current_motion_config.direction   = next_motion_config.direction;
-            current_motion_config.speed       = next_motion_config.speed;
-            current_motion_config.step_length = next_motion_config.step_length;
-            current_motion_config.curvature   = next_motion_config.curvature;
+            current_motion_config = next_motion_config;
             core_state = STATE_SYNC;
             break;
 
@@ -268,6 +284,15 @@ bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG
                 (int32_t)limbs_list[limb_index].override_position.x, 
                 (int32_t)limbs_list[limb_index].override_position.y, 
                 (int32_t)limbs_list[limb_index].override_position.z);
+    }
+    else if (strcmp(cmd, "d") == 0 && argc == 1) {
+        next_motion_config.direction = DIRECTION_DIRECT;
+    }
+    else if (strcmp(cmd, "h") == 0 && argc == 1) {
+        next_motion_config.direction = DIRECTION_HOLD;
+    }
+    else if (strcmp(cmd, "r") == 0 && argc == 1) {
+        next_motion_config.direction = DIRECTION_REVERSE;
     }
     else {
         return false;
@@ -348,6 +373,15 @@ static bool read_configuration(void) {
 /// @return true - calculation success, false - no
 //  ***************************************************************************
 static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_config, limb_t* limbs_list) {
+    
+    // Hexapod hold current position - just copy start coordinates to current
+    if (motion_config->direction == DIRECTION_HOLD) {
+        for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+            limbs_list[i].current_position = limbs_list[i].start_position;
+        }
+        return true;
+    }
+    
 
     if (motion_config->curvature == 0 || motion_config->curvature > 1999 || motion_config->curvature < -1999) {
         return false; // Wrong curvature value
@@ -363,8 +397,8 @@ static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_con
     float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * step_length;
 
     // Common calculations
-    float trajectory_radius[6] = {0};
-    float start_angle_rad[6] = {0};
+    float trajectory_radius[SUPPORT_LIMBS_COUNT] = {0};
+    float start_angle_rad[SUPPORT_LIMBS_COUNT] = {0};
     float max_trajectory_radius = 0;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
 
@@ -396,10 +430,10 @@ static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_con
         
         float motion_time = 0;
         if ((i % 2) == 0) {
-            motion_time = -((float)time / MOTION_TIME_SCALE - 0.5f);
+            motion_time = -((float)time / MOTION_TIME_SCALE - 0.5f) * (float)motion_config->direction;
         }
         else {
-            motion_time = ((float)time / MOTION_TIME_SCALE - 0.5f);
+            motion_time = +((float)time / MOTION_TIME_SCALE - 0.5f) * (float)motion_config->direction;
         }
 
         // Calculation arc angle for current time
@@ -415,8 +449,8 @@ static bool calc_points_by_time(uint32_t time, const motion_config_t* motion_con
     //
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         
-        if (limbs_list[i].is_up == true) {
-            float angle = M_PI * ((float)time / MOTION_TIME_SCALE);
+        if (limbs_list[i].is_stage_move_up) {
+            float angle = M_PI * (float)time / MOTION_TIME_SCALE;
             limbs_list[i].current_position.y = limbs_list[i].start_position.y + sin(angle) * 25;
         }
         else {
