@@ -31,10 +31,10 @@ static const sequence_info_t sequence_down = {
     
     {
         {
-            {{-140, -25, 65}, {-150, -25, 0}, {-140, -25, -65}, {140, -25, 65}, {150, -25, 0}, {140, -25, -65}},
+            {{-140, -25, 83}, {-150, -25, 0}, {-140, -25, -83}, {140, -25, 83}, {150, -25, 0}, {140, -25, -83}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .time_offset = 0, .time_step = 10, .time_for_config_update = MOTION_TIME_NO_UPDATE
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .flags = MOTION_FLAG_NO
         }
     }
 };
@@ -51,32 +51,80 @@ static const sequence_info_t sequence_up = {
             {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .time_offset = 0, .time_step = 25, .time_for_config_update = MOTION_TIME_NO_UPDATE
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 25, .flags = MOTION_FLAG_NO
         },
         {    // Up 0, 2, 4 legs
             {{-110, LIMB_UP_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_UP_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_UP_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .time_offset = 0, .time_step = 25, .time_for_config_update = MOTION_TIME_NO_UPDATE
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 25, .flags = MOTION_FLAG_NO
         },
         {    // Down 0, 2, 4 legs
             {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .time_offset = 0, .time_step = 25, .time_for_config_update = MOTION_TIME_NO_UPDATE
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 25, .flags = MOTION_FLAG_NO
         },
         {    // Up 1, 3, 5 legs
             {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_UP_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_UP_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_UP_Y, -65}}, 
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .time_offset = 0, .time_step = 25, .time_for_config_update = MOTION_TIME_NO_UPDATE
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 25, .flags = MOTION_FLAG_NO
         },
         {   // Down 0, 2, 4 legs
             {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}}, 
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .time_offset = 0, .time_step = 25, .time_for_config_update = MOTION_TIME_NO_UPDATE
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 25, .flags = MOTION_FLAG_NO
         },
+    }
+};
+
+static const sequence_info_t sequence_direct = {
+
+    .is_sequence_looped     = true,
+    .main_motions_begin     = 1,
+    .finalize_motions_begin = 3,
+    .total_motions_count    = 4,
+     
+    {
+        {
+            {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
+            { TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
+            .time_start = MTIME_MID_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .flags = MOTION_FLAG_NOT_INIT_START_POINTS,
+            .curvature = 1, .step_length = 90, .step_height = 0,
+        },
+        
+        
+        {
+            {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
+            { TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST},
+            { TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE },
+            {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 20, .flags = MOTION_FLAG_NOT_INIT_START_POINTS,
+            .curvature = 1, .step_length = 90, .step_height = 0,
+        },
+        {
+            {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
+            { TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 20, .flags = MOTION_FLAG_NOT_INIT_START_POINTS,
+            .curvature = 1, .step_length = 90, .step_height = 0,
+        },
+        
+        
+        
+        {
+            {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
+            { TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_CONST},
+            { TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE, TIME_DIR_REVERSE },
+            {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
+            .time_start = MTIME_MIN_VALUE, .time_stop = MTIME_MID_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .flags = MOTION_FLAG_NOT_INIT_START_POINTS,
+            .curvature = 1, .step_length = 90, .step_height = 0,
+        }
     }
 };
 

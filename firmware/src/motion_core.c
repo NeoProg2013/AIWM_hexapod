@@ -38,18 +38,18 @@ typedef struct {
 
 
 static bool read_configuration(void);
-static bool calc_xz_using_advanced_trajectory(uint32_t time, const motion_config_t* motion_config, limb_t* limbs_list);
+static bool process_linear_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list);
+static bool process_advanced_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list);
 static bool kinematic_calculate_angles(limb_t* limbs_list);
-static void calculate_points_by_trajectory(uint32_t time, const motion_config_t* motion_config, limb_t* limbs_list);
 
 
-static core_state_t core_state = STATE_NOINIT;
-static limb_t limbs_list[SUPPORT_LIMBS_COUNT] = {0};
+static core_state_t g_core_state = STATE_NOINIT;
+static limb_t g_limbs_list[SUPPORT_LIMBS_COUNT] = {0};
 
-static motion_config_t current_motion_config = {0};
-static motion_config_t next_motion_config = {0};
-static uint32_t motion_time = MOTION_TIME_START_VALUE;
-static bool is_motion_in_progress = false;
+static motion_config_t g_current_motion_config = {0};
+static motion_config_t g_next_motion_config = {0};
+static uint32_t g_core_motion_time = MTIME_MIN_VALUE;
+static bool g_is_motion_in_progress = false;
 
 
 void motion_core_init(const point_3d_t* start_point_list) {
@@ -62,11 +62,11 @@ void motion_core_init(const point_3d_t* start_point_list) {
     
     // Set start points
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        limbs_list[i].position = start_point_list[i];
+        g_limbs_list[i].position = start_point_list[i];
     }
     
     // Calculate start link angles
-    if (kinematic_calculate_angles(limbs_list) == false) {
+    if (kinematic_calculate_angles(g_limbs_list) == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
         return;
@@ -75,34 +75,37 @@ void motion_core_init(const point_3d_t* start_point_list) {
     // Initialize servo driver
     servo_driver_init();
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        servo_driver_move(i * 3 + 0, limbs_list[i].coxa.angle);
-        servo_driver_move(i * 3 + 1, limbs_list[i].femur.angle);
-        servo_driver_move(i * 3 + 2, limbs_list[i].tibia.angle);
+        servo_driver_move(i * 3 + 0, g_limbs_list[i].coxa.angle);
+        servo_driver_move(i * 3 + 1, g_limbs_list[i].femur.angle);
+        servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
     }
     
     // Initialize driver state
-    core_state = STATE_SYNC;
-    is_motion_in_progress = false;
+    g_core_state = STATE_SYNC;
+    g_is_motion_in_progress = false;
 }
 
 void motion_core_start_motion(const motion_config_t* motion_config) {
     
     // Copy motion configuration
-    current_motion_config = *motion_config;
+    g_current_motion_config = *motion_config;
     
     // Initialize start positions
-    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        current_motion_config.start_positions[i] = limbs_list[i].position;
+    if ((motion_config->flags & MOTION_FLAG_NOT_INIT_START_POINTS) == 0) {
+        for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+            g_current_motion_config.start_positions[i] = g_limbs_list[i].position;
+        }
     }
     
     // Initialize next motion configuration
-    next_motion_config = current_motion_config;
-
-    is_motion_in_progress = true;
+    g_next_motion_config = g_current_motion_config;
+    
+    g_core_motion_time = g_current_motion_config.time_start;
+    g_is_motion_in_progress = true;
 }
 
 void motion_core_update_motion_config(const motion_config_t* motion_config) {
-    next_motion_config = *motion_config;
+    g_next_motion_config = *motion_config;
 }
 
 void motion_core_process(void) {
@@ -111,7 +114,8 @@ void motion_core_process(void) {
 
     
     static uint64_t prev_synchro_value = 0;
-    switch (core_state) {
+    float scaled_motion_time = 0;
+    switch (g_core_state) {
 
         case STATE_SYNC:
             if (synchro != prev_synchro_value) {
@@ -121,42 +125,44 @@ void motion_core_process(void) {
                     //return;
                 }
                 prev_synchro_value = synchro;
-                core_state = STATE_CALC;
+                g_core_state = STATE_CALC;
             }
             break;
 
         case STATE_CALC:
-            if (is_motion_in_progress == false) {
-                core_state = STATE_SYNC;
+            if (g_is_motion_in_progress == false) {
+                g_core_state = STATE_SYNC;
                 break;
             }
             
             // Calculate new limbs positions
-            calculate_points_by_trajectory(motion_time, &current_motion_config, limbs_list);
+            scaled_motion_time = (float)g_core_motion_time / (float)MTIME_SCALE; // to [0; 1]
+            process_linear_trajectory(scaled_motion_time, &g_current_motion_config, g_limbs_list);
+            process_advanced_trajectory(scaled_motion_time, &g_current_motion_config, g_limbs_list);
             
             // Calculate servo angles
-            kinematic_calculate_angles(limbs_list);
+            kinematic_calculate_angles(g_limbs_list);
             
             // Load new angles to servo driver
             for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-                servo_driver_move(i * 3 + 0, limbs_list[i].coxa.angle);
-                servo_driver_move(i * 3 + 1, limbs_list[i].femur.angle);
-                servo_driver_move(i * 3 + 2, limbs_list[i].tibia.angle);
+                servo_driver_move(i * 3 + 0, g_limbs_list[i].coxa.angle);
+                servo_driver_move(i * 3 + 1, g_limbs_list[i].femur.angle);
+                servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
             }
 
-            core_state = STATE_TIME;
+            g_core_state = STATE_TIME;
             break;
 
         case STATE_TIME:
-            motion_time += current_motion_config.time_step;
-            if (motion_time >= current_motion_config.time_for_config_update) {
-                current_motion_config = next_motion_config;
+            g_core_motion_time += g_current_motion_config.time_step;
+            if (g_core_motion_time >= g_current_motion_config.time_update) {
+                g_current_motion_config = g_next_motion_config;
             }
-            if (motion_time > MOTION_TIME_MAX_VALUE) {
-                motion_time = MOTION_TIME_START_VALUE;
-                is_motion_in_progress = false;
+            if (g_core_motion_time > g_current_motion_config.time_stop) {
+                g_core_motion_time = MTIME_MIN_VALUE;
+                g_is_motion_in_progress = false;
             }
-            core_state = STATE_SYNC;
+            g_core_state = STATE_SYNC;
             break;
 
         case STATE_NOINIT:
@@ -168,7 +174,7 @@ void motion_core_process(void) {
 }
 
 bool motion_core_is_motion_complete(void) {
-    return is_motion_in_progress == false;
+    return g_is_motion_in_progress == false;
 }
 
 
@@ -194,9 +200,9 @@ static bool read_configuration(void) {
     }
     
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        limbs_list[i].coxa.length  = length[0];
-        limbs_list[i].femur.length = length[1];
-        limbs_list[i].tibia.length = length[2];
+        g_limbs_list[i].coxa.length  = length[0];
+        g_limbs_list[i].femur.length = length[1];
+        g_limbs_list[i].tibia.length = length[2];
     }
     
     // Read and set COXA zero rotate
@@ -209,12 +215,12 @@ static bool read_configuration(void) {
     if (abs(coxa_zero_rotate_0_3) > 360 || abs(coxa_zero_rotate_1_4) > 360 || abs(coxa_zero_rotate_2_5) > 360) {
         return false;
     }
-    limbs_list[0].coxa.zero_rotate = 135;//coxa_zero_rotate_0_3;
-    limbs_list[1].coxa.zero_rotate = 180;//coxa_zero_rotate_0_3;
-    limbs_list[2].coxa.zero_rotate = 225;//coxa_zero_rotate_1_4;
-    limbs_list[3].coxa.zero_rotate = 45;//coxa_zero_rotate_1_4;
-    limbs_list[4].coxa.zero_rotate = 0;//coxa_zero_rotate_2_5;
-    limbs_list[5].coxa.zero_rotate = 315;//coxa_zero_rotate_2_5;
+    g_limbs_list[0].coxa.zero_rotate = 135;//coxa_zero_rotate_0_3;
+    g_limbs_list[1].coxa.zero_rotate = 180;//coxa_zero_rotate_0_3;
+    g_limbs_list[2].coxa.zero_rotate = 225;//coxa_zero_rotate_1_4;
+    g_limbs_list[3].coxa.zero_rotate = 45;//coxa_zero_rotate_1_4;
+    g_limbs_list[4].coxa.zero_rotate = 0;//coxa_zero_rotate_2_5;
+    g_limbs_list[5].coxa.zero_rotate = 315;//coxa_zero_rotate_2_5;
     
     // Read and set FEMUR, TIBIA 1-6 zero rotate
     int16_t femur_zero_rotate_femur = 0;
@@ -225,8 +231,8 @@ static bool read_configuration(void) {
         return false;
     }
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        limbs_list[i].femur.zero_rotate = femur_zero_rotate_femur;
-        limbs_list[i].tibia.zero_rotate = tibia_zero_rotate_femur;
+        g_limbs_list[i].femur.zero_rotate = femur_zero_rotate_femur;
+        g_limbs_list[i].tibia.zero_rotate = tibia_zero_rotate_femur;
     }
     
     return true;
@@ -235,18 +241,30 @@ static bool read_configuration(void) {
 #define M_PI                                (3.14159265f)
 #define RAD_TO_DEG(rad)                     ((rad) * 180.0f / M_PI)
 #define DEG_TO_RAD(deg)                     ((deg) * M_PI / 180.0f)
-//  ***************************************************************************
-/// @brief  Calculate points by trajectory
-/// @param  time: current movement time [0; 100]
-/// @param  motion_config: @ref motion_config_t
-/// @param  limbs_list: @ref limb_t
-/// @retval limbs_list
-//  ***************************************************************************
-static void calculate_points_by_trajectory(uint32_t time, const motion_config_t* motion_config, limb_t* limbs_list) {
-    
-    float motion_time = (float)time / MOTION_TIME_SCALE;
 
+
+//  ***************************************************************************
+/// @brief  Process linear trajectory
+/// @param  motion_time: current motion time [0; 1]
+/// @param  motion_config: current motion config. @ref motion_config_t
+/// @param  limbs_list: limbs configuration list. @ref limb_t
+/// @retval modify limbs_list
+/// @return true - calculation success, false - no
+//  ***************************************************************************
+static bool process_linear_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list) {
+    
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        
+        // Skip limbs which not use linear trajectory
+        if (motion_config->trajectories[i] != TRAJECTORY_XYZ_LINEAR) {
+            continue;
+        }
+      
+        // Inversion motion time if need
+        float relative_motion_time = motion_time;
+        if (motion_config->time_directions[i] == TIME_DIR_REVERSE) {
+            relative_motion_time = 1.0f - relative_motion_time;
+        }
         
         float x0 = motion_config->start_positions[i].x;
         float y0 = motion_config->start_positions[i].y;
@@ -255,23 +273,23 @@ static void calculate_points_by_trajectory(uint32_t time, const motion_config_t*
         float y1 = motion_config->dest_positions[i].y;
         float z1 = motion_config->dest_positions[i].z;
         
-        if (motion_config->trajectories[i] == TRAJECTORY_XYZ_LINEAR) {
-            limbs_list[i].position.x = x0 + motion_time * (x1 - x0);
-            limbs_list[i].position.y = y0 + motion_time * (y1 - y0);
-            limbs_list[i].position.z = z0 + motion_time * (z1 - z0);
-        }
+        limbs_list[i].position.x = x0 + relative_motion_time * (x1 - x0);
+        limbs_list[i].position.y = y0 + relative_motion_time * (y1 - y0);
+        limbs_list[i].position.z = z0 + relative_motion_time * (z1 - z0);
     }
+    
+    return true;
 }
 
 //  ***************************************************************************
-/// @brief  Calculate limbs coordinates according trajectory parameters
-/// @param  time: current movement time [0; 100]
-/// @param  motion_config: @ref motion_config_t
-/// @param  limbs_list: @ref limb_t
-/// @retval limbs_list::current_position
+/// @brief  Process advanced trajectory
+/// @param  motion_time: current motion time [0; 1]
+/// @param  motion_config: current motion config. @ref motion_config_t
+/// @param  limbs_list: limbs configuration list. @ref limb_t
+/// @retval modify limbs_list
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-static bool calc_xz_using_advanced_trajectory(uint32_t time, const motion_config_t* motion_config, limb_t* limbs_list) {
+static bool process_advanced_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list) {
     
     if (motion_config->curvature == 0 || motion_config->curvature > 1999 || motion_config->curvature < -1999) {
         return false; // Wrong curvature value
@@ -291,6 +309,12 @@ static bool calc_xz_using_advanced_trajectory(uint32_t time, const motion_config
     float start_angle_rad[SUPPORT_LIMBS_COUNT] = {0};
     float max_trajectory_radius = 0;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        
+        // Skip limbs which not use advanced trajectory
+        if (motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_CONST && 
+            motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_SINUS) {
+            continue;
+        }
 
         // Save start point to separate variables for short code
         float x0 = motion_config->start_positions[i].x;
@@ -316,11 +340,22 @@ static bool calc_xz_using_advanced_trajectory(uint32_t time, const motion_config
     float max_arc_angle = curvature_radius_sign * step_length / max_trajectory_radius;
 
     // Calculation points by time
-    float motion_time = ((float)time / MOTION_TIME_SCALE - 0.5f);
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        
+        // Skip limbs which not use advanced trajectory
+        if (motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_CONST && 
+            motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_SINUS) {
+            continue;
+        }
+        
+        // Inversion motion time if need
+        float relative_motion_time = motion_time;
+        if (motion_config->time_directions[i] == TIME_DIR_REVERSE) {
+            relative_motion_time = 1.0f - relative_motion_time;
+        }
 
         // Calculation arc angle for current time
-        float arc_angle_rad = motion_time * max_arc_angle + start_angle_rad[i];
+        float arc_angle_rad = (relative_motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
 
         // Calculation point by time
         limbs_list[i].position.x = curvature_radius + trajectory_radius[i] * cosf(arc_angle_rad);

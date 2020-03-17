@@ -11,11 +11,11 @@
 
 #define SUPPORT_LIMBS_COUNT                 (6)
 
-#define MOTION_TIME_SCALE                   (1000)
-#define MOTION_TIME_START_VALUE             (0 * MOTION_TIME_SCALE)
-#define MOTION_TIME_MAX_VALUE               (1 * MOTION_TIME_SCALE)
-#define MOTION_TIME_CENTER                  (MOTION_TIME_MAX_VALUE >> 1)
-#define MOTION_TIME_NO_UPDATE               (MOTION_TIME_MAX_VALUE + 1)
+#define MTIME_SCALE                         (1000)
+#define MTIME_MIN_VALUE                     (0 * MTIME_SCALE)
+#define MTIME_MAX_VALUE                     (1 * MTIME_SCALE)
+#define MTIME_MID_VALUE                     (MTIME_MAX_VALUE >> 1)
+#define MTIME_NO_UPDATE                     (MTIME_MAX_VALUE << 1)
 
 
 typedef enum {
@@ -29,6 +29,11 @@ typedef enum {
 	TIME_DIR_DIRECT = 1
 } time_dir_t;
 
+typedef enum {
+    MOTION_FLAG_NO,
+    MOTION_FLAG_NOT_INIT_START_POINTS = 0x01,
+} motion_flags_t;
+
 typedef struct {
 	float x;
 	float y;
@@ -39,13 +44,15 @@ typedef struct {
 	point_3d_t dest_positions[SUPPORT_LIMBS_COUNT];     // Destination point for each limb
 	trajectory_t trajectories[SUPPORT_LIMBS_COUNT];     // Motion trajectory
 	time_dir_t time_directions[SUPPORT_LIMBS_COUNT];    // Motion time direction for each limb
-	int16_t    curvature;   // Curvature (using for advanced trajectory)
-	uint16_t   step_length; // Step length (using for advanced trajectory)
-	uint16_t   step_height; // Step height (using for advanced trajectory)
-	uint16_t   time_offset; // Trajectory time offset (example: advanced trajectory started on 50% of motion time range)
-    uint16_t   time_step;   // Trajectory time step (speed)
-    uint16_t   time_for_config_update; // Motion time value for motion configuration update
     point_3d_t start_positions[SUPPORT_LIMBS_COUNT];    // Initialize auto when motion started
+	int16_t    curvature;                               // Curvature (using for advanced trajectory)
+	uint16_t   step_length;                             // Step length (using for advanced trajectory)
+	uint16_t   step_height;                             // Step height (using for advanced trajectory)
+	uint16_t   time_start;                              // Trajectory start time (example: advanced trajectory started on 50% of motion time range)
+    uint16_t   time_stop;                               // Trajectory stop time
+    uint16_t   time_update;                             // Motion time value for motion configuration update
+    uint16_t   time_step;                               // Trajectory time step (speed)
+    uint8_t    flags;
 } motion_config_t;
 
 

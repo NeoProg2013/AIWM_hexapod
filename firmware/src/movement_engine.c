@@ -185,16 +185,16 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
                 next_sequence = SEQUENCE_RUN;
                 next_sequence_info = &sequence_run;
             }
-            break;
+            break;*/
 
         case SEQUENCE_DIRECT_MOVEMENT:
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DIRECT_MOVEMENT;
-                next_sequence_info = &sequence_direct_movement;
+                next_sequence_info = &sequence_direct;
             }
             break;
 
-        case SEQUENCE_REVERSE_MOVEMENT: 
+        /*case SEQUENCE_REVERSE_MOVEMENT: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_REVERSE_MOVEMENT;
                 next_sequence_info = &sequence_reverse_movement;
