@@ -45,14 +45,14 @@ typedef struct {
 	trajectory_t trajectories[SUPPORT_LIMBS_COUNT];     // Motion trajectory
 	time_dir_t time_directions[SUPPORT_LIMBS_COUNT];    // Motion time direction for each limb
     point_3d_t start_positions[SUPPORT_LIMBS_COUNT];    // Initialize auto when motion started
-	int16_t    curvature;                               // Curvature (using for advanced trajectory)
-	uint16_t   step_length;                             // Step length (using for advanced trajectory)
-	uint16_t   step_height;                             // Step height (using for advanced trajectory)
-	uint16_t   time_start;                              // Trajectory start time (example: advanced trajectory started on 50% of motion time range)
-    uint16_t   time_stop;                               // Trajectory stop time
-    uint16_t   time_update;                             // Motion time value for motion configuration update
-    uint16_t   time_step;                               // Trajectory time step (speed)
-    uint8_t    flags;
+	int32_t    curvature;                               // Curvature (using for advanced trajectory)
+	int32_t    step_length;                             // Step length (using for advanced trajectory)
+	int32_t    step_height;                             // Step height (using for advanced trajectory)
+	int32_t    time_start;                              // Trajectory start time (example: advanced trajectory started on 50% of motion time range)
+    int32_t    time_stop;                               // Trajectory stop time
+    int32_t    time_update;                             // Motion time value for motion configuration update
+    int32_t    time_step;                               // Trajectory time step (speed)
+    int32_t    flags;
 } motion_config_t;
 
 

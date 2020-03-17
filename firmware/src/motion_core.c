@@ -158,7 +158,7 @@ void motion_core_process(void) {
             if (g_core_motion_time >= g_current_motion_config.time_update) {
                 g_current_motion_config = g_next_motion_config;
             }
-            if (g_core_motion_time > g_current_motion_config.time_stop) {
+            if (g_core_motion_time >= g_current_motion_config.time_stop) {
                 g_core_motion_time = MTIME_MIN_VALUE;
                 g_is_motion_in_progress = false;
             }
@@ -357,9 +357,19 @@ static bool process_advanced_trajectory(float motion_time, const motion_config_t
         // Calculation arc angle for current time
         float arc_angle_rad = (relative_motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
 
-        // Calculation point by time
+        // Calculation XZ points by time
         limbs_list[i].position.x = curvature_radius + trajectory_radius[i] * cosf(arc_angle_rad);
         limbs_list[i].position.z =                    trajectory_radius[i] * sinf(arc_angle_rad);
+        
+        
+        
+        // Calculation Y points by time
+        if (motion_config->trajectories[i] == TRAJECTORY_XZ_ADV_Y_CONST) {
+            limbs_list[i].position.y = motion_config->start_positions[i].y;
+        }
+        else if (motion_config->trajectories[i] == TRAJECTORY_XZ_ADV_Y_SINUS) {
+            limbs_list[i].position.y = motion_config->start_positions[i].y + motion_config->step_height * sinf(relative_motion_time * M_PI);  
+        }
     }
     
     return true;

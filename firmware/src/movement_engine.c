@@ -194,14 +194,14 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             }
             break;
 
-        /*case SEQUENCE_REVERSE_MOVEMENT: 
+        case SEQUENCE_REVERSE_MOVEMENT: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_REVERSE_MOVEMENT;
-                next_sequence_info = &sequence_reverse_movement;
+                next_sequence_info = &sequence_reverse;
             }
             break;
 
-        case SEQUENCE_ROTATE_LEFT:
+        /*ase SEQUENCE_ROTATE_LEFT:
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_LEFT;
                 next_sequence_info = &sequence_rotate_left;
