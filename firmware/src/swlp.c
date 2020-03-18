@@ -80,7 +80,9 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
         //case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:              movement_engine_select_sequence(SEQUENCE_ROTATE_X);              break;
         ////case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Y:              movement_engine_select_sequence(SEQUENCE_ROTATE_Y);              break;
         //case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:              movement_engine_select_sequence(SEQUENCE_ROTATE_Z);              break;
-        case SWLP_CMD_SELECT_SEQUENCE_NONE:                  movement_engine_select_sequence(SEQUENCE_NONE);                  break;
+        case SWLP_CMD_SELECT_SEQUENCE_NONE:
+            movement_engine_select_sequence(SEQUENCE_NONE);
+            break;
         
         //case SWLP_CMD_SWITCH_LIGHT:                          indication_switch_light_state();                                 break;                                            break;
 

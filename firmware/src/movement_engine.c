@@ -125,8 +125,7 @@ void movement_engine_process(void) {
                         current_motion = current_sequence_info->main_motions_begin;
                     }
                     else {
-                        // Current sequence completed and new sequence not selected
-                        hexapod_state = (current_sequence == SEQUENCE_DOWN) ? HEXAPOD_STATE_DOWN : HEXAPOD_STATE_UP;
+                        // Not looped sequence completed and new sequence not selected
                         movement_engine_select_sequence(SEQUENCE_NONE);
                         driver_state = STATE_CHANGE_SEQUENCE;
                     }
@@ -134,7 +133,10 @@ void movement_engine_process(void) {
             }
             if (sequence_stage == SEQUENCE_STAGE_FINALIZE && current_motion >= current_sequence_info->total_motions_count) {
                 driver_state = STATE_CHANGE_SEQUENCE;
-            }           
+            }    
+            
+            // Change hexapod state
+            hexapod_state = (current_sequence == SEQUENCE_DOWN) ? HEXAPOD_STATE_DOWN : HEXAPOD_STATE_UP;
             break;
             
         case STATE_CHANGE_SEQUENCE:

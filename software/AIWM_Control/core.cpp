@@ -40,8 +40,6 @@ void Core::sendStartMotionCommand(QVariant stepLength, QVariant curvature) {
 
     m_stepLenght = abs(stepLengthInt16);
     m_curvature = curvature.toInt();
-
-    qDebug() << m_stepLenght << " " << m_curvature;
 }
 
 
@@ -58,4 +56,6 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
 
 void Core::swlpCommandPayloadPrepare(swlp_command_payload_t* payload) {
 	payload->command = m_commandForSend;
+	payload->step_length = m_stepLenght;
+	payload->curvature = m_curvature;
 }
