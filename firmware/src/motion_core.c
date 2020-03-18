@@ -20,7 +20,7 @@ typedef enum {
     STATE_NOINIT,
     STATE_SYNC,
     STATE_CALC,
-    STATE_TIME,
+    STATE_TIME_SHIFT,
 } core_state_t;
 
 typedef struct {
@@ -36,20 +36,24 @@ typedef struct {
 	link_t tibia;
 } limb_t;
 
+typedef struct {
+    int32_t curvature;
+	int32_t step_length;
+} traejctory_config_t;
+
 
 static bool read_configuration(void);
-static bool process_linear_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list);
-static bool process_advanced_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list);
-static bool kinematic_calculate_angles(limb_t* limbs_list);
+static bool process_linear_trajectory(float motion_time);
+static bool process_advanced_trajectory(float motion_time);
+static bool kinematic_calculate_angles(void);
 
 
 static core_state_t g_core_state = STATE_NOINIT;
 static limb_t g_limbs_list[SUPPORT_LIMBS_COUNT] = {0};
 
-static motion_config_t g_current_motion_config = {0};
-static motion_config_t g_next_motion_config = {0};
-static uint32_t g_core_motion_time = MTIME_MIN_VALUE;
-static bool g_is_motion_in_progress = false;
+static motion_config_t g_motion_config = {0};
+static traejctory_config_t g_current_trajectory_config = {0};
+static traejctory_config_t g_next_trajectory_config = {0};
 
 
 void motion_core_init(const point_3d_t* start_point_list) {
@@ -66,7 +70,7 @@ void motion_core_init(const point_3d_t* start_point_list) {
     }
     
     // Calculate start link angles
-    if (kinematic_calculate_angles(g_limbs_list) == false) {
+    if (kinematic_calculate_angles() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
         return;
@@ -82,29 +86,25 @@ void motion_core_init(const point_3d_t* start_point_list) {
     
     // Initialize driver state
     g_core_state = STATE_SYNC;
-    g_is_motion_in_progress = false;
 }
 
 void motion_core_start_motion(const motion_config_t* motion_config) {
     
     // Initialize motion configuration
-    g_current_motion_config = *motion_config;
-    if ((motion_config->flags & MOTION_FLAG_NOT_INIT_START_POINTS) == 0) {
+    g_motion_config = *motion_config;
+    if (g_motion_config.is_need_init_start_position) {
         for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-            g_current_motion_config.start_positions[i] = g_limbs_list[i].position;
+            g_motion_config.start_positions[i] = g_limbs_list[i].position;
         }
     }
-    g_current_motion_config.curvature = g_next_motion_config.curvature;
-    g_current_motion_config.step_length = g_next_motion_config.step_length;
-    //g_next_motion_config = g_current_motion_config;
     
-    g_core_motion_time = g_current_motion_config.time_start;
-    g_is_motion_in_progress = true;
+    // Initialize trajectory configuration
+    g_current_trajectory_config = g_next_trajectory_config;
 }
 
-void motion_core_update_motion(int32_t curvature, int32_t step_length) {
-    g_next_motion_config.curvature = curvature;
-    g_next_motion_config.step_length = step_length;
+void motion_core_update_trajectory_config(int32_t curvature, int32_t step_length) {
+    g_next_trajectory_config.curvature = curvature;
+    g_next_trajectory_config.step_length = step_length;
 }
 
 void motion_core_process(void) {
@@ -129,18 +129,18 @@ void motion_core_process(void) {
             break;
 
         case STATE_CALC:
-            if (g_is_motion_in_progress == false) {
+            if (g_motion_config.motion_time >= g_motion_config.time_stop) {
                 g_core_state = STATE_SYNC;
                 break;
             }
             
             // Calculate new limbs positions
-            scaled_motion_time = (float)g_core_motion_time / (float)MTIME_SCALE; // to [0; 1]
-            process_linear_trajectory(scaled_motion_time, &g_current_motion_config, g_limbs_list);
-            process_advanced_trajectory(scaled_motion_time, &g_current_motion_config, g_limbs_list);
+            scaled_motion_time = (float)g_motion_config.motion_time / (float)MTIME_SCALE; // to [0; 1]
+            process_linear_trajectory(scaled_motion_time);
+            process_advanced_trajectory(scaled_motion_time);
             
             // Calculate servo angles
-            kinematic_calculate_angles(g_limbs_list);
+            kinematic_calculate_angles();
             
             // Load new angles to servo driver
             for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
@@ -149,32 +149,27 @@ void motion_core_process(void) {
                 servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
             }
 
-            g_core_state = STATE_TIME;
+            g_core_state = STATE_TIME_SHIFT;
             break;
 
-        case STATE_TIME:
-            g_core_motion_time += g_current_motion_config.time_step;
-            if (g_core_motion_time == g_current_motion_config.time_update) {
-                g_current_motion_config.curvature = g_next_motion_config.curvature;
-                g_current_motion_config.step_length = g_next_motion_config.step_length;
-            }
-            if (g_core_motion_time >= g_current_motion_config.time_stop) {
-                g_core_motion_time = MTIME_MIN_VALUE;
-                g_is_motion_in_progress = false;
+        case STATE_TIME_SHIFT:
+            g_motion_config.motion_time += g_motion_config.time_step;
+            if (g_motion_config.motion_time == g_motion_config.time_update) {
+                g_current_trajectory_config = g_next_trajectory_config;
             }
             g_core_state = STATE_SYNC;
             break;
 
         case STATE_NOINIT:
         default:
-            //sysmon_set_error(SYSMON_FATAL_ERROR);
-            //sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+            sysmon_set_error(SYSMON_FATAL_ERROR);
+            sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
             break;
     }
 }
 
 bool motion_core_is_motion_complete(void) {
-    return g_is_motion_in_progress == false;
+    return g_motion_config.motion_time >= g_motion_config.time_stop;
 }
 
 
@@ -246,36 +241,34 @@ static bool read_configuration(void) {
 //  ***************************************************************************
 /// @brief  Process linear trajectory
 /// @param  motion_time: current motion time [0; 1]
-/// @param  motion_config: current motion config. @ref motion_config_t
-/// @param  limbs_list: limbs configuration list. @ref limb_t
-/// @retval modify limbs_list
+/// @retval modify g_limbs_list
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-static bool process_linear_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list) {
+static bool process_linear_trajectory(float motion_time) {
     
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         
         // Skip limbs which not use linear trajectory
-        if (motion_config->trajectories[i] != TRAJECTORY_XYZ_LINEAR) {
+        if (g_motion_config.trajectories[i] != TRAJECTORY_XYZ_LINEAR) {
             continue;
         }
       
         // Inversion motion time if need
         float relative_motion_time = motion_time;
-        if (motion_config->time_directions[i] == TIME_DIR_REVERSE) {
+        if (g_motion_config.time_directions[i] == TIME_DIR_REVERSE) {
             relative_motion_time = 1.0f - relative_motion_time;
         }
         
-        float x0 = motion_config->start_positions[i].x;
-        float y0 = motion_config->start_positions[i].y;
-        float z0 = motion_config->start_positions[i].z;
-        float x1 = motion_config->dest_positions[i].x;
-        float y1 = motion_config->dest_positions[i].y;
-        float z1 = motion_config->dest_positions[i].z;
+        float x0 = g_motion_config.start_positions[i].x;
+        float y0 = g_motion_config.start_positions[i].y;
+        float z0 = g_motion_config.start_positions[i].z;
+        float x1 = g_motion_config.dest_positions[i].x;
+        float y1 = g_motion_config.dest_positions[i].y;
+        float z1 = g_motion_config.dest_positions[i].z;
         
-        limbs_list[i].position.x = x0 + relative_motion_time * (x1 - x0);
-        limbs_list[i].position.y = y0 + relative_motion_time * (y1 - y0);
-        limbs_list[i].position.z = z0 + relative_motion_time * (z1 - z0);
+        g_limbs_list[i].position.x = x0 + relative_motion_time * (x1 - x0);
+        g_limbs_list[i].position.y = y0 + relative_motion_time * (y1 - y0);
+        g_limbs_list[i].position.z = z0 + relative_motion_time * (z1 - z0);
     }
     
     return true;
@@ -284,22 +277,20 @@ static bool process_linear_trajectory(float motion_time, const motion_config_t* 
 //  ***************************************************************************
 /// @brief  Process advanced trajectory
 /// @param  motion_time: current motion time [0; 1]
-/// @param  motion_config: current motion config. @ref motion_config_t
-/// @param  limbs_list: limbs configuration list. @ref limb_t
-/// @retval modify limbs_list
+/// @retval modify g_limbs_list
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-static bool process_advanced_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list) {
+static bool process_advanced_trajectory(float motion_time) {
     
-    float curvature = (float)motion_config->curvature / 1000.0f;
-    if (motion_config->curvature == 0)    curvature = +0.001f;
-    if (motion_config->curvature > 1999)  curvature = +1.999f;
-    if (motion_config->curvature < -1999) curvature = -1.999f;
+    float curvature = (float)g_current_trajectory_config.curvature / 1000.0f;
+    if (g_current_trajectory_config.curvature == 0)    curvature = +0.001f;
+    if (g_current_trajectory_config.curvature > 1999)  curvature = +1.999f;
+    if (g_current_trajectory_config.curvature < -1999) curvature = -1.999f;
     
     //
     // Calculate XZ
     //
-    float step_length = (float)motion_config->step_length;
+    float step_length = (float)g_current_trajectory_config.step_length;
 
     // Calculation radius of curvature
     float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * step_length;
@@ -311,14 +302,14 @@ static bool process_advanced_trajectory(float motion_time, const motion_config_t
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         
         // Skip limbs which not use advanced trajectory
-        if (motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_CONST && 
-            motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_SINUS) {
+        if (g_motion_config.trajectories[i] != TRAJECTORY_XZ_ADV_Y_CONST && 
+            g_motion_config.trajectories[i] != TRAJECTORY_XZ_ADV_Y_SINUS) {
             continue;
         }
 
         // Save start point to separate variables for short code
-        float x0 = motion_config->start_positions[i].x;
-        float z0 = motion_config->start_positions[i].z;
+        float x0 = g_motion_config.start_positions[i].x;
+        float z0 = g_motion_config.start_positions[i].z;
 
         // Calculation trajectory radius
         trajectory_radius[i] = sqrtf((curvature_radius - x0) * (curvature_radius - x0) + z0 * z0);
@@ -343,14 +334,14 @@ static bool process_advanced_trajectory(float motion_time, const motion_config_t
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         
         // Skip limbs which not use advanced trajectory
-        if (motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_CONST && 
-            motion_config->trajectories[i] != TRAJECTORY_XZ_ADV_Y_SINUS) {
+        if (g_motion_config.trajectories[i] != TRAJECTORY_XZ_ADV_Y_CONST && 
+            g_motion_config.trajectories[i] != TRAJECTORY_XZ_ADV_Y_SINUS) {
             continue;
         }
         
         // Inversion motion time if need
         float relative_motion_time = motion_time;
-        if (motion_config->time_directions[i] == TIME_DIR_REVERSE) {
+        if (g_motion_config.time_directions[i] == TIME_DIR_REVERSE) {
             relative_motion_time = 1.0f - relative_motion_time;
         }
 
@@ -358,17 +349,18 @@ static bool process_advanced_trajectory(float motion_time, const motion_config_t
         float arc_angle_rad = (relative_motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
 
         // Calculation XZ points by time
-        limbs_list[i].position.x = curvature_radius + trajectory_radius[i] * cosf(arc_angle_rad);
-        limbs_list[i].position.z =                    trajectory_radius[i] * sinf(arc_angle_rad);
+        g_limbs_list[i].position.x = curvature_radius + trajectory_radius[i] * cosf(arc_angle_rad);
+        g_limbs_list[i].position.z =                    trajectory_radius[i] * sinf(arc_angle_rad);
         
         
         
         // Calculation Y points by time
-        if (motion_config->trajectories[i] == TRAJECTORY_XZ_ADV_Y_CONST) {
-            limbs_list[i].position.y = motion_config->start_positions[i].y;
+        if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_CONST) {
+            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y;
         }
-        else if (motion_config->trajectories[i] == TRAJECTORY_XZ_ADV_Y_SINUS) {
-            limbs_list[i].position.y = motion_config->start_positions[i].y + motion_config->step_height * sinf(relative_motion_time * M_PI);  
+        else if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_SINUS) {
+            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y;
+            g_limbs_list[i].position.y += LIMB_STEP_HEIGHT * sinf(relative_motion_time * M_PI);  
         }
     }
     
@@ -381,20 +373,20 @@ static bool process_advanced_trajectory(float motion_time, const motion_config_t
 /// @retval limbs_list::servo_angle
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-static bool kinematic_calculate_angles(limb_t* limbs_list) {
+static bool kinematic_calculate_angles(void) {
 
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
 
-        float coxa_zero_rotate_deg  = limbs_list[i].coxa.zero_rotate;
-        float femur_zero_rotate_deg = limbs_list[i].femur.zero_rotate;
-        float tibia_zero_rotate_deg = limbs_list[i].tibia.zero_rotate;
-        float coxa_length  = limbs_list[i].coxa.length;
-        float femur_length = limbs_list[i].femur.length;
-        float tibia_length = limbs_list[i].tibia.length;
+        float coxa_zero_rotate_deg  = g_limbs_list[i].coxa.zero_rotate;
+        float femur_zero_rotate_deg = g_limbs_list[i].femur.zero_rotate;
+        float tibia_zero_rotate_deg = g_limbs_list[i].tibia.zero_rotate;
+        float coxa_length  = g_limbs_list[i].coxa.length;
+        float femur_length = g_limbs_list[i].femur.length;
+        float tibia_length = g_limbs_list[i].tibia.length;
 
-        float x = limbs_list[i].position.x;
-        float y = limbs_list[i].position.y;
-        float z = limbs_list[i].position.z;
+        float x = g_limbs_list[i].position.x;
+        float y = g_limbs_list[i].position.y;
+        float z = g_limbs_list[i].position.z;
 
 
         // Move to (X*, Y*, Z*) coordinate system - rotate
@@ -408,7 +400,7 @@ static bool kinematic_calculate_angles(limb_t* limbs_list) {
         // Calculate COXA angle
         //
         float coxa_angle_rad = atan2f(z1, x1);
-        limbs_list[i].coxa.angle = RAD_TO_DEG(coxa_angle_rad);
+        g_limbs_list[i].coxa.angle = RAD_TO_DEG(coxa_angle_rad);
 
 
         //
@@ -444,8 +436,8 @@ static bool kinematic_calculate_angles(limb_t* limbs_list) {
         //
         // Calculate FEMUR and TIBIA angle
         //
-        limbs_list[i].femur.angle = femur_zero_rotate_deg - RAD_TO_DEG(alpha) - RAD_TO_DEG(fi);
-        limbs_list[i].tibia.angle = RAD_TO_DEG(gamma) - tibia_zero_rotate_deg;
+        g_limbs_list[i].femur.angle = femur_zero_rotate_deg - RAD_TO_DEG(alpha) - RAD_TO_DEG(fi);
+        g_limbs_list[i].tibia.angle = RAD_TO_DEG(gamma) - tibia_zero_rotate_deg;
     }
     return true;
 }

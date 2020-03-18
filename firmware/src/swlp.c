@@ -60,12 +60,12 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
             movement_engine_select_sequence(SEQUENCE_DOWN);
             break;
         case SWLP_CMD_SELECT_SEQUENCE_DIRECT:
-            motion_core_update_motion(request->curvature, request->step_length);
             movement_engine_select_sequence(SEQUENCE_DIRECT);
+            motion_core_update_trajectory_config(request->curvature, request->step_length);
             break;
         case SWLP_CMD_SELECT_SEQUENCE_REVERSE:
-            motion_core_update_motion(request->curvature, request->step_length);
             movement_engine_select_sequence(SEQUENCE_REVERSE);
+            motion_core_update_trajectory_config(request->curvature, request->step_length);
             break;
         
         //case SWLP_CMD_SELECT_SEQUENCE_RUN:                   movement_engine_select_sequence(SEQUENCE_RUN);                   break;

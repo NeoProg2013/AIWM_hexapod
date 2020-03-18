@@ -22,7 +22,6 @@ typedef enum {
 
 extern void movement_engine_init(void);
 extern void movement_engine_process(void);
-extern void movement_engine_set_motion_config(uint32_t step_length, uint32_t curvature);
 extern void movement_engine_select_sequence(sequence_id_t sequence);
 
 

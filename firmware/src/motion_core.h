@@ -11,6 +11,8 @@
 
 #define SUPPORT_LIMBS_COUNT                 (6)
 
+#define LIMB_STEP_HEIGHT                    (25)
+
 #define MTIME_SCALE                         (1000)
 #define MTIME_MIN_VALUE                     (0 * MTIME_SCALE)
 #define MTIME_MAX_VALUE                     (1 * MTIME_SCALE)
@@ -29,11 +31,6 @@ typedef enum {
 	TIME_DIR_DIRECT = 1
 } time_dir_t;
 
-typedef enum {
-    MOTION_FLAG_NO,
-    MOTION_FLAG_NOT_INIT_START_POINTS = 0x01,
-} motion_flags_t;
-
 typedef struct {
 	float x;
 	float y;
@@ -41,24 +38,21 @@ typedef struct {
 } point_3d_t;
 
 typedef struct {
-	point_3d_t dest_positions[SUPPORT_LIMBS_COUNT];     // Destination point for each limb
-	trajectory_t trajectories[SUPPORT_LIMBS_COUNT];     // Motion trajectory
-	time_dir_t time_directions[SUPPORT_LIMBS_COUNT];    // Motion time direction for each limb
-    point_3d_t start_positions[SUPPORT_LIMBS_COUNT];    // Initialize auto when motion started
-	int32_t    curvature;                               // Curvature (using for advanced trajectory)
-	int32_t    step_length;                             // Step length (using for advanced trajectory)
-	int32_t    step_height;                             // Step height (using for advanced trajectory)
-	int32_t    time_start;                              // Trajectory start time (example: advanced trajectory started on 50% of motion time range)
-    int32_t    time_stop;                               // Trajectory stop time
-    int32_t    time_update;                             // Motion time value for motion configuration update
-    int32_t    time_step;                               // Trajectory time step (speed)
-    int32_t    flags;
+	point_3d_t   dest_positions[SUPPORT_LIMBS_COUNT];     // Destination point for each limb
+	trajectory_t trajectories[SUPPORT_LIMBS_COUNT];       // Motion trajectory
+	time_dir_t   time_directions[SUPPORT_LIMBS_COUNT];    // Motion time direction for each limb
+    point_3d_t   start_positions[SUPPORT_LIMBS_COUNT];    // Initialize auto when motion started
+	int32_t      motion_time;                             // Trajectory motion time. Can use for set start motion time value
+    int32_t      time_stop;                               // Trajectory stop time
+    int32_t      time_update;                             // Motion time value for motion configuration update
+    int32_t      time_step;                               // Trajectory time step (speed)
+    bool         is_need_init_start_position;
 } motion_config_t;
 
 
 extern void motion_core_init(const point_3d_t* start_point_list);
 extern void motion_core_start_motion(const motion_config_t* motion_config);
-extern void motion_core_update_motion(int32_t curvature, int32_t step_length);
+extern void motion_core_update_trajectory_config(int32_t curvature, int32_t step_length);
 extern void motion_core_process(void);
 extern bool motion_core_is_motion_complete(void);
 
