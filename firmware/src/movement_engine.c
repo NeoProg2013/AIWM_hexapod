@@ -15,17 +15,17 @@
 typedef enum {
     STATE_NOINIT,           // Module not initialized
     STATE_IDLE,
-    STATE_MOVE,             // Process step of current gait
+    STATE_MOVE,             // Process motion of current sequence
     STATE_WAIT,             // Wait limbs movement complete
-    STATE_NEXT_ITERATION,   // Select next step of current gait
+    STATE_NEXT_MOTION,      // Select next motion of current sequence
     STATE_CHANGE_SEQUENCE   // Change current sequence (if needed)
 } driver_state_t;
 
 typedef enum {
-    SEQUENCE_STAGE_PREPARE,
-    SEQUENCE_STAGE_MAIN,
-    SEQUENCE_STAGE_FINALIZE
-} sequence_stage_t;
+    STAGE_PREPARE,
+    STAGE_MAIN,
+    STAGE_FINALIZE
+} stage_t;
 
 typedef enum {
     HEXAPOD_STATE_DOWN,
@@ -79,7 +79,7 @@ void movement_engine_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOVEMENT_ENGINE) == true) return; // Module disabled
     
 
-    static sequence_stage_t sequence_stage = SEQUENCE_STAGE_PREPARE;
+    static stage_t sequence_stage = STAGE_PREPARE;
     static uint32_t current_motion = 0;
 
     switch (driver_state) {
@@ -99,25 +99,24 @@ void movement_engine_process(void) {
         
         case STATE_WAIT:
             if (motion_core_is_motion_complete() == true) {
-                driver_state = STATE_NEXT_ITERATION;
+                driver_state = STATE_NEXT_MOTION;
             }
             break;
             
-        case STATE_NEXT_ITERATION:
+        case STATE_NEXT_MOTION:
             
             ++current_motion;
             driver_state = STATE_MOVE;
             
-            if (sequence_stage == SEQUENCE_STAGE_PREPARE && current_motion >= current_sequence_info->main_motions_begin) {
-                sequence_stage = SEQUENCE_STAGE_MAIN;
+            if (sequence_stage == STAGE_PREPARE && current_motion >= current_sequence_info->main_motions_begin) {
+                sequence_stage = STAGE_MAIN;
             }
-            if (sequence_stage == SEQUENCE_STAGE_MAIN && current_motion >= current_sequence_info->finalize_motions_begin) {
+            if (sequence_stage == STAGE_MAIN && current_motion >= current_sequence_info->finalize_motions_begin) {
                 
                 if (current_sequence != next_sequence) { 
-                    
                     // Need change current sequence - go to finalize motions if it available
                     current_motion = current_sequence_info->finalize_motions_begin;
-                    sequence_stage = SEQUENCE_STAGE_FINALIZE;
+                    sequence_stage = STAGE_FINALIZE;
                 }
                 else {
                     
@@ -131,7 +130,7 @@ void movement_engine_process(void) {
                     }
                 }              
             }
-            if (sequence_stage == SEQUENCE_STAGE_FINALIZE && current_motion >= current_sequence_info->total_motions_count) {
+            if (sequence_stage == STAGE_FINALIZE && current_motion >= current_sequence_info->total_motions_count) {
                 driver_state = STATE_CHANGE_SEQUENCE;
             }    
             
@@ -143,7 +142,7 @@ void movement_engine_process(void) {
             current_sequence      = next_sequence;
             current_sequence_info = next_sequence_info;
             current_motion        = 0;
-            sequence_stage        = SEQUENCE_STAGE_PREPARE;
+            sequence_stage        = STAGE_PREPARE;
             driver_state          = STATE_MOVE;
             
             if (current_sequence == SEQUENCE_NONE) {

@@ -87,25 +87,22 @@ void motion_core_init(const point_3d_t* start_point_list) {
 
 void motion_core_start_motion(const motion_config_t* motion_config) {
     
-    // Copy motion configuration
+    // Initialize motion configuration
     g_current_motion_config = *motion_config;
-    
-    // Initialize start positions
     if ((motion_config->flags & MOTION_FLAG_NOT_INIT_START_POINTS) == 0) {
         for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
             g_current_motion_config.start_positions[i] = g_limbs_list[i].position;
         }
     }
-    
-    // Initialize next motion configuration
     g_next_motion_config = g_current_motion_config;
     
     g_core_motion_time = g_current_motion_config.time_start;
     g_is_motion_in_progress = true;
 }
 
-void motion_core_update_motion_config(const motion_config_t* motion_config) {
-    g_next_motion_config = *motion_config;
+void motion_core_update_motion(int32_t curvature, int32_t step_length) {
+    g_next_motion_config.curvature = curvature;
+    g_next_motion_config.step_length = step_length;
 }
 
 void motion_core_process(void) {
