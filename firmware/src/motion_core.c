@@ -54,6 +54,7 @@ static limb_t g_limbs_list[SUPPORT_LIMBS_COUNT] = {0};
 static motion_config_t g_motion_config = {0};
 static traejctory_config_t g_current_trajectory_config = {0};
 static traejctory_config_t g_next_trajectory_config = {0};
+static bool is_trajectory_config_init = false;
 
 
 void motion_core_init(const point_3d_t* start_point_list) {
@@ -99,7 +100,16 @@ void motion_core_start_motion(const motion_config_t* motion_config) {
     }
     
     // Initialize trajectory configuration
-    g_current_trajectory_config = g_next_trajectory_config;
+    if (is_trajectory_config_init == false) {
+        g_current_trajectory_config = g_next_trajectory_config;
+        is_trajectory_config_init = true;
+    }
+}
+
+void motion_core_reset_trajectory_config(void) {
+    g_current_trajectory_config.curvature = 1;
+    g_current_trajectory_config.step_length = 0;
+    is_trajectory_config_init = false;
 }
 
 void motion_core_update_trajectory_config(int32_t curvature, int32_t step_length) {

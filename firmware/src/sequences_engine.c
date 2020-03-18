@@ -1,8 +1,8 @@
 //  ***************************************************************************
-/// @file    movement_engine.c
+/// @file    sequences_engine.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "movement_engine.h"
+#include "sequences_engine.h"
 #include "motion_core.h"
 #include "gait_sequences.h"
 #include "system_monitor.h"
@@ -16,10 +16,10 @@ typedef enum {
     STATE_NOINIT,           // Module not initialized
     STATE_IDLE,
     STATE_MOVE,             // Process motion of current sequence
-    STATE_WAIT,             // Wait limbs movement complete
+    STATE_WAIT,             // Wait motion complete
     STATE_NEXT_MOTION,      // Select next motion of current sequence
     STATE_CHANGE_SEQUENCE   // Change current sequence (if needed)
-} driver_state_t;
+} engine_state_t;
 
 typedef enum {
     STAGE_PREPARE,
@@ -33,7 +33,7 @@ typedef enum {
 } hexapod_state_t;
 
 
-static driver_state_t driver_state = STATE_NOINIT;
+static engine_state_t engine_state = STATE_NOINIT;
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
 
 static sequence_id_t current_sequence = SEQUENCE_NONE;
@@ -44,11 +44,11 @@ static const sequence_info_t* next_sequence_info = NULL;
 
 
 //  ***************************************************************************
-/// @brief  Movement driver initialization
+/// @brief  Sequences engine initialization
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void movement_engine_init(void) {
+void sequences_engine_init(void) {
 
     // Select DOWN sequence as start position
     current_sequence      = SEQUENCE_DOWN;
@@ -57,36 +57,32 @@ void movement_engine_init(void) {
     next_sequence_info    = &sequence_down;
     hexapod_state         = HEXAPOD_STATE_DOWN;
     
-    // Initialize limbs driver
+    // Initialize motion driver
     uint32_t last_motion_index = sequence_down.total_motions_count - 1;
     motion_core_init(sequence_down.motion_list[last_motion_index].dest_positions);
     
-    // Initialization driver state
-    driver_state = STATE_IDLE;
-}
-
-void movement_engine_set_motion_config(uint32_t step_length, uint32_t curvature) {
-    
+    // Initialization engine state
+    engine_state = STATE_IDLE;
 }
 
 //  ***************************************************************************
-/// @brief  Movement driver process
+/// @brief  Sequences engine process
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void movement_engine_process(void) {
+void sequences_engine_process(void) {
     
-    if (sysmon_is_module_disable(SYSMON_MODULE_MOVEMENT_ENGINE) == true) return; // Module disabled
+    if (sysmon_is_module_disable(SYSMON_MODULE_SEQUENCES_ENGINE) == true) return; // Module disabled
     
 
     static stage_t sequence_stage = STAGE_PREPARE;
     static uint32_t current_motion = 0;
 
-    switch (driver_state) {
+    switch (engine_state) {
         
         case STATE_IDLE:
             if (current_sequence != next_sequence) {
-                driver_state = STATE_CHANGE_SEQUENCE;
+                engine_state = STATE_CHANGE_SEQUENCE;
             }
             break;
         
@@ -94,19 +90,18 @@ void movement_engine_process(void) {
             for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
                 motion_core_start_motion(&current_sequence_info->motion_list[current_motion]);
             }
-            driver_state = STATE_WAIT;
+            engine_state = STATE_WAIT;
             break;
         
         case STATE_WAIT:
             if (motion_core_is_motion_complete() == true) {
-                driver_state = STATE_NEXT_MOTION;
+                engine_state = STATE_NEXT_MOTION;
             }
             break;
             
         case STATE_NEXT_MOTION:
-            
             ++current_motion;
-            driver_state = STATE_MOVE;
+            engine_state = STATE_MOVE;
             
             if (sequence_stage == STAGE_PREPARE && current_motion >= current_sequence_info->main_motions_begin) {
                 sequence_stage = STAGE_MAIN;
@@ -125,13 +120,13 @@ void movement_engine_process(void) {
                     }
                     else {
                         // Not looped sequence completed and new sequence not selected
-                        movement_engine_select_sequence(SEQUENCE_NONE);
-                        driver_state = STATE_CHANGE_SEQUENCE;
+                        sequences_engine_select_sequence(SEQUENCE_NONE, 0, 0);
+                        engine_state = STATE_CHANGE_SEQUENCE;
                     }
                 }              
             }
             if (sequence_stage == STAGE_FINALIZE && current_motion >= current_sequence_info->total_motions_count) {
-                driver_state = STATE_CHANGE_SEQUENCE;
+                engine_state = STATE_CHANGE_SEQUENCE;
             }    
             
             // Change hexapod state
@@ -143,17 +138,19 @@ void movement_engine_process(void) {
             current_sequence_info = next_sequence_info;
             current_motion        = 0;
             sequence_stage        = STAGE_PREPARE;
-            driver_state          = STATE_MOVE;
+            engine_state          = STATE_MOVE;
+            
+            motion_core_reset_trajectory_config();
             
             if (current_sequence == SEQUENCE_NONE) {
-                driver_state = STATE_IDLE;
+                engine_state = STATE_IDLE;
             }        
             break;
             
         case STATE_NOINIT:
         default:
             sysmon_set_error(SYSMON_FATAL_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_MOVEMENT_ENGINE);
+            sysmon_disable_module(SYSMON_MODULE_SEQUENCES_ENGINE);
             break;
     }
 }
@@ -161,9 +158,11 @@ void movement_engine_process(void) {
 //  ***************************************************************************
 /// @brief  Select sequence
 /// @param  sequence: new sequence
+/// @param  curvature: curvature value for DIRECT\REVERSE sequences
+/// @param  step_length: step length value for DIRECT\REVERSE sequences
 /// @return none
 //  ***************************************************************************
-void movement_engine_select_sequence(sequence_id_t sequence) {
+void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature, int32_t step_length) {
     
     // Request switch current sequence
     switch (sequence) {
@@ -196,6 +195,7 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DIRECT;
                 next_sequence_info = &sequence_direct;
+                motion_core_update_trajectory_config(curvature, step_length);
             }
             break;
 
@@ -203,6 +203,7 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_REVERSE;
                 next_sequence_info = &sequence_reverse;
+                motion_core_update_trajectory_config(curvature, step_length);
             }
             break;
 
@@ -292,7 +293,7 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
 
         default:
             sysmon_set_error(SYSMON_FATAL_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_MOVEMENT_ENGINE);
+            sysmon_disable_module(SYSMON_MODULE_SEQUENCES_ENGINE);
             return;
     }
 }
