@@ -18,26 +18,9 @@
 #define SWLP_CMD_NONE                                   (0x00)
 #define SWLP_CMD_SELECT_SEQUENCE_UP                     (0x01)
 #define SWLP_CMD_SELECT_SEQUENCE_DOWN                   (0x02)
-#define SWLP_CMD_SELECT_SEQUENCE_RUN                    (0x03)
-#define SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT        (0x04)
-#define SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT       (0x05)
-#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_LEFT            (0x06)
-#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_RIGHT           (0x07)
-#define SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SLOW   (0x08)
-#define SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SLOW  (0x09)
-#define SWLP_CMD_SELECT_SEQUENCE_SHIFT_LEFT             (0x10)
-#define SWLP_CMD_SELECT_SEQUENCE_SHIFT_RIGHT            (0x11)
-#define SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT            (0x20)
-#define SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT           (0x21)
-#define SWLP_CMD_SELECT_SEQUENCE_DANCE                  (0x30)
-#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_X               (0x31)
-//#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_Y               (0x32)
-#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z               (0x33)
+#define SWLP_CMD_SELECT_SEQUENCE_DIRECT                 (0x03)
+#define SWLP_CMD_SELECT_SEQUENCE_REVERSE                (0x04)
 #define SWLP_CMD_SELECT_SEQUENCE_NONE                   (0x90)
-
-#define SWLP_CMD_SWITCH_LIGHT                           (0xA0)
-
-#define SWLP_CMD_RESET                                  (0xFE)
 
 //
 // SWLP command status
@@ -55,7 +38,9 @@ typedef struct {
 
 typedef struct {
     uint8_t command;
-    uint8_t reserved[17];
+    uint8_t step_length;
+    int16_t curvature;
+    uint8_t reserved[14];
 } swlp_command_payload_t;
 
 typedef struct {

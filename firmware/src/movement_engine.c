@@ -65,6 +65,10 @@ void movement_engine_init(void) {
     driver_state = STATE_IDLE;
 }
 
+void movement_engine_set_motion_config(uint32_t step_length, uint32_t curvature) {
+    
+}
+
 //  ***************************************************************************
 /// @brief  Movement driver process
 /// @param  none
@@ -187,16 +191,16 @@ void movement_engine_select_sequence(sequence_id_t sequence) {
             }
             break;*/
 
-        case SEQUENCE_DIRECT_MOVEMENT:
+        case SEQUENCE_DIRECT:
             if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_DIRECT_MOVEMENT;
+                next_sequence = SEQUENCE_DIRECT;
                 next_sequence_info = &sequence_direct;
             }
             break;
 
-        case SEQUENCE_REVERSE_MOVEMENT: 
+        case SEQUENCE_REVERSE: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_REVERSE_MOVEMENT;
+                next_sequence = SEQUENCE_REVERSE;
                 next_sequence_info = &sequence_reverse;
             }
             break;

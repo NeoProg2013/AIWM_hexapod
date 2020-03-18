@@ -291,14 +291,14 @@ static bool process_linear_trajectory(float motion_time, const motion_config_t* 
 //  ***************************************************************************
 static bool process_advanced_trajectory(float motion_time, const motion_config_t* motion_config, limb_t* limbs_list) {
     
-    if (motion_config->curvature == 0 || motion_config->curvature > 1999 || motion_config->curvature < -1999) {
-        return false; // Wrong curvature value
-    }
+    float curvature = (float)motion_config->curvature / 1000.0f;
+    if (motion_config->curvature == 0)    curvature = +0.001f;
+    if (motion_config->curvature > 1999)  curvature = +1.999f;
+    if (motion_config->curvature < -1999) curvature = -1.999f;
     
     //
     // Calculate XZ
     //
-    float curvature   = (float)motion_config->curvature / 1000.0f;
     float step_length = (float)motion_config->step_length;
 
     // Calculation radius of curvature

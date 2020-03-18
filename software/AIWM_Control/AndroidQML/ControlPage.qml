@@ -1,6 +1,7 @@
 import QtQuick 2.12
-import QtQuick.Controls 2.5
+import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.3
+import QtGraphicalEffects 1.0
 
 Item {
 
@@ -39,186 +40,69 @@ Item {
     Item {
         id: joystickItem
         y: 653
-        width: 325
+        width: 270
         height: 270
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 20
 
-        ImageButton {
-            x: 110
-            y: 55
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/arrowDoubleUp.svg"
-            onButtonPressed: {
-                CppCore.sendDirectMoveCommand()
+        ParallelAnimation {
+            id: animationReturn
+            NumberAnimation {
+                target: dragItem
+                property: "x"
+                to: joystickItem.width / 2 - dragItem.width / 2
+                duration: 50
             }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 110
-            y: 220
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/arrowDoubleDown.svg"
-            onButtonPressed: {
-                CppCore.sendReverseMoveCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
+            NumberAnimation {
+                target: dragItem
+                property: "y"
+                to: joystickItem.height / 2 - dragItem.height / 2
+                duration: 50
             }
         }
 
-        ImageButton {
-            x: 110
-            y: 110
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/arrowUp.svg"
-            onButtonPressed: {
-                CppCore.sendDirectMoveSlowCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
+        ColorOverlay {
+            id: dragItem
+            width: 100
+            height: 100
+            source: joystickImage
+            color: "#FFFFFF"
+            smooth: true
+            antialiasing: true
+
+            x: joystickItem.width / 2 - dragItem.width / 2
+            y: joystickItem.height / 2 - dragItem.height / 2
+
+            MouseArea {
+                anchors.fill: parent
+                drag.target: dragItem
+                drag.axis: Drag.XAndYAxis
+                drag.minimumX: 0
+                drag.maximumX: joystickItem.width - dragItem.width
+                drag.minimumY: 0
+                drag.maximumY: joystickItem.height - dragItem.height
+
+                onReleased: {
+                    animationReturn.start()
+                    CppCore.sendStopMoveCommand()
+                }
+                onPositionChanged: {
+
+                    var curvature = dragItem.x * (3998.0 / drag.maximumX) - 1999.0
+                    var stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+                    CppCore.sendStartMotionCommand(Math.round(stepLength),
+                                                   Math.round(curvature))
+                }
             }
         }
 
-        ImageButton {
-            x: 0
-            y: 110
-            width: 105
-            height: 105
-            imageSrc: "qrc:/images/arrowLeft.svg"
-            onButtonPressed: {
-                CppCore.sendShiftLeftCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 220
-            y: 110
-            width: 105
-            height: 105
-            imageSrc: "qrc:/images/arrowRight.svg"
-            onButtonPressed: {
-                CppCore.sendShiftRightCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 110
-            y: 165
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/arrowDown.svg"
-            onButtonPressed: {
-                CppCore.sendReverseMoveSlowCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 0
-            y: 0
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/swordLeft.svg"
-            onButtonPressed: {
-                CppCore.sendAttackLeftCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 220
-            y: 0
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/swordRight.svg"
-            onButtonPressed: {
-                CppCore.sendAttackRightCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 220
-            y: 220
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/getUp.svg"
-            onButtonClicked: {
-                CppCore.sendGetUpCommand()
-            }
-        }
-
-        ImageButton {
-            x: 0
-            y: 220
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/getDown.svg"
-            onButtonClicked: {
-                CppCore.sendGetDownCommand()
-            }
-        }
-
-        ImageButton {
-            x: 110
-            y: 0
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/run.svg"
-            onButtonPressed: {
-                CppCore.sendRunCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 0
-            y: 55
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/arrowRotateLeft.svg"
-            onButtonPressed: {
-                CppCore.sendRotateLeftCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
-        }
-
-        ImageButton {
-            x: 220
-            y: 55
-            width: 105
-            height: 50
-            imageSrc: "qrc:/images/arrowRotateRight.svg"
-            onButtonPressed: {
-                CppCore.sendRotateRightCommand()
-            }
-            onButtonReleased: {
-                CppCore.sendStopMoveCommand()
-            }
+        Image {
+            id: joystickImage
+            visible: false
+            source: "qrc:/images/joystick.svg"
+            sourceSize.width: dragItem.width
+            sourceSize.height: dragItem.height
         }
     }
 
@@ -462,9 +346,9 @@ Item {
         ImageButton {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            imageSrc: "qrc:/images/rotateX.svg"
+            imageSrc: "qrc:/images/getUp.svg"
             onButtonPressed: {
-                CppCore.sendRotateXCommand()
+                CppCore.sendGetUpCommand()
             }
             onButtonReleased: {
                 CppCore.sendStopMoveCommand()
@@ -473,10 +357,10 @@ Item {
 
         ImageButton {
             Layout.fillWidth: true
-            imageSrc: "qrc:/images/rotateZ.svg"
+            imageSrc: "qrc:/images/getDown.svg"
             Layout.fillHeight: true
             onButtonPressed: {
-                CppCore.sendRotateZCommand()
+                CppCore.sendGetDownCommand()
             }
             onButtonReleased: {
                 CppCore.sendStopMoveCommand()
