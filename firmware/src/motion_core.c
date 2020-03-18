@@ -94,7 +94,9 @@ void motion_core_start_motion(const motion_config_t* motion_config) {
             g_current_motion_config.start_positions[i] = g_limbs_list[i].position;
         }
     }
-    g_next_motion_config = g_current_motion_config;
+    g_current_motion_config.curvature = g_next_motion_config.curvature;
+    g_current_motion_config.step_length = g_next_motion_config.step_length;
+    //g_next_motion_config = g_current_motion_config;
     
     g_core_motion_time = g_current_motion_config.time_start;
     g_is_motion_in_progress = true;
@@ -152,8 +154,9 @@ void motion_core_process(void) {
 
         case STATE_TIME:
             g_core_motion_time += g_current_motion_config.time_step;
-            if (g_core_motion_time >= g_current_motion_config.time_update) {
-                g_current_motion_config = g_next_motion_config;
+            if (g_core_motion_time == g_current_motion_config.time_update) {
+                g_current_motion_config.curvature = g_next_motion_config.curvature;
+                g_current_motion_config.step_length = g_next_motion_config.step_length;
             }
             if (g_core_motion_time >= g_current_motion_config.time_stop) {
                 g_core_motion_time = MTIME_MIN_VALUE;
