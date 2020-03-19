@@ -29,23 +29,18 @@ void Core::stopCommunication() {
 
 void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP; 					 }
 void Core::sendGetDownCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DOWN; 				 }
-void Core::sendRunCommand()				{ m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_RUN; 					 }
-void Core::sendDirectMoveCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT; 		 }
-void Core::sendReverseMoveCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT; 	 }
-void Core::sendRotateLeftCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_LEFT; 			 }
-void Core::sendRotateRightCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_RIGHT; 		 }
-void Core::sendDirectMoveSlowCommand()  { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SLOW;  }
-void Core::sendReverseMoveSlowCommand() { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SLOW; }
-void Core::sendShiftLeftCommand()       { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_SHIFT_LEFT; 			 }
-void Core::sendShiftRightCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_SHIFT_RIGHT; 			 }
-void Core::sendAttackLeftCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT; 			 }
-void Core::sendAttackRightCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT; 		 }
-void Core::sendDanceCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DANCE; 				 }
-void Core::sendRotateXCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_X; 			 }
-void Core::sendRotateZCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z; 			 }
 void Core::sendStopMoveCommand()        { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;					 }
-void Core::sendSwitchLightCommand()     { m_commandForSend = SWLP_CMD_SWITCH_LIGHT;					         }
+void Core::sendStartMotionCommand(QVariant stepLength, QVariant curvature) {
 
+    int16_t stepLengthInt16 = stepLength.toInt();
+    m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DIRECT;
+    if (stepLengthInt16 < 0) {
+        m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_REVERSE;
+    }
+
+    m_stepLenght = abs(stepLengthInt16);
+    m_curvature = curvature.toInt();
+}
 
 
 //
@@ -61,4 +56,6 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
 
 void Core::swlpCommandPayloadPrepare(swlp_command_payload_t* payload) {
 	payload->command = m_commandForSend;
+	payload->step_length = m_stepLenght;
+	payload->curvature = m_curvature;
 }

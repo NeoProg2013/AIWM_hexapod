@@ -9,8 +9,8 @@
 #include "system_monitor.h"
 #include "systimer.h"
 #include "servo_driver.h"
-#include "limbs_driver.h"
-#include "movement_engine.h"
+#include "motion_core.h"
+#include "sequences_engine.h"
 #include "indication.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -38,7 +38,7 @@ void main() {
     config_init();
     communication_init();
     
-    movement_engine_init();
+    sequences_engine_init();
     
     while (true) {
         
@@ -48,13 +48,13 @@ void main() {
         // Override select sequence if need
         if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true ||
             sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
-            movement_engine_select_sequence(SEQUENCE_DOWN);
+            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
         }
         
-        // Movement engine process
+        // Motion process
         // This 3 functions should be call in this sequence
-        movement_engine_process();
-        limbs_driver_process();
+        sequences_engine_process();
+        motion_core_process();
         servo_driver_process();
         
         indication_process();

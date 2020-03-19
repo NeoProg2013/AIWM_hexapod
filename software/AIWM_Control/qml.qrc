@@ -39,6 +39,7 @@
         <file>terminal.h</file>
         <file>fonts/RobotoMono-Regular.ttf</file>
         <file>AndroidQML/TerminalPage.qml</file>
+        <file>images/joystick.svg</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

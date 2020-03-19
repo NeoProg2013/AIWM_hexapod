@@ -17,22 +17,8 @@ public:
 
 	Q_INVOKABLE void sendGetUpCommand();
 	Q_INVOKABLE void sendGetDownCommand();
-	Q_INVOKABLE void sendRunCommand();
-	Q_INVOKABLE void sendDirectMoveCommand();
-	Q_INVOKABLE void sendReverseMoveCommand();
-	Q_INVOKABLE void sendRotateLeftCommand();
-	Q_INVOKABLE void sendRotateRightCommand();
-	Q_INVOKABLE void sendDirectMoveSlowCommand();
-	Q_INVOKABLE void sendReverseMoveSlowCommand();
-	Q_INVOKABLE void sendShiftLeftCommand();
-	Q_INVOKABLE void sendShiftRightCommand();
-	Q_INVOKABLE void sendAttackLeftCommand();
-	Q_INVOKABLE void sendAttackRightCommand();
-	Q_INVOKABLE void sendDanceCommand();
-	Q_INVOKABLE void sendRotateXCommand();
-	Q_INVOKABLE void sendRotateZCommand();
-	Q_INVOKABLE void sendStopMoveCommand();
-	Q_INVOKABLE void sendSwitchLightCommand();
+    Q_INVOKABLE void sendStopMoveCommand();
+    Q_INVOKABLE void sendStartMotionCommand(QVariant stepLength, QVariant curvature);
 
 signals:
 	// To SWLP module
@@ -54,6 +40,8 @@ protected:
 	Swlp m_swlp;
 	QThread m_swlpThread;
 	uint8_t m_commandForSend;
+    uint8_t m_stepLenght;
+    int16_t m_curvature;
 };
 
 #endif // CORE_H

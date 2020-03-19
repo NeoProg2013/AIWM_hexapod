@@ -66,39 +66,20 @@ void indication_init(void) {
     LED_TURN_OFF(LED_B_PIN);
     BUZZER_TURN_OFF();
     
-    // Blink R led
+    // Blink R, G, B leds
     LED_TURN_ON(LED_R_PIN);
-    BUZZER_TURN_ON();
-    delay_ms(100);
+    delay_ms(150);
     LED_TURN_OFF(LED_R_PIN);
-    BUZZER_TURN_OFF();
-    delay_ms(100);
-    
-    // Blink G led
     LED_TURN_ON(LED_G_PIN);
-    BUZZER_TURN_ON();
-    delay_ms(100);
+    delay_ms(150);
     LED_TURN_OFF(LED_G_PIN);
-    BUZZER_TURN_OFF();
-    delay_ms(100);
-    
-    // Blink B led
     LED_TURN_ON(LED_B_PIN);
-    BUZZER_TURN_ON();
-    delay_ms(100);
+    delay_ms(150);
     LED_TURN_OFF(LED_B_PIN);
-    BUZZER_TURN_OFF();
-    delay_ms(100);
     
     // Blink RGB leds
-    LED_TURN_ON(LED_R_PIN);
-    LED_TURN_ON(LED_G_PIN);
-    LED_TURN_ON(LED_B_PIN);
     BUZZER_TURN_ON();
-    delay_ms(500);
-    LED_TURN_OFF(LED_R_PIN);
-    LED_TURN_OFF(LED_G_PIN);
-    LED_TURN_OFF(LED_B_PIN);
+    delay_ms(300);
     BUZZER_TURN_OFF();
 }
 
