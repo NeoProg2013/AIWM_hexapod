@@ -37,7 +37,7 @@ Item {
 		}
 	}
 
-	Item {
+	Rectangle {
 		id: joystickItem
 		y: 653
 		width: 270
@@ -45,6 +45,8 @@ Item {
 		anchors.horizontalCenter: parent.horizontalCenter
 		anchors.bottom: parent.bottom
 		anchors.bottomMargin: 20
+		color: "#00000000"
+		border.color: "#AAAAAA"
 
 		ParallelAnimation {
 			id: animationReturn
@@ -90,7 +92,7 @@ Item {
 				onPositionChanged: {
 
 					var curvature = dragItem.x * (3998.0 / drag.maximumX) - 1999.0
-					var stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+					var stepLength = -(dragItem.y * (240.0 / drag.maximumY) - 120.0)
 					CppCore.sendStartMotionCommand(Math.round(stepLength),
 												   Math.round(curvature))
 				}
