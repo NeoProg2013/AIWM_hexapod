@@ -91,10 +91,25 @@ Item {
 				}
 				onPositionChanged: {
 
-					var curvature = dragItem.x * (3998.0 / drag.maximumX) - 1999.0
+					var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2)
+
+					var factor = 15
+
+					var scaled_x = Math.abs(x / factor)
+					var scaled_max_x = (drag.maximumX / 2) / factor
+
+					var curvature = Math.exp(scaled_x) / Math.exp(
+								scaled_max_x) * 1999
+
+					curvature = Math.round(curvature)
+					if (x < 0) {
+						curvature = -curvature
+					}
+
 					var stepLength = -(dragItem.y * (240.0 / drag.maximumY) - 120.0)
 					CppCore.sendStartMotionCommand(Math.round(stepLength),
 												   Math.round(curvature))
+					console.log(curvature)
 				}
 			}
 		}
