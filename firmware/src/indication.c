@@ -119,8 +119,8 @@ void indication_process(void) {
         if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
              blink_red_led_with_buzzer(500);
         }
-        else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
-             blink_blue_led(500);
+        else if (sysmon_is_error_set(SYSMON_FATAL_ERROR | SYSMON_MEMORY_ERROR | SYSMON_SYNC_ERROR | SYSMON_MATH_ERROR) == true) {
+             blink_red_led_with_buzzer(100);
         }
         else if (sysmon_is_error_set(SYSMON_CONFIG_ERROR) == true) {
             LED_TURN_ON(LED_R_PIN);
@@ -128,11 +128,10 @@ void indication_process(void) {
             LED_TURN_OFF(LED_B_PIN);
             BUZZER_TURN_OFF();
         }
+        else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
+             blink_blue_led(500);
+        }
         else {
-            // SYSMON_FATAL_ERROR
-            // SYSMON_MEMORY_ERROR
-            // SYSMON_SYNC_ERROR
-            // SYSMON_MATH_ERROR
             blink_red_led_with_buzzer(100);
         }
     }

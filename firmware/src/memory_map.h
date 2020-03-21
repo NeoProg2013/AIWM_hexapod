@@ -15,11 +15,9 @@
 #define MM_LIMB_COXA_LENGTH_OFFSET                          (0x00)
 #define MM_LIMB_FEMUR_LENGTH_OFFSET                         (0x02)
 #define MM_LIMB_TIBIA_LENGTH_OFFSET                         (0x04)
-#define MM_LIMB_COXA_0_3_ZERO_ROTATE_OFFSET                 (0x06)
-#define MM_LIMB_COXA_1_4_ZERO_ROTATE_OFFSET                 (0x08)
-#define MM_LIMB_COXA_2_5_ZERO_ROTATE_OFFSET                 (0x0A)
-#define MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET                    (0x0C)
-#define MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET                    (0x0E)
+#define MM_LIMB_COXA_ZERO_ROTATE_OFFSET                     (0x10)
+#define MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET                    (0x1C)
+#define MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET                    (0x1E)
 
 //
 // Configuration map for servos

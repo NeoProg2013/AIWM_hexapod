@@ -74,7 +74,7 @@ void communication_process(void) {
 
         // Check switch CLI sequence
 		memset(tx_buffer, 0, sizeof(tx_buffer));
-        if (is_switched_to_cli == false && rx_buffer[0] == 'c' && rx_buffer[1] == 'l' && rx_buffer[2] == 'i') {
+        if (rx_buffer[0] == 'c' && rx_buffer[1] == 'l' && rx_buffer[2] == 'i') {
             is_switched_to_cli = true;
             strcpy((char*)tx_buffer, CLI_MSG("Main communication protocol - CLI"));
             bytes_for_tx = strlen((char*)tx_buffer);

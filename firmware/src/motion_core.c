@@ -211,21 +211,19 @@ static bool read_configuration(void) {
     }
     
     // Read and set COXA zero rotate
-    int16_t coxa_zero_rotate_0_3 = 0;
-    int16_t coxa_zero_rotate_1_4 = 0;
-    int16_t coxa_zero_rotate_2_5 = 0;
-    if (config_read_16(base_address + MM_LIMB_COXA_0_3_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_0_3) == false) return false;
-    if (config_read_16(base_address + MM_LIMB_COXA_1_4_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_1_4) == false) return false;
-    if (config_read_16(base_address + MM_LIMB_COXA_2_5_ZERO_ROTATE_OFFSET, (uint16_t*)&coxa_zero_rotate_2_5) == false) return false;
-    if (abs(coxa_zero_rotate_0_3) > 360 || abs(coxa_zero_rotate_1_4) > 360 || abs(coxa_zero_rotate_2_5) > 360) {
-        return false;
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        
+        int16_t zero_rotate = 0;
+        if (config_read_16(base_address + MM_LIMB_COXA_ZERO_ROTATE_OFFSET + i * sizeof(zero_rotate), (uint16_t*)&zero_rotate) == false) {
+            return false;
+        }
+        
+        if (abs(zero_rotate) > 360) {
+            return false;
+        }
+        
+        g_limbs_list[i].coxa.zero_rotate = zero_rotate;
     }
-    g_limbs_list[0].coxa.zero_rotate = 135;//coxa_zero_rotate_0_3;
-    g_limbs_list[1].coxa.zero_rotate = 180;//coxa_zero_rotate_0_3;
-    g_limbs_list[2].coxa.zero_rotate = 225;//coxa_zero_rotate_1_4;
-    g_limbs_list[3].coxa.zero_rotate = 45;//coxa_zero_rotate_1_4;
-    g_limbs_list[4].coxa.zero_rotate = 0;//coxa_zero_rotate_2_5;
-    g_limbs_list[5].coxa.zero_rotate = 315;//coxa_zero_rotate_2_5;
     
     // Read and set FEMUR, TIBIA 1-6 zero rotate
     int16_t femur_zero_rotate_femur = 0;
