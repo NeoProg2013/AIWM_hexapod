@@ -218,7 +218,7 @@ static bool read_configuration(void) {
             return false;
         }
         
-        if (abs(zero_rotate) > 360) {
+        if (zero_rotate > 360 || zero_rotate < 0) {
             return false;
         }
         
