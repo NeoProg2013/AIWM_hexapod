@@ -206,6 +206,13 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 motion_core_update_trajectory_config(curvature, step_length);
             }
             break;
+    
+        case SEQUENCE_UP_DOWN: 
+            if (hexapod_state == HEXAPOD_STATE_UP) {
+                next_sequence = SEQUENCE_UP_DOWN;
+                next_sequence_info = &sequence_up_down;
+            }
+            break;
 
         /*ase SEQUENCE_ROTATE_LEFT:
             if (hexapod_state == HEXAPOD_STATE_UP) {

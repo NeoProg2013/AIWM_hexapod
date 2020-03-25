@@ -17,6 +17,7 @@ public:
 
 	Q_INVOKABLE void sendGetUpCommand();
 	Q_INVOKABLE void sendGetDownCommand();
+	Q_INVOKABLE void sendUpDownCommand();
     Q_INVOKABLE void sendStopMoveCommand();
     Q_INVOKABLE void sendStartMotionCommand(QVariant stepLength, QVariant curvature);
 

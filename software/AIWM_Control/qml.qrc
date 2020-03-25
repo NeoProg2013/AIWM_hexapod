@@ -40,6 +40,7 @@
         <file>fonts/RobotoMono-Regular.ttf</file>
         <file>AndroidQML/TerminalPage.qml</file>
         <file>images/joystick.svg</file>
+        <file>images/arrowUpDown.svg</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

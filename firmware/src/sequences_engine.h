@@ -15,6 +15,7 @@ typedef enum {
     SEQUENCE_DOWN,
     SEQUENCE_DIRECT,
     SEQUENCE_REVERSE,
+    SEQUENCE_UP_DOWN,
     
     SUPPORT_SEQUENCE_COUNT
 } sequence_id_t;

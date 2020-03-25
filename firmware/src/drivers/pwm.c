@@ -10,7 +10,7 @@
 #define PWM_CHANNEL_DISABLE_VALUE       (0xFFFF)
 #define PWM_CHANNEL_PULSE_TRIM          (3)
 
-#define PWM_FREQUENCY_HZ                (200)
+#define PWM_FREQUENCY_HZ                (250)
 #define PWM_PERIOD_US                   (1000000 / PWM_FREQUENCY_HZ)
 
 #if PWM_PERIOD_US > 65535

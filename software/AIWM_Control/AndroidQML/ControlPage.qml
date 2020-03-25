@@ -392,20 +392,15 @@ Item {
 		}
 
 		ImageButton {
-			property bool isCommandSended: false
-			imageSrc: "qrc:/images/light.svg"
+			imageSrc: "qrc:/images/arrowUpDown.svg"
 			Layout.fillHeight: true
 			Layout.fillWidth: true
 
 			onButtonPressed: {
-				if (!isCommandSended) {
-					CppCore.sendSwitchLightCommand()
-				}
-				isCommandSended = true
+				CppCore.sendUpDownCommand()
 			}
 			onButtonReleased: {
 				CppCore.sendStopMoveCommand()
-				isCommandSended = false
 			}
 		}
 	}
