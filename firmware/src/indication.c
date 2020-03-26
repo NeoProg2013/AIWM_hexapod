@@ -77,9 +77,17 @@ void indication_init(void) {
     delay_ms(150);
     LED_TURN_OFF(LED_B_PIN);
     
-    // Blink RGB leds
+    // Buzzer
     BUZZER_TURN_ON();
-    delay_ms(300);
+    delay_ms(80);
+    BUZZER_TURN_OFF();
+    delay_ms(80);
+    BUZZER_TURN_ON();
+    delay_ms(80);
+    BUZZER_TURN_OFF();
+    delay_ms(80);
+    BUZZER_TURN_ON();
+    delay_ms(80);
     BUZZER_TURN_OFF();
 }
 

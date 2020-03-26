@@ -213,6 +213,20 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 next_sequence_info = &sequence_up_down;
             }
             break;
+    
+        case SEQUENCE_ATTACK_LEFT: 
+            if (hexapod_state == HEXAPOD_STATE_UP) {
+                next_sequence = SEQUENCE_ATTACK_LEFT;
+                next_sequence_info = &sequence_attack_left;
+            }
+            break;
+            
+        case SEQUENCE_ATTACK_RIGHT: 
+            if (hexapod_state == HEXAPOD_STATE_UP) {
+                next_sequence = SEQUENCE_ATTACK_RIGHT;
+                next_sequence_info = &sequence_attack_right;
+            }
+            break;
 
         /*ase SEQUENCE_ROTATE_LEFT:
             if (hexapod_state == HEXAPOD_STATE_UP) {

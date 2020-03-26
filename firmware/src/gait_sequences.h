@@ -18,7 +18,7 @@ typedef struct {
     uint32_t main_motions_begin;
     uint32_t finalize_motions_begin;
     uint32_t total_motions_count;
-    motion_config_t motion_list[15];    // Sequence motion list
+    motion_config_t motion_list[15]; // Sequence motion list
 } sequence_info_t;
 
 
@@ -88,6 +88,9 @@ static const sequence_info_t sequence_direct = {
     .total_motions_count    = 6,
      
     {
+        //
+        // Prepare sequence
+        //
         {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_UP_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_UP_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_UP_Y, -70}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
@@ -103,8 +106,9 @@ static const sequence_info_t sequence_direct = {
             .motion_time = MTIME_MID_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = false
         },
         
-        
-        
+        //
+        // Main sequence
+        //
         {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST},
@@ -120,8 +124,9 @@ static const sequence_info_t sequence_direct = {
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .time_step = 10, .is_need_init_start_position = false
         },
         
-        
-        
+        //
+        // Finalize sequence
+        //
         {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST},
@@ -129,7 +134,6 @@ static const sequence_info_t sequence_direct = {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MID_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = false
         },
-        
         {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
@@ -137,7 +141,6 @@ static const sequence_info_t sequence_direct = {
             {0}, // Start points initialize after motion start
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 25, .is_need_init_start_position = true
         },
-        
     }
 };
 
@@ -149,6 +152,9 @@ static const sequence_info_t sequence_reverse = {
     .total_motions_count    = 6,
      
     {
+        //
+        // Prepare sequence
+        //
         {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_UP_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_UP_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_UP_Y, -70}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
@@ -164,8 +170,9 @@ static const sequence_info_t sequence_reverse = {
             .motion_time = MTIME_MID_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = false
         },
         
-        
-        
+        //
+        // Main sequence
+        //
         {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST},
@@ -181,8 +188,9 @@ static const sequence_info_t sequence_reverse = {
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .time_step = 10, .is_need_init_start_position = false
         },
         
-        
-        
+        //
+        // Finalize sequence
+        //
         {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST},
@@ -190,7 +198,6 @@ static const sequence_info_t sequence_reverse = {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MID_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = false
         },
-        
         {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
@@ -200,6 +207,144 @@ static const sequence_info_t sequence_reverse = {
         },
     }
 };
+
+static const sequence_info_t sequence_attack_left = {
+
+    .is_sequence_looped     = true,
+    .main_motions_begin     = 1,
+    .finalize_motions_begin = 3,
+    .total_motions_count    = 4,
+    
+    {
+        //
+        // Prepare sequence
+        //
+        {
+            {{0, 0, 150}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+        
+        //
+        // Main sequence
+        //
+        {
+            {{0, 0, 250}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+        {
+            {{0, 0, 150}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+
+        //
+        // Finalize sequence
+        //
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+    }
+};
+
+static const sequence_info_t sequence_attack_right = {
+
+    .is_sequence_looped     = true,
+    .main_motions_begin     = 1,
+    .finalize_motions_begin = 3,
+    .total_motions_count    = 4,
+    
+    {
+        //
+        // Prepare sequence
+        //
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {0, 0, 150}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+        
+        //
+        // Main sequence
+        //
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {0, 0, 250}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {0, 0, 150}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+
+        //
+        // Finalize sequence
+        //
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+    }
+};
+
+/*static const sequence_info_t sequence_attack = {
+
+    .is_sequence_looped     = true,
+    .main_motions_begin     = 1,
+    .finalize_motions_begin = 3,
+    .total_motions_count    = 4,
+    
+    {
+        //
+        // Prepare sequence
+        //
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {0, 0, 150}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+        
+        //
+        // Main sequence
+        //
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {0, 0, 250}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {0, 0, 150}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+
+        //
+        // Finalize sequence
+        //
+        {
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
+            { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
+        },
+    }
+};*/
 
 static const sequence_info_t sequence_up_down = {
 
