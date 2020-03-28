@@ -3,6 +3,7 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 #include <QClipboard>
+#include <QFontDatabase>
 #include "swlp.h"
 #include "core.h"
 #include "terminal.h"
@@ -12,7 +13,6 @@
 int main(int argc, char *argv[]) {
 
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
 	QGuiApplication app(argc, argv);
 
 	Terminal terminal;

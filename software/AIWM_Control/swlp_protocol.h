@@ -16,6 +16,9 @@
 #define SWLP_CMD_SELECT_SEQUENCE_DIRECT                 (0x03)
 #define SWLP_CMD_SELECT_SEQUENCE_REVERSE                (0x04)
 #define SWLP_CMD_SELECT_SEQUENCE_UP_DOWN                (0x05)
+#define SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL              (0x06)
+#define SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT            (0x07)
+#define SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT           (0x08)
 #define SWLP_CMD_SELECT_SEQUENCE_NONE                   (0x90)
 
 //

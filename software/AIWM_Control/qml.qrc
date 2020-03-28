@@ -4,7 +4,6 @@
         <file>AndroidQML/ControlPage.qml</file>
         <file>AndroidQML/ImageButton.qml</file>
         <file>AndroidQML/main.qml</file>
-        <file>AndroidQML/MetroButton.qml</file>
         <file>images/arrowDown.svg</file>
         <file>images/arrowLeft.svg</file>
         <file>images/arrowRight.svg</file>
@@ -41,6 +40,8 @@
         <file>AndroidQML/TerminalPage.qml</file>
         <file>images/joystick.svg</file>
         <file>images/arrowUpDown.svg</file>
+        <file>images/arrowPushPull.svg</file>
+        <file>fonts/OpenSans-Regular.ttf</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

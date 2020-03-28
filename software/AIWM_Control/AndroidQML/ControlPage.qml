@@ -18,6 +18,11 @@ Item {
 	height: 888
 	clip: true
 
+	FontLoader {
+		id: fixedFont
+		source: "qrc:/fonts/OpenSans-Regular.ttf"
+	}
+
 	Connections {
 		target: CppCore
 		onSystemStatusUpdated: {
@@ -54,13 +59,13 @@ Item {
 				target: dragItem
 				property: "x"
 				to: joystickItem.width / 2 - dragItem.width / 2
-				duration: 50
+				duration: 100
 			}
 			NumberAnimation {
 				target: dragItem
 				property: "y"
 				to: joystickItem.height / 2 - dragItem.height / 2
-				duration: 50
+				duration: 100
 			}
 		}
 
@@ -109,7 +114,6 @@ Item {
 					var stepLength = -(dragItem.y * (240.0 / drag.maximumY) - 120.0)
 					CppCore.sendStartMotionCommand(Math.round(stepLength),
 												   Math.round(curvature))
-					console.log(curvature)
 				}
 			}
 		}
@@ -138,9 +142,10 @@ Item {
 			height: 22
 			anchors.left: parent.left
 			anchors.top: parent.top
-			font.pointSize: 12
+			font.family: fixedFont.name
+			font.pointSize: 10
 			text: qsTr("Battery charge:")
-			horizontalAlignment: Text.AlignRight
+			horizontalAlignment: Text.AlignLeft
 			verticalAlignment: Text.AlignVCenter
 		}
 
@@ -163,7 +168,8 @@ Item {
 			text: batteryVoltageProgressBar.value + "%"
 			anchors.top: parent.top
 			anchors.right: parent.right
-			font.pointSize: 12
+			font.family: fixedFont.name
+			font.pointSize: 10
 			verticalAlignment: Text.AlignVCenter
 			horizontalAlignment: Text.AlignHCenter
 		}
@@ -311,7 +317,7 @@ Item {
 		}
 
 		StatusLabel {
-			text: "Movement\nengine"
+			text: "Sequences\nengine"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
@@ -321,7 +327,7 @@ Item {
 		}
 
 		StatusLabel {
-			text: "Limbs\ndriver"
+			text: "Motion\ncore"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
@@ -351,7 +357,9 @@ Item {
 		}
 	}
 
-	RowLayout {
+	SwipeView {
+		clip: true
+		width: 480
 		height: 50
 		anchors.top: voltage.bottom
 		anchors.topMargin: 10
@@ -360,47 +368,92 @@ Item {
 		anchors.right: parent.right
 		anchors.rightMargin: 10
 
-		ImageButton {
-			Layout.fillHeight: true
-			Layout.fillWidth: true
-			imageSrc: "qrc:/images/getUp.svg"
-			onButtonPressed: {
-				CppCore.sendGetUpCommand()
+		RowLayout {
+
+			ImageButton {
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+				imageSrc: "qrc:/images/getUp.svg"
+				onButtonPressed: {
+					CppCore.sendGetUpCommand()
+				}
+			}
+
+			ImageButton {
+				Layout.fillWidth: true
+				imageSrc: "qrc:/images/getDown.svg"
+				Layout.fillHeight: true
+				onButtonPressed: {
+					CppCore.sendGetDownCommand()
+				}
+			}
+
+			ImageButton {
+				imageSrc: "qrc:/images/dance.svg"
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+
+
+				/*onButtonPressed: {
+					CppCore.sendDanceCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}*/
+			}
+
+			ImageButton {
+				imageSrc: "qrc:/images/arrowUpDown.svg"
+				imageRotate: 90
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+
+				onButtonPressed: {
+					CppCore.sendUpDownCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
 			}
 		}
 
-		ImageButton {
-			Layout.fillWidth: true
-			imageSrc: "qrc:/images/getDown.svg"
-			Layout.fillHeight: true
-			onButtonPressed: {
-				CppCore.sendGetDownCommand()
-			}
-		}
+		RowLayout {
 
-		ImageButton {
-			imageSrc: "qrc:/images/dance.svg"
-			Layout.fillHeight: true
-			Layout.fillWidth: true
-
-			onButtonPressed: {
-				CppCore.sendDanceCommand()
+			ImageButton {
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+				imageSrc: "qrc:/images/swordLeft.svg"
+				onButtonPressed: {
+					CppCore.sendAttackLeftCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
 			}
-			onButtonReleased: {
-				CppCore.sendStopMoveCommand()
-			}
-		}
 
-		ImageButton {
-			imageSrc: "qrc:/images/arrowUpDown.svg"
-			Layout.fillHeight: true
-			Layout.fillWidth: true
-
-			onButtonPressed: {
-				CppCore.sendUpDownCommand()
+			ImageButton {
+				Layout.fillWidth: true
+				imageSrc: "qrc:/images/swordRight.svg"
+				Layout.fillHeight: true
+				onButtonPressed: {
+					CppCore.sendAttackRightCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
 			}
-			onButtonReleased: {
-				CppCore.sendStopMoveCommand()
+
+			ImageButton {
+				imageSrc: "qrc:/images/arrowPushPull.svg"
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+
+				onButtonPressed: {
+					CppCore.sendPushPullCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
 			}
 		}
 	}

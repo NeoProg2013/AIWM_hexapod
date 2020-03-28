@@ -17,8 +17,12 @@ Item {
 	}
 
 	FontLoader {
-		id: fontFromResources
+		id: terminalFont
 		source: "qrc:/fonts/RobotoMono-Regular.ttf"
+	}
+	FontLoader {
+		id: fixedFont
+		source: "qrc:/fonts/OpenSans-Regular.ttf"
 	}
 
 	Flickable {
@@ -37,7 +41,7 @@ Item {
 
 		Label {
 			id: terminalLog
-			font.family: fontFromResources.name
+			font.family: terminalFont.name
 			color: "#FFFFFF"
 			text: "TERMINAL LOG STARTED\n\n"
 			onContentHeightChanged: {
@@ -66,7 +70,7 @@ Item {
 			anchors.fill: parent
 			horizontalAlignment: Text.AlignLeft
 			verticalAlignment: Text.AlignVCenter
-			font.family: fontFromResources.name
+			font.family: fixedFont.name
 			selectByMouse: true
 			Keys.onReturnPressed: {
 				terminalLog.text += "TERMINAL: " + text + "\n"
@@ -82,6 +86,7 @@ Item {
 		height: 48
 		text: "SEND"
 		clip: true
+		font.family: fixedFont.name
 		anchors.bottom: parent.bottom
 		anchors.bottomMargin: 2
 		anchors.right: parent.right
@@ -97,6 +102,7 @@ Item {
 		width: 70
 		height: 48
 		text: "CLEAR"
+		font.family: fixedFont.name
 		anchors.top: parent.top
 		anchors.topMargin: 5
 		anchors.left: parent.left
@@ -111,6 +117,7 @@ Item {
 		y: 1
 		width: 100
 		height: 48
+		font.family: fixedFont.name
 		text: "COPY LOG"
 		anchors.left: parent.left
 		anchors.leftMargin: 80

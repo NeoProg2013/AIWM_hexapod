@@ -10,6 +10,7 @@ Button {
 
 	property string imageSrc: ""
 	property string imageColor: "#FFFFFF"
+	property int imageRotate: 0
 
 	id: root
 	width: 80
@@ -42,6 +43,7 @@ Button {
 			antialiasing: true
 			source: buttonImage
 			color: imageColor
+			rotation: imageRotate
 		}
 	}
 

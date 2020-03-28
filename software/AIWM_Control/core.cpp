@@ -30,6 +30,9 @@ void Core::stopCommunication() {
 void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP; 					 }
 void Core::sendGetDownCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DOWN; 				 }
 void Core::sendUpDownCommand()          { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP_DOWN; 				 }
+void Core::sendPushPullCommand()        { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL; 		     }
+void Core::sendAttackLeftCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT; 			 }
+void Core::sendAttackRightCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT; 		 }
 void Core::sendStopMoveCommand()        { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;					 }
 void Core::sendStartMotionCommand(QVariant stepLength, QVariant curvature) {
 

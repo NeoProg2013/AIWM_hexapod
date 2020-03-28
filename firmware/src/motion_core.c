@@ -61,7 +61,7 @@ void motion_core_init(const point_3d_t* start_point_list) {
 
     if (read_configuration() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         return;
     }
     
@@ -73,7 +73,7 @@ void motion_core_init(const point_3d_t* start_point_list) {
     // Calculate start link angles
     if (kinematic_calculate_angles() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         return;
     }
     
@@ -119,7 +119,7 @@ void motion_core_update_trajectory_config(int32_t curvature, int32_t step_length
 
 void motion_core_process(void) {
 
-    if (sysmon_is_module_disable(SYSMON_MODULE_LIMBS_DRIVER) == true) return;  // Module disabled
+    if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
 
     
     static uint64_t prev_synchro_value = 0;
@@ -130,7 +130,7 @@ void motion_core_process(void) {
             if (synchro != prev_synchro_value) {
                 if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0) {
                     sysmon_set_error(SYSMON_SYNC_ERROR);
-                    //sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+                    //sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
                     //return;
                 }
                 prev_synchro_value = synchro;
@@ -173,7 +173,7 @@ void motion_core_process(void) {
         case STATE_NOINIT:
         default:
             sysmon_set_error(SYSMON_FATAL_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_LIMBS_DRIVER);
+            sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
             break;
     }
 }

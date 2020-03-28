@@ -11,6 +11,11 @@ Item {
 	signal showControlPage
 	signal showTerminalPage
 
+	FontLoader {
+		id: fixedFont
+		source: "qrc:/fonts/OpenSans-Regular.ttf"
+	}
+
 	Connections {
 		target: CppCore
 		onFrameReceived: {
@@ -50,6 +55,7 @@ Item {
 		anchors.leftMargin: 10
 		anchors.right: parent.right
 		anchors.rightMargin: 10
+		font.family: fixedFont.name
 		font.pointSize: 14
 		verticalAlignment: Text.AlignVCenter
 		horizontalAlignment: Text.AlignHCenter
@@ -105,6 +111,7 @@ Item {
 		y: 863
 		width: 120
 		height: 20
+		font.family: fixedFont.name
 		text: qsTr("Версия: 1.00")
 		anchors.bottom: parent.bottom
 		anchors.bottomMargin: 5
@@ -126,6 +133,7 @@ Item {
 		anchors.rightMargin: 10
 		anchors.left: parent.left
 		anchors.leftMargin: 10
+		font.family: fixedFont.name
 		font.pointSize: 14
 		horizontalAlignment: Text.AlignHCenter
 		verticalAlignment: Text.AlignVCenter
@@ -135,6 +143,7 @@ Item {
 		id: terminalButton
 		x: 409
 		y: 835
+		font.family: fixedFont.name
 		text: qsTr("Терминал")
 		anchors.right: parent.right
 		anchors.rightMargin: 10
@@ -155,6 +164,7 @@ Item {
 		anchors.rightMargin: 15
 		anchors.left: parent.left
 		anchors.leftMargin: 15
+		font.family: fixedFont.name
 		font.pixelSize: 40
 		fontSizeMode: Text.Fit
 		verticalAlignment: Text.AlignTop

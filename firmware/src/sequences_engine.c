@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#define AUTO_SELECT_DOWN_SEQUENCE_TIME              (20000) // 20s
+
 
 typedef enum {
     STATE_NOINIT,           // Module not initialized
@@ -77,12 +79,19 @@ void sequences_engine_process(void) {
 
     static stage_t sequence_stage = STAGE_PREPARE;
     static uint32_t current_motion = 0;
+    static uint64_t prev_active_time = 0;
 
     switch (engine_state) {
         
         case STATE_IDLE:
             if (current_sequence != next_sequence) {
                 engine_state = STATE_CHANGE_SEQUENCE;
+            }
+            else {
+                // Auto select down sequence timer
+                if (get_time_ms() - prev_active_time > AUTO_SELECT_DOWN_SEQUENCE_TIME) {
+                    sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
+                }
             }
             break;
         
@@ -144,6 +153,7 @@ void sequences_engine_process(void) {
             
             if (current_sequence == SEQUENCE_NONE) {
                 engine_state = STATE_IDLE;
+                prev_active_time = get_time_ms();
             }        
             break;
             
@@ -213,7 +223,15 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 next_sequence_info = &sequence_up_down;
             }
             break;
-    
+
+        case SEQUENCE_PUSH_PULL: 
+            if (hexapod_state == HEXAPOD_STATE_UP) {
+                next_sequence = SEQUENCE_PUSH_PULL;
+                next_sequence_info = &sequence_push_pull;
+                motion_core_update_trajectory_config(1, 110);
+            }
+            break;
+            
         case SEQUENCE_ATTACK_LEFT: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ATTACK_LEFT;
