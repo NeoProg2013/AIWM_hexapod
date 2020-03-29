@@ -98,7 +98,7 @@ Item {
 
 					var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2)
 
-					var factor = 15
+					var factor = 25
 
 					var scaled_x = Math.abs(x / factor)
 					var scaled_max_x = (drag.maximumX / 2) / factor
@@ -389,37 +389,6 @@ Item {
 			}
 
 			ImageButton {
-				imageSrc: "qrc:/images/dance.svg"
-				Layout.fillHeight: true
-				Layout.fillWidth: true
-
-
-				/*onButtonPressed: {
-					CppCore.sendDanceCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}*/
-			}
-
-			ImageButton {
-				imageSrc: "qrc:/images/arrowUpDown.svg"
-				imageRotate: 90
-				Layout.fillHeight: true
-				Layout.fillWidth: true
-
-				onButtonPressed: {
-					CppCore.sendUpDownCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
-		}
-
-		RowLayout {
-
-			ImageButton {
 				Layout.fillHeight: true
 				Layout.fillWidth: true
 				imageSrc: "qrc:/images/swordLeft.svg"
@@ -442,6 +411,9 @@ Item {
 					CppCore.sendStopMoveCommand()
 				}
 			}
+		}
+
+		RowLayout {
 
 			ImageButton {
 				imageSrc: "qrc:/images/arrowPushPull.svg"
@@ -450,6 +422,60 @@ Item {
 
 				onButtonPressed: {
 					CppCore.sendPushPullCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
+			}
+
+			ImageButton {
+				imageSrc: "qrc:/images/dance.svg"
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+
+				onButtonPressed: {
+					CppCore.sendDanceCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
+			}
+
+			ImageButton {
+				imageSrc: "qrc:/images/arrowUpDown.svg"
+				imageRotate: 90
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+
+				onButtonPressed: {
+					CppCore.sendUpDownCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
+			}
+
+			ImageButton {
+				imageSrc: "qrc:/images/rotateX.svg"
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+
+				onButtonPressed: {
+					CppCore.sendRotateXCommand()
+				}
+				onButtonReleased: {
+					CppCore.sendStopMoveCommand()
+				}
+			}
+
+			ImageButton {
+				imageSrc: "qrc:/images/rotateZ.svg"
+				imageRotate: 90
+				Layout.fillHeight: true
+				Layout.fillWidth: true
+
+				onButtonPressed: {
+					CppCore.sendRotateZCommand()
 				}
 				onButtonReleased: {
 					CppCore.sendStopMoveCommand()

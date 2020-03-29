@@ -21,6 +21,9 @@ public:
 	Q_INVOKABLE void sendPushPullCommand();
 	Q_INVOKABLE void sendAttackLeftCommand();
 	Q_INVOKABLE void sendAttackRightCommand();
+	Q_INVOKABLE void sendDanceCommand();
+	Q_INVOKABLE void sendRotateXCommand();
+	Q_INVOKABLE void sendRotateZCommand();
     Q_INVOKABLE void sendStopMoveCommand();
     Q_INVOKABLE void sendStartMotionCommand(QVariant stepLength, QVariant curvature);
 

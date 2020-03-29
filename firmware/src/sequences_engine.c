@@ -174,7 +174,6 @@ void sequences_engine_process(void) {
 //  ***************************************************************************
 void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature, int32_t step_length) {
     
-    // Request switch current sequence
     switch (sequence) {
         
         case SEQUENCE_NONE:
@@ -193,13 +192,6 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
             next_sequence = SEQUENCE_DOWN;
             next_sequence_info = &sequence_down;
             break;
-            
-        /*case SEQUENCE_RUN:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_RUN;
-                next_sequence_info = &sequence_run;
-            }
-            break;*/
 
         case SEQUENCE_DIRECT:
             if (hexapod_state == HEXAPOD_STATE_UP) {
@@ -245,91 +237,28 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 next_sequence_info = &sequence_attack_right;
             }
             break;
-
-        /*ase SEQUENCE_ROTATE_LEFT:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_ROTATE_LEFT;
-                next_sequence_info = &sequence_rotate_left;
-            }
-            break;
-
-        case SEQUENCE_ROTATE_RIGHT:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_ROTATE_RIGHT;
-                next_sequence_info = &sequence_rotate_right;
-            }
-            break;
-        
-        case SEQUENCE_DIRECT_MOVEMENT_SLOW:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_DIRECT_MOVEMENT_SLOW;
-                next_sequence_info = &sequence_direct_movement_slow;
-            }
-            break;
-
-        case SEQUENCE_REVERSE_MOVEMENT_SLOW:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_REVERSE_MOVEMENT_SLOW;
-                next_sequence_info = &sequence_reverse_movement_slow;
-            }
-            break;
-
-        case SEQUENCE_SHIFT_LEFT:
-             if (hexapod_state == HEXAPOD_STATE_UP) {
-                 next_sequence = SEQUENCE_SHIFT_LEFT;
-                 next_sequence_info = &sequence_shift_left;
-             }
-             break;
-             
-        case SEQUENCE_SHIFT_RIGHT:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_SHIFT_RIGHT;
-                next_sequence_info = &sequence_shift_right;
-            }
-            break;
- 
-        case SEQUENCE_ATTACK_LEFT:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_ATTACK_LEFT;
-                next_sequence_info = &sequence_attack_left;
-            }
-            break;
             
-        case SEQUENCE_ATTACK_RIGHT:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_ATTACK_RIGHT;
-                next_sequence_info = &sequence_attack_right;
-            }
-            break;
-            
-        case SEQUENCE_DANCE:
+        case SEQUENCE_DANCE: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DANCE;
                 next_sequence_info = &sequence_dance;
             }
             break;
             
-        case SEQUENCE_ROTATE_X:
+        case SEQUENCE_ROTATE_X: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_X;
                 next_sequence_info = &sequence_rotate_x;
             }
-            break;*/
-            
-        /*case SEQUENCE_ROTATE_Y:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_ROTATE_Y;
-                next_sequence_info = &sequence_rotate_y;
-            }
-            break;*/
-            
-        /*case SEQUENCE_ROTATE_Z:
+            break;
+       
+        case SEQUENCE_ROTATE_Z: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_Z;
                 next_sequence_info = &sequence_rotate_z;
             }
-            break;*/
-
+            break;
+            
         default:
             sysmon_set_error(SYSMON_FATAL_ERROR);
             sysmon_disable_module(SYSMON_MODULE_SEQUENCES_ENGINE);
