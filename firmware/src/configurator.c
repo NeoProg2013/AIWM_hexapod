@@ -162,20 +162,18 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
     if (strcmp(cmd, "enable") == 0) {
         sysmon_enable_module(SYSMON_MODULE_CONFIGURATOR);
     }
-    else if (strcmp(cmd, "disable") == 0) {
-        sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
-    }
     else if (strcmp(cmd, "read") == 0 && argc == 1) {
 
         // Get page number
         uint32_t page = atoi(argv[0]);
         if (page >= CONFIG_SECTION_PAGE_COUNT) {
+            strcpy(response, CLI_MSG("ERROR: Wrong page number"));
             return false;
         }
 
         // Read data
         if (config_read(page * CONFIG_SECTION_PAGE_SIZE, cli_buffer, CONFIG_SECTION_PAGE_SIZE) == false) {
-            strcpy(response, CLI_MSG("Cannot read data from memory"));
+            strcpy(response, CLI_MSG("ERROR: Cannot read data from memory"));
             return false;
         }
 
@@ -197,13 +195,14 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
         if (address > CONFIG_SECTION_SIZE) {
+            sprintf(response, CLI_MSG("ERROR: Wrong address value (%d)"), address);
             return false;
         }
 
         // Read data
         uint16_t data = 0;
         if (config_read_16(address, &data) == false) {
-            strcpy(response, CLI_MSG("Cannot read data from memory"));
+            strcpy(response, CLI_MSG("ERROR: Cannot read data from memory"));
             return false;
         }
 
@@ -220,6 +219,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
         if (address > CONFIG_SECTION_SIZE) {
+            sprintf(response, CLI_MSG("ERROR: Wrong address value (%d)"), address);
             return false;
         }
 
@@ -243,12 +243,14 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
         if (address > CONFIG_SECTION_SIZE) {
+            sprintf(response, CLI_MSG("ERROR: Wrong address value (%d)"), address);
             return false;
         }
 
         // Get bytes count
         uint32_t data_len = strlen(argv[1]);
         if (data_len & 0x01) {
+            sprintf(response, CLI_MSG("ERROR: Wrong data array %s"), argv[1]);
             return false;
         }
         uint32_t bytes_count = data_len >> 1;
@@ -264,7 +266,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
             uint8_t byte = strtol(hex_value, NULL, 16);
             if (config_write_8(address, byte) == false) {
-                strcpy(response, CLI_MSG("Cannot write data to memory"));
+                strcpy(response, CLI_MSG("ERROR: Cannot write data to memory"));
                 return false;
             }
         }
@@ -274,6 +276,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
         if (address > CONFIG_SECTION_SIZE) {
+            sprintf(response, CLI_MSG("ERROR: Wrong address value (%d)"), address);
             return false;
         }
 
@@ -282,7 +285,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
         // Write data
         if (config_write_16(address, data) == false) {
-            strcpy(response, CLI_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("ERROR: Cannot write data to memory"));
             return false;
         }
     }
@@ -291,6 +294,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Get address
         uint32_t address = strtol(argv[0], NULL, 16);
         if (address > CONFIG_SECTION_SIZE) {
+            sprintf(response, CLI_MSG("ERROR: Wrong address value (%d)"), address);
             return false;
         }
 
@@ -299,14 +303,14 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
         // Write data
         if (config_write_32(address, data) == false) {
-            strcpy(response, CLI_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("ERROR: Cannot write data to memory"));
             return false;
         }
     }
     else if (strcmp(cmd, "erase") == 0 && argc == 0) {
 
         if (config_erase() == false) {
-            strcpy(response, CLI_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("ERROR: Cannot write data to memory"));
             return false;
         }
     }
@@ -334,17 +338,18 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         // Calculate checksum
         uint32_t checksum = 0;
         if (config_calc_checksum(page, &checksum) == false) {
-            strcpy(response, CLI_MSG("Cannot read data from memory"));
+            strcpy(response, CLI_MSG("ERROR: Cannot read data from memory"));
             return false;
         }
 
         // Write checksum value
         if (config_write_32(page * CONFIG_SECTION_PAGE_SIZE + MM_PAGE_CHECKSUM_OFFSET, checksum) == false) {
-            strcpy(response, CLI_MSG("Cannot write data to memory"));
+            strcpy(response, CLI_MSG("ERROR: Cannot write data to memory"));
             return false;
         }
     }
     else {
+        sprintf(response, CLI_MSG("ERROR: Unknown command '%s' for configurator"), cmd);
         return false;
     }
     return true;

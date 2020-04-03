@@ -46,31 +46,31 @@ static const sequence_info_t sequence_up = {
      
     {
         {
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 20, .is_need_init_start_position = true
         },
         {    // Up 0, 2, 4 legs
-            {{-115, LIMB_UP_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_UP_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_UP_Y, 0}, {115, LIMB_DOWN_Y, -70}}, 
+            {{-105, LIMB_UP_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_UP_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_UP_Y, 0}, {105, LIMB_DOWN_Y, -85}}, 
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 20, .is_need_init_start_position = true
         },
         {    // Down 0, 2, 4 legs
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 20, .is_need_init_start_position = true
         },
         {    // Up 1, 3, 5 legs
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_UP_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_UP_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_UP_Y, -70}}, 
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_UP_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_UP_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_UP_Y, -85}}, 
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 20, .is_need_init_start_position = true
         },
         {   // Down 0, 2, 4 legs
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}}, 
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}}, 
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 20, .is_need_init_start_position = true
@@ -89,7 +89,7 @@ static const sequence_info_t sequence_direct = {
         // Prepare sequence
         //
         {
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_UP_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_UP_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_UP_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_UP_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_UP_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_UP_Y, -85}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             {0}, // Start points initialize after motion start
@@ -99,7 +99,7 @@ static const sequence_info_t sequence_direct = {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS},
             { TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE },
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}},
             .motion_time = MTIME_MID_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = false
         },
         
@@ -110,14 +110,14 @@ static const sequence_info_t sequence_direct = {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST},
             { TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT },
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}},
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .time_step = 10, .is_need_init_start_position = false
         },
         {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS},
             { TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE },
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}},
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .time_step = 10, .is_need_init_start_position = false
         },
         
@@ -128,11 +128,11 @@ static const sequence_info_t sequence_direct = {
             {0}, // Destination points is not use for TRAJECTORY_XZ_ADV_Y_CONST
             { TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST, TRAJECTORY_XZ_ADV_Y_SINUS, TRAJECTORY_XZ_ADV_Y_CONST},
             { TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT },
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}},
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MID_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = false
         },
         {
-            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
+            {{-105, LIMB_DOWN_Y, 85}, {-135, LIMB_DOWN_Y, 0}, {-105, LIMB_DOWN_Y, -85}, {105, LIMB_DOWN_Y, 85}, {135, LIMB_DOWN_Y, 0}, {105, LIMB_DOWN_Y, -85}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             {0}, // Start points initialize after motion start
@@ -404,25 +404,25 @@ static const sequence_info_t sequence_dance = {
         },
         
         {
-            {{-170, 50, 170}, {-130, LIMB_DOWN_Y, 0}, {-170, 50, -170}, {110, LIMB_DOWN_Y, 65}, {240, 50, 0}, {110, LIMB_DOWN_Y, -65}},
+            {{-170, 50, 170}, {-135, LIMB_DOWN_Y, 0}, {-170, 50, -170}, {115, LIMB_DOWN_Y, 70}, {240, 50, 0}, {115, LIMB_DOWN_Y, -70}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
         },
         {
-            {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {130, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
         },
         {
-            {{-110, LIMB_DOWN_Y, 65}, {-240,  50, 0}, {-110, LIMB_DOWN_Y, -65}, {170, 50, 170}, {130, LIMB_DOWN_Y, 0}, {170, 50, -170}},
+            {{-115, LIMB_DOWN_Y, 70}, {-240,  50, 0}, {-115, LIMB_DOWN_Y, -70}, {170, 50, 170}, {130, LIMB_DOWN_Y, 0}, {170, 50, -170}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true
         },
         {
-            {{-110, LIMB_DOWN_Y, 65}, {-130, LIMB_DOWN_Y, 0}, {-110, LIMB_DOWN_Y, -65}, {110, LIMB_DOWN_Y, 65}, {130, LIMB_DOWN_Y, 0}, {110, LIMB_DOWN_Y, -65}},
+            {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {130, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
             { TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR, TRAJECTORY_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
             .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .time_step = 10, .is_need_init_start_position = true

@@ -69,12 +69,6 @@ void servo_driver_init(void) {
         sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
         return;
     }
-    servo_config_list[0].config = 1;
-    servo_config_list[3].config = 1;
-    servo_config_list[6].config = 1;
-    servo_config_list[9].config = 1;
-    servo_config_list[12].config = 1;
-    servo_config_list[15].config = 1;
 
     pwm_init();
     pwm_enable();
@@ -123,15 +117,13 @@ void servo_driver_process(void) {
         // We skip PWM period - this is error and calculations have long time
         if (synchro - prev_synchro > 1) {
             sysmon_set_error(SYSMON_SYNC_ERROR);
-            //sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
-            //return;
         }
 
         //
         // Calculate servo state and update PWM driver
         //
         pwm_set_shadow_buffer_lock_state(false);
-        for (uint32_t i = 0; i < 18/*SUPPORT_SERVO_COUNT*/; ++i) {
+        for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
 
             servo_info_t* info = &servo_info_list[i];
 
@@ -173,17 +165,24 @@ void servo_driver_process(void) {
 bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
 
     // Get servo index
-    if (argc == 0) return false;
+    if (argc == 0) {
+        strcpy(response, CLI_MSG("ERROR: Servo index is not found"));
+        return false;
+    }
     uint32_t servo_index = atoi(argv[0]);
-    if (servo_index > SUPPORT_SERVO_COUNT) return false;
+    if (servo_index > SUPPORT_SERVO_COUNT) {
+        sprintf(response, CLI_MSG("ERROR: Servo index %d is out of range"), servo_index);
+        return false;
+    }
     
+    // Get servo info
+    servo_info_t* info = &servo_info_list[servo_index];
     
     //
     // Process command
     //
     if (strcmp(cmd, "status") == 0 && argc == 1) {
 
-        servo_info_t* info = &servo_info_list[servo_index];
         sprintf(response, CLI_MSG("servo status report")
                           CLI_MSG("    - override level: %ld")
                           CLI_MSG("    - override value: %ld")
@@ -193,36 +192,45 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
                 info->override_level, info->override_value,
                 (int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
     }
-    else if (strcmp(cmd, "set_override_level") == 0 && argc == 2) {
+    else if (strcmp(cmd, "center") == 0 && argc == 1) {
+
+        sprintf(response, CLI_MSG("servo status report")
+                          CLI_MSG("    - override level: %ld")
+                          CLI_MSG("    - override value: %ld")
+                          CLI_MSG("    - logic angle: %ld")
+                          CLI_MSG("    - physic angle: %ld")
+                          CLI_MSG("    - pulse width: %lu"),
+                info->override_level, info->override_value,
+                (int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
+    }
+    else if (strcmp(cmd, "set") == 0 && argc == 3) {
 
         // Set override level
-        servo_info_t* info = &servo_info_list[servo_index];
-        if (strcmp(argv[1], "no") == 0) {
-           info->override_level = OVERRIDE_LEVEL_NO;
-           info->override_value = 0;
+        if (strcmp(argv[1], "logic") == 0) {
+            info->override_level = OVERRIDE_LEVEL_LOGIC_ANGLE;
+            info->override_value = atoi(argv[2]);
         } 
-        else if (strcmp(argv[1], "log") == 0) {
-           info->override_level = OVERRIDE_LEVEL_LOGIC_ANGLE;
-           info->override_value = (int32_t)info->logic_angle;
-        } 
-        else if (strcmp(argv[1], "phy") == 0) {
-           info->override_level = OVERRIDE_LEVEL_PHYSIC_ANGLE;
-           info->override_value = (int32_t)info->physic_angle;
+        else if (strcmp(argv[1], "physic") == 0) {
+            info->override_level = OVERRIDE_LEVEL_PHYSIC_ANGLE;
+            info->override_value = atoi(argv[2]);
         }
         else if (strcmp(argv[1], "pulse") == 0) {
-           info->override_level = OVERRIDE_LEVEL_PULSE_WIDTH;
-           info->override_value = (int32_t)info->pulse_width;
+            info->override_level = OVERRIDE_LEVEL_PULSE_WIDTH;
+            info->override_value = atoi(argv[2]);
         }
         else {
-           return false;
+            sprintf(response, CLI_MSG("ERROR: Unknown override level %s"), argv[1]);
+            return false;
         }
         sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
-    else if (strcmp(cmd, "set_override_value") == 0 && argc == 2) {
-        servo_info_list[servo_index].override_value = atoi(argv[1]);
-        sprintf(response, CLI_MSG("[%lu] has new override value %ld"), servo_index, servo_info_list[servo_index].override_value);
+    else if (strcmp(cmd, "reset") == 0 && argc == 1) {
+        info->override_level = OVERRIDE_LEVEL_NO;
+        info->override_value = 0;
+        sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
     else {
+        sprintf(response, CLI_MSG("ERROR: Unknown command or format '%s' for servo driver"), cmd);
         return false;
     }
     return true;
@@ -312,10 +320,12 @@ static float calculate_physic_angle(float logic_angle, const servo_config_t* con
 
     // Constrain physic servo angle (protection)
     if (physic_angle < config->protection_min_physic_angle) {
-        physic_angle = config->protection_min_physic_angle;
+        //physic_angle = config->protection_min_physic_angle;
+        sysmon_set_error(SYSMON_MATH_ERROR);
     }
     if (physic_angle > config->protection_max_physic_angle) {
-        physic_angle = config->protection_max_physic_angle;
+        //physic_angle = config->protection_max_physic_angle;
+        sysmon_set_error(SYSMON_MATH_ERROR);
     }
 
     return physic_angle;
