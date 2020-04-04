@@ -27,6 +27,9 @@ typedef struct {
 	float    angle;
 	uint16_t length;
 	int16_t  zero_rotate;
+    
+    int16_t  prot_min_angle; // Protection min angle, [degree]
+    int16_t  prot_max_angle; // Protection max angle, [degree]
 } link_t;
 
 typedef struct {
@@ -74,7 +77,6 @@ void motion_core_init(const point_3d_t* start_point_list) {
     if (kinematic_calculate_angles() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-        return;
     }
     
     // Initialize servo driver
@@ -144,11 +146,23 @@ void motion_core_process(void) {
             
             // Calculate new limbs positions
             scaled_motion_time = (float)g_motion_config.motion_time / (float)MTIME_SCALE; // to [0; 1]
-            process_linear_trajectory(scaled_motion_time);
-            process_advanced_trajectory(scaled_motion_time);
+            if (process_linear_trajectory(scaled_motion_time) == false) {
+                sysmon_set_error(SYSMON_MATH_ERROR);
+                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+                break;
+            }
+            if (process_advanced_trajectory(scaled_motion_time) == false) {
+                sysmon_set_error(SYSMON_MATH_ERROR);
+                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+                break;
+            }
             
             // Calculate servo angles
-            kinematic_calculate_angles();
+            if (kinematic_calculate_angles() == false) {
+                sysmon_set_error(SYSMON_MATH_ERROR);
+                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+                break;
+            }
             
             // Load new angles to servo driver
             for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
@@ -193,49 +207,40 @@ static bool read_configuration(void) {
     
     uint32_t base_address = MM_LIMB_CONFIG_BASE_EE_ADDRESS;
     
-    // Read and set COXA, FEMUR, TIBIA length
-    uint16_t length[3] = {0};
-    if (config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &length[0]) == false) return false;
-    if (config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &length[1]) == false) return false;
-    if (config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &length[2]) == false) return false;
-    if (length[0] == 0xFFFF || length[1] == 0xFFFF || length[2] == 0xFFFF) {
-        return false;
+    // Read length
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        if (config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &g_limbs_list[i].coxa.length) == false) return false;
+        if (config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &g_limbs_list[i].femur.length) == false) return false;
+        if (config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &g_limbs_list[i].tibia.length) == false) return false;
     }
     
+    // Read zero rotate
+    //int16_t femur_zero_rotate_femur = 35;
+    //int16_t tibia_zero_rotate_femur = 135;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        g_limbs_list[i].coxa.length  = length[0];
-        g_limbs_list[i].femur.length = length[1];
-        g_limbs_list[i].tibia.length = length[2];
-    }
-    
-    // Read and set COXA zero rotate
-    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        
-        int16_t zero_rotate = 0;
-        if (config_read_16(base_address + MM_LIMB_COXA_ZERO_ROTATE_OFFSET + i * sizeof(zero_rotate), (uint16_t*)&zero_rotate) == false) {
+        if (config_read_16(base_address + MM_LIMB_COXA_ZERO_ROTATE_OFFSET + i * sizeof(uint16_t), (uint16_t*)&g_limbs_list[i].coxa.zero_rotate) == false) return false;
+        if (config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&g_limbs_list[i].femur.zero_rotate) == false ) return false;
+        if (config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&g_limbs_list[i].tibia.zero_rotate) == false ) return false;
+        if (abs(g_limbs_list[i].coxa.zero_rotate) > 360 || abs(g_limbs_list[i].femur.zero_rotate) > 360 || abs(g_limbs_list[i].tibia.zero_rotate) > 360) {
             return false;
         }
-        
-        if (zero_rotate > 360 || zero_rotate < 0) {
+    }
+    
+    // Read protection
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        if (config_read_16(base_address + MM_LIMB_PROTECTION_COXA_MIN_ANGLE_OFFSET,  (uint16_t*)&g_limbs_list[i].coxa.prot_min_angle)  == false ) return false;
+        if (config_read_16(base_address + MM_LIMB_PROTECTION_COXA_MAX_ANGLE_OFFSET,  (uint16_t*)&g_limbs_list[i].coxa.prot_max_angle)  == false ) return false;
+        if (config_read_16(base_address + MM_LIMB_PROTECTION_FEMUR_MIN_ANGLE_OFFSET, (uint16_t*)&g_limbs_list[i].femur.prot_min_angle) == false ) return false;
+        if (config_read_16(base_address + MM_LIMB_PROTECTION_FEMUR_MAX_ANGLE_OFFSET, (uint16_t*)&g_limbs_list[i].femur.prot_max_angle) == false ) return false;
+        if (config_read_16(base_address + MM_LIMB_PROTECTION_TIBIA_MIN_ANGLE_OFFSET, (uint16_t*)&g_limbs_list[i].tibia.prot_min_angle) == false ) return false;
+        if (config_read_16(base_address + MM_LIMB_PROTECTION_TIBIA_MAX_ANGLE_OFFSET, (uint16_t*)&g_limbs_list[i].tibia.prot_max_angle) == false ) return false;
+        if (g_limbs_list[i].coxa.prot_min_angle  >= g_limbs_list[i].coxa.prot_max_angle  || 
+            g_limbs_list[i].femur.prot_min_angle >= g_limbs_list[i].femur.prot_max_angle || 
+            g_limbs_list[i].tibia.prot_min_angle >= g_limbs_list[i].tibia.prot_max_angle) {
             return false;
         }
-        
-        g_limbs_list[i].coxa.zero_rotate = zero_rotate;
     }
-    
-    // Read and set FEMUR, TIBIA 1-6 zero rotate
-    int16_t femur_zero_rotate_femur = 0;
-    int16_t tibia_zero_rotate_femur = 0;
-    if (config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&femur_zero_rotate_femur) == false ) return false;
-    if (config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&tibia_zero_rotate_femur) == false ) return false;
-    if (abs(femur_zero_rotate_femur) > 360 || abs(tibia_zero_rotate_femur) > 360) {
-        return false;
-    }
-    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        g_limbs_list[i].femur.zero_rotate = femur_zero_rotate_femur;
-        g_limbs_list[i].tibia.zero_rotate = tibia_zero_rotate_femur;
-    }
-    
+
     return true;
 }
 
@@ -288,6 +293,20 @@ static bool process_linear_trajectory(float motion_time) {
 //  ***************************************************************************
 static bool process_advanced_trajectory(float motion_time) {
     
+    // Check need process advanced trajectory
+    bool is_need_process = false;
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_CONST || 
+            g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_SINUS) {
+            is_need_process = true;
+            break;
+        }
+    }
+    if (is_need_process == false) {
+        return true;
+    }
+    
+    // Check curvature value
     float curvature = (float)g_current_trajectory_config.curvature / 1000.0f;
     if (g_current_trajectory_config.curvature == 0)    curvature = +0.001f;
     if (g_current_trajectory_config.curvature > 1999)  curvature = +1.999f;
@@ -444,6 +463,19 @@ static bool kinematic_calculate_angles(void) {
         //
         g_limbs_list[i].femur.angle = femur_zero_rotate_deg - RAD_TO_DEG(alpha) - RAD_TO_DEG(fi);
         g_limbs_list[i].tibia.angle = RAD_TO_DEG(gamma) - tibia_zero_rotate_deg;
+        
+        //
+        // Protection
+        //
+        if (g_limbs_list[i].coxa.angle < g_limbs_list[i].coxa.prot_min_angle || g_limbs_list[i].coxa.angle > g_limbs_list[i].coxa.prot_max_angle) {
+            return false;
+        }
+        if (g_limbs_list[i].femur.angle < g_limbs_list[i].femur.prot_min_angle || g_limbs_list[i].femur.angle > g_limbs_list[i].femur.prot_max_angle) {
+            return false;
+        }
+        if (g_limbs_list[i].tibia.angle < g_limbs_list[i].tibia.prot_min_angle || g_limbs_list[i].tibia.angle > g_limbs_list[i].tibia.prot_max_angle) {
+            return false;
+        }
     }
     return true;
 }

@@ -18,6 +18,12 @@
 #define MM_LIMB_COXA_ZERO_ROTATE_OFFSET                     (0x10)
 #define MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET                    (0x1C)
 #define MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET                    (0x1E)
+#define MM_LIMB_PROTECTION_COXA_MIN_ANGLE_OFFSET            (0x50)      ///< S16 Min coxa angle (protection)
+#define MM_LIMB_PROTECTION_COXA_MAX_ANGLE_OFFSET            (0x52)      ///< S16 Max coxa angle (protection)
+#define MM_LIMB_PROTECTION_FEMUR_MIN_ANGLE_OFFSET           (0x54)      ///< S16 Min femur angle (protection)
+#define MM_LIMB_PROTECTION_FEMUR_MAX_ANGLE_OFFSET           (0x56)      ///< S16 Max femur angle (protection)
+#define MM_LIMB_PROTECTION_TIBIA_MIN_ANGLE_OFFSET           (0x58)      ///< S16 Min tibia angle (protection)
+#define MM_LIMB_PROTECTION_TIBIA_MAX_ANGLE_OFFSET           (0x5A)      ///< S16 Max tibia angle (protection)
 
 //
 // Configuration map for servos
@@ -29,9 +35,7 @@
 #define     MM_SERVO_CONFIG_REVERSE_DIRECTION_MASK          (0x01)
 #define     MM_SERVO_CONFIG_SERVO_TYPE_MASK                 (0xF0)
 #define MM_SERVO_PWM_CHANNEL_OFFSET                         (1)          ///< U8  PWM channel
-#define MM_SERVO_LOGIC_ZERO_OFFSET                          (2)          ///< U16 Servo logic angle
-#define MM_SERVO_PROTECTION_MIN_PHYSIC_ANGLE_OFFSET         (4)          ///< U16 Servo min physic angle (protection)
-#define MM_SERVO_PROTECTION_MAX_PHYSIC_ANGLE_OFFSET         (6)          ///< U16 Servo max physic angle (protection)
+#define MM_SERVO_ZERO_TRIM_OFFSET                           (2)          ///< S16 Servo zero trim
 
 
 #endif // _MEMORY_MAP_H_

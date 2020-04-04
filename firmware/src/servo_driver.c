@@ -18,6 +18,7 @@
 #define       DS3218MG_MIN_PULSE_WIDTH          (500)
 #define       DS3218MG_MAX_PULSE_WIDTH          (2500)
 #define       DS3218MG_MAX_PHYSIC_ANGLE         (270)
+#define       DS3218MG_LOGIC_ZERO               (DS3218MG_MAX_PHYSIC_ANGLE / 2)
 
 
 typedef enum {
@@ -28,15 +29,14 @@ typedef enum {
 } override_level_t;
 
 typedef struct {
-    uint8_t  config;                            // Servo mode configuration
-    uint8_t  pwm_channel;                       // PWM channel
-    uint16_t logic_zero;                        // Servo logic zero
-    uint16_t protection_min_physic_angle;       // Protection min servo physic angle, [degree]
-    uint16_t protection_max_physic_angle;       // Protection max servo physic angle, [degree]
-
-    uint16_t min_pulse_width;                   // Min pulse width
-    uint16_t max_pulse_width;                   // Max pulse width
-    uint16_t max_physic_angle;                  // Max physic angle
+    uint8_t  config;                        // Servo mode configuration
+    uint8_t  pwm_channel;                   // PWM channel
+    int16_t  zero_trim;                     // Zero trim
+                                   
+    uint16_t logic_zero;                    // Logic zero
+    uint16_t min_pulse_width;               // Min pulse width
+    uint16_t max_pulse_width;               // Max pulse width
+    uint16_t max_physic_angle;              // Max physic angle
 } servo_config_t;
 
 typedef struct {
@@ -88,6 +88,7 @@ void servo_driver_move(uint32_t ch, float angle) {
         return;
     }
     
+    // Set new logic angle
     servo_info_list[ch].logic_angle = angle;
 }
 
@@ -192,17 +193,6 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
                 info->override_level, info->override_value,
                 (int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
     }
-    else if (strcmp(cmd, "center") == 0 && argc == 1) {
-
-        sprintf(response, CLI_MSG("servo status report")
-                          CLI_MSG("    - override level: %ld")
-                          CLI_MSG("    - override value: %ld")
-                          CLI_MSG("    - logic angle: %ld")
-                          CLI_MSG("    - physic angle: %ld")
-                          CLI_MSG("    - pulse width: %lu"),
-                info->override_level, info->override_value,
-                (int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
-    }
     else if (strcmp(cmd, "set") == 0 && argc == 3) {
 
         // Set override level
@@ -246,7 +236,7 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
 /// @return true - read success, false - fail
 //  ***************************************************************************
 static bool read_configuration(void) {
-
+    
     for (uint32_t servo_index = 0; servo_index < SUPPORT_SERVO_COUNT; ++servo_index) {
 
         servo_config_t* servo_config = &servo_config_list[servo_index];
@@ -263,6 +253,7 @@ static bool read_configuration(void) {
         // Load servo information
         uint8_t servo_id = (servo_config->config & MM_SERVO_CONFIG_SERVO_TYPE_MASK) >> 4;
         if (servo_id == SERVO_DS3218MG_270_ID) {
+            servo_config->logic_zero       = DS3218MG_LOGIC_ZERO;
             servo_config->min_pulse_width  = DS3218MG_MIN_PULSE_WIDTH;
             servo_config->max_pulse_width  = DS3218MG_MAX_PULSE_WIDTH;
             servo_config->max_physic_angle = DS3218MG_MAX_PHYSIC_ANGLE;
@@ -278,23 +269,9 @@ static bool read_configuration(void) {
             return false;
         }
 
-        // Read protection min physic angle
-        if (config_read_16(base_address + MM_SERVO_PROTECTION_MIN_PHYSIC_ANGLE_OFFSET, &servo_config->protection_min_physic_angle) == false) return false;
-        if (servo_config->protection_min_physic_angle == 0xFFFF || servo_config->protection_min_physic_angle > servo_config->max_physic_angle) {
-            return false;
-        }
-
-        // Read protection max physic angle
-        if (config_read_16(base_address + MM_SERVO_PROTECTION_MAX_PHYSIC_ANGLE_OFFSET, &servo_config->protection_max_physic_angle) == false) return false;
-        if (servo_config->protection_max_physic_angle == 0xFFFF || servo_config->protection_max_physic_angle > servo_config->max_physic_angle) {
-            return false;
-        }
-
-        // Read servo logic zero
-        if (config_read_16(base_address + MM_SERVO_LOGIC_ZERO_OFFSET, &servo_config->logic_zero) == false) return false;
-        if (servo_config->logic_zero == 0xFFFF ||
-            servo_config->logic_zero < servo_config->protection_min_physic_angle ||
-            servo_config->logic_zero > servo_config->protection_max_physic_angle) {
+        // Read servo zero trim
+        if (config_read_16(base_address + MM_SERVO_ZERO_TRIM_OFFSET, (uint16_t*)&servo_config->zero_trim) == false) return false;
+        if ((uint16_t)servo_config->zero_trim == 0xFFFF) {
             return false;
         }
     }
@@ -312,20 +289,17 @@ static float calculate_physic_angle(float logic_angle, const servo_config_t* con
     // Convert logic angle to physic angle
     float physic_angle = 0;
     if (config->config & MM_SERVO_CONFIG_REVERSE_DIRECTION_MASK) {
-        physic_angle = (float)config->logic_zero - logic_angle;      // Reverse rotate direction
+        physic_angle = ((float)config->logic_zero + (float)config->zero_trim) - logic_angle;
     }
     else {
-        physic_angle = (float)config->logic_zero + logic_angle;      // Direct rotate direction
+        physic_angle = ((float)config->logic_zero + (float)config->zero_trim) + logic_angle;
     }
-
-    // Constrain physic servo angle (protection)
-    if (physic_angle < config->protection_min_physic_angle) {
-        //physic_angle = config->protection_min_physic_angle;
+    
+    // Check physic angle value
+    if (physic_angle < 0 || physic_angle > config->max_physic_angle) {
         sysmon_set_error(SYSMON_MATH_ERROR);
-    }
-    if (physic_angle > config->protection_max_physic_angle) {
-        //physic_angle = config->protection_max_physic_angle;
-        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
+        return config->logic_zero;
     }
 
     return physic_angle;
@@ -337,9 +311,17 @@ static float calculate_physic_angle(float logic_angle, const servo_config_t* con
 /// @param  config: servo configuration. @ref servo_config_t
 /// @return PWM pulse width
 //  ***************************************************************************
-static uint32_t convert_angle_to_pulse_width(float physic_angle, const servo_config_t* servo_config) {
+static uint32_t convert_angle_to_pulse_width(float physic_angle, const servo_config_t* config) {
 
-    float step = (float)(servo_config->max_pulse_width - servo_config->min_pulse_width) / (float)servo_config->max_physic_angle;
-    float pulse_width = (float)servo_config->min_pulse_width + physic_angle * step;
+    float step = (float)(config->max_pulse_width - config->min_pulse_width) / (float)config->max_physic_angle;
+    float pulse_width = (float)config->min_pulse_width + physic_angle * step;
+    
+    // Check pulse width value
+    if (pulse_width < config->min_pulse_width || pulse_width > config->max_pulse_width) {
+        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
+        return config->min_pulse_width + (pulse_width > config->max_pulse_width - config->min_pulse_width) / 2;
+    }
+    
     return (uint32_t)pulse_width;
 }
