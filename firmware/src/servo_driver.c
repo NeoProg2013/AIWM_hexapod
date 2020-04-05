@@ -214,6 +214,11 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
         }
         sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
+    else if (strcmp(cmd, "zero") == 0 && argc == 1) {
+        info->override_level = OVERRIDE_LEVEL_PHYSIC_ANGLE;
+        info->override_value = (int32_t)calculate_physic_angle(0, &servo_config_list[servo_index]);
+        sprintf(response, CLI_MSG("[%lu] moved to zero"), servo_index);
+    }
     else if (strcmp(cmd, "reset") == 0 && argc == 1) {
         info->override_level = OVERRIDE_LEVEL_NO;
         info->override_value = 0;
@@ -286,10 +291,10 @@ static float calculate_physic_angle(float logic_angle, const servo_config_t* con
     // Convert logic angle to physic angle
     float physic_angle = 0;
     if (config->config & MM_SERVO_CONFIG_REVERSE_DIRECTION_MASK) {
-        physic_angle = ((float)config->logic_zero + (float)config->zero_trim) - logic_angle;
+        physic_angle = (float)config->logic_zero - (logic_angle + (float)config->zero_trim);
     }
     else {
-        physic_angle = ((float)config->logic_zero + (float)config->zero_trim) + logic_angle;
+        physic_angle = (float)config->logic_zero + (logic_angle + (float)config->zero_trim);
     }
     
     // Check physic angle value
