@@ -430,7 +430,7 @@ static const sequence_info_t sequence_dance = {
     }
 };
 
-#define LIMB_Y_OFFSET                  (LIMB_STEP_HEIGHT)
+#define LIMB_Y_OFFSET                  (20)
 static const sequence_info_t sequence_rotate_x = {
 
     .is_sequence_looped     = true,
