@@ -111,7 +111,7 @@ Item {
                         curvature = -curvature
                     }
 
-                    var stepLength = -(dragItem.y * (240.0 / drag.maximumY) - 120.0)
+                    var stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
                     CppCore.sendStartMotionCommand(Math.round(stepLength),
                                                    Math.round(curvature))
                 }
@@ -376,6 +376,9 @@ Item {
                 onButtonPressed: {
                     CppCore.sendGetUpCommand()
                 }
+                onButtonReleased: {
+                    CppCore.sendStopMoveCommand()
+                }
             }
 
             ImageButton {
@@ -384,6 +387,9 @@ Item {
                 Layout.fillHeight: true
                 onButtonPressed: {
                     CppCore.sendGetDownCommand()
+                }
+                onButtonReleased: {
+                    CppCore.sendStopMoveCommand()
                 }
             }
 
