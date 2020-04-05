@@ -87,12 +87,12 @@ void sequences_engine_process(void) {
             if (current_sequence != next_sequence) {
                 engine_state = STATE_CHANGE_SEQUENCE;
             }
-            else {
+            /*else {
                 // Auto select down sequence timer
                 if (get_time_ms() - prev_active_time > AUTO_SELECT_DOWN_SEQUENCE_TIME) {
                     sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
                 }
-            }
+            }*/
             break;
         
         case STATE_MOVE:

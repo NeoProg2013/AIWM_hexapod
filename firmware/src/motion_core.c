@@ -467,15 +467,18 @@ static bool kinematic_calculate_angles(void) {
         //
         // Protection
         //
-        if (g_limbs_list[i].coxa.angle < g_limbs_list[i].coxa.prot_min_angle || g_limbs_list[i].coxa.angle > g_limbs_list[i].coxa.prot_max_angle) {
-            return false;
-        }
-        if (g_limbs_list[i].femur.angle < g_limbs_list[i].femur.prot_min_angle || g_limbs_list[i].femur.angle > g_limbs_list[i].femur.prot_max_angle) {
-            return false;
-        }
-        if (g_limbs_list[i].tibia.angle < g_limbs_list[i].tibia.prot_min_angle || g_limbs_list[i].tibia.angle > g_limbs_list[i].tibia.prot_max_angle) {
-            return false;
-        }
+        if (g_limbs_list[i].coxa.angle < g_limbs_list[i].coxa.prot_min_angle) 
+            g_limbs_list[i].coxa.angle = g_limbs_list[i].coxa.prot_min_angle;
+        if (g_limbs_list[i].coxa.angle > g_limbs_list[i].coxa.prot_max_angle) 
+            g_limbs_list[i].coxa.angle = g_limbs_list[i].coxa.prot_max_angle;
+        if (g_limbs_list[i].femur.angle < g_limbs_list[i].femur.prot_min_angle) 
+            g_limbs_list[i].femur.angle = g_limbs_list[i].femur.prot_min_angle;
+        if (g_limbs_list[i].femur.angle > g_limbs_list[i].femur.prot_max_angle) 
+            g_limbs_list[i].femur.angle = g_limbs_list[i].femur.prot_max_angle;
+        if (g_limbs_list[i].tibia.angle < g_limbs_list[i].tibia.prot_min_angle) 
+            g_limbs_list[i].tibia.angle = g_limbs_list[i].tibia.prot_min_angle;
+        if (g_limbs_list[i].tibia.angle > g_limbs_list[i].tibia.prot_max_angle) 
+            g_limbs_list[i].tibia.angle = g_limbs_list[i].tibia.prot_max_angle;
     }
     return true;
 }

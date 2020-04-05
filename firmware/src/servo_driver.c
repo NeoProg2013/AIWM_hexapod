@@ -271,9 +271,6 @@ static bool read_configuration(void) {
 
         // Read servo zero trim
         if (config_read_16(base_address + MM_SERVO_ZERO_TRIM_OFFSET, (uint16_t*)&servo_config->zero_trim) == false) return false;
-        if ((uint16_t)servo_config->zero_trim == 0xFFFF) {
-            return false;
-        }
     }
     return true;
 }

@@ -11,7 +11,7 @@
 
 #define SUPPORT_LIMBS_COUNT                 (6)
 
-#define LIMB_STEP_HEIGHT                    (25)
+#define LIMB_STEP_HEIGHT                    (20)
 
 #define MTIME_SCALE                         (1000)
 #define MTIME_MIN_VALUE                     (0 * MTIME_SCALE)
