@@ -115,9 +115,6 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
     response->command = request->command;
     response->module_status = sysmon_module_status;
     response->system_status = sysmon_system_status;
-    response->battery_cell_voltage[0] = sysmon_battery_cell_voltage[0];
-    response->battery_cell_voltage[1] = sysmon_battery_cell_voltage[1];
-    response->battery_cell_voltage[2] = sysmon_battery_cell_voltage[2];
     response->battery_voltage = sysmon_battery_voltage;
     response->battery_charge = sysmon_battery_charge;
 

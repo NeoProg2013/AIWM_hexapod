@@ -9,6 +9,9 @@
 #define PAUSE_BETWEEN_CONVERSIONS       (5)
 #define ACCUMULATE_SAMPLES_COUNT        (100)
 
+#define ADC_CHANNELS_COUNT              (1)
+#define ADC_BATTERY_VOLTAGE_CH          (0)
+
 
 typedef enum {
     STATE_NO_INIT,
@@ -21,12 +24,11 @@ typedef enum {
 
 
 static monitor_state_t monitor_state = STATE_NO_INIT;
-static uint32_t acc_adc_bins[3] = {0, 0, 0};
-static int16_t  battery_voltage_offset = 1050;
+static uint32_t acc_adc_bins[ADC_CHANNELS_COUNT] = {0};
+static int16_t  battery_voltage_offset = 690;
 
 uint8_t  sysmon_system_status = 0;
 uint8_t  sysmon_module_status = 0;
-uint16_t sysmon_battery_cell_voltage[3] = {0, 0, 0};
 uint16_t sysmon_battery_voltage = 0;
 uint8_t  sysmon_battery_charge = 0;
 
@@ -41,7 +43,7 @@ static void calculate_battery_voltage(void);
 //  ***************************************************************************
 void sysmon_init(void) {
 
-    sysmon_system_status = SYSMON_CONN_LOST_ERROR;
+    sysmon_system_status = 0;
     sysmon_module_status = 0;
 
     // ADC initialization
@@ -57,9 +59,7 @@ void sysmon_init(void) {
 void sysmon_process(void) {
 
     if (sysmon_is_module_disable(SYSMON_MODULE_SYSTEM_MONITOR) == true) {
-        sysmon_battery_cell_voltage[0] = 0;
-        sysmon_battery_cell_voltage[1] = 0;
-        sysmon_battery_cell_voltage[2] = 0;
+        sysmon_battery_charge = 0;
         sysmon_battery_voltage = 0;
         return;
     }
@@ -81,9 +81,7 @@ void sysmon_process(void) {
             break;
             
         case STATE_ACCUMULATE:
-            acc_adc_bins[0] += adc_get_conversion_result(0);
-            acc_adc_bins[1] += adc_get_conversion_result(1);
-            acc_adc_bins[2] += adc_get_conversion_result(2);
+            acc_adc_bins[ADC_BATTERY_VOLTAGE_CH] += adc_get_conversion_result(ADC_BATTERY_VOLTAGE_CH);
             if (++accumulate_counter >= ACCUMULATE_SAMPLES_COUNT) {
                 accumulate_counter = 0;
                 monitor_state = STATE_CALCULATION;
@@ -96,21 +94,10 @@ void sysmon_process(void) {
 
         case STATE_CALCULATION:
             calculate_battery_voltage();
-            acc_adc_bins[0] = 0;
-            acc_adc_bins[1] = 0;
-            acc_adc_bins[2] = 0;
+            acc_adc_bins[ADC_BATTERY_VOLTAGE_CH] = 0;
             if (sysmon_battery_charge == 0) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
             }
-            /*if (sysmon_battery_cell_voltage[0] < CELL_VOLTAGE_THRESHOLD) {
-                sysmon_set_error(SYSMON_VOLTAGE_ERROR);
-            }
-            if (sysmon_battery_cell_voltage[1] < CELL_VOLTAGE_THRESHOLD) {
-                sysmon_set_error(SYSMON_VOLTAGE_ERROR);
-            }
-            if (sysmon_battery_cell_voltage[2] < CELL_VOLTAGE_THRESHOLD) {
-                sysmon_set_error(SYSMON_VOLTAGE_ERROR);
-            }*/
             pause_start_time = get_time_ms();
             monitor_state = STATE_PAUSE;
             break;
@@ -200,42 +187,16 @@ static void calculate_battery_voltage(void) {
     const float voltage_div_factor = ((10000.0f + 3300.0f) / 3300.0f) * 1000.0f;
     const float bins_to_voltage_factor = 3.3f / 4096.0f;
     
-    uint32_t avr_adc_bins = 0;
-    float input_voltage = 0;
-    
-    // Battery cell #1 (max voltage 4.2V)
-    avr_adc_bins = acc_adc_bins[0] / ACCUMULATE_SAMPLES_COUNT;
-    input_voltage = avr_adc_bins * bins_to_voltage_factor;
-    int32_t cell_1 = (uint32_t)(input_voltage * voltage_div_factor);
-    
-    // Battery cell #2 (max voltage 8.4V)
-    avr_adc_bins = acc_adc_bins[1] / ACCUMULATE_SAMPLES_COUNT;
-    input_voltage = avr_adc_bins * bins_to_voltage_factor;
-    int32_t cell_2 = (uint32_t)(input_voltage * voltage_div_factor);
-    
-    // Battery cell #3 (max voltage 12.6V)
-    avr_adc_bins = acc_adc_bins[2] / ACCUMULATE_SAMPLES_COUNT;
-    input_voltage = avr_adc_bins * bins_to_voltage_factor;
-    int32_t cell_3 = (uint32_t)(input_voltage * voltage_div_factor);
-    
-    // Caclulate cells voltage
-    cell_3 -= cell_2;
-    cell_2 -= cell_1;
-    
-    // Avoid < 0
-    if (cell_1 < 0) cell_1 = 0;
-    if (cell_2 < 0) cell_2 = 0;
-    if (cell_3 < 0) cell_3 = 0;
-    
-    sysmon_battery_cell_voltage[0] = cell_1;
-    sysmon_battery_cell_voltage[1] = cell_2;
-    sysmon_battery_cell_voltage[2] = cell_3;   
-    
-    // Calculate battery voltage
-    sysmon_battery_voltage = sysmon_battery_cell_voltage[0] + sysmon_battery_cell_voltage[1] + sysmon_battery_cell_voltage[2];
+    // Battery voltage (max voltage 12.6V)
+    uint32_t avr_adc_bins = acc_adc_bins[ADC_BATTERY_VOLTAGE_CH] / ACCUMULATE_SAMPLES_COUNT;
+    float input_voltage = avr_adc_bins * bins_to_voltage_factor;
+    int32_t battery_voltage = (uint32_t)(input_voltage * voltage_div_factor);
+
+    // Offset battery voltage
+    sysmon_battery_voltage = battery_voltage;
     sysmon_battery_voltage += battery_voltage_offset;
     
-    // Calculate battery charge
+    // Calculate battery charge persents
     float battery_charge = (sysmon_battery_voltage - 9000.0f) / (12600.0f - 9000.0f) * 100.0f;
     if (battery_charge < 0) {
         battery_charge = 0;

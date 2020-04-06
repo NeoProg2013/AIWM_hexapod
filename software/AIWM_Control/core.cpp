@@ -57,7 +57,7 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
 	emit frameReceived();
 	emit systemStatusUpdated(payload->system_status);
 	emit moduleStatusUpdated(payload->module_status);
-	emit voltageValuesUpdated(payload->battery_cell_voltage[0], payload->battery_cell_voltage[1], payload->battery_cell_voltage[2], payload->battery_voltage);
+	emit voltageValuesUpdated(payload->battery_voltage);
 	emit batteryChargeUpdated(payload->battery_charge);
 }
 

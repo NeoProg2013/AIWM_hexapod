@@ -20,12 +20,10 @@
 #define BUZZER_TURN_ON()            ( GPIOC->BSRR = (uint32_t)(0x01 << (BUZZER_PIN * 1)) )
 
 
-static bool is_light_enabled = false;
-
-
 static void blink_red_led_with_buzzer(uint32_t period);
 static void blink_red_led(uint32_t period);
 static void blink_blue_led(uint32_t period);
+static void blink_green_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
 
 
@@ -36,8 +34,6 @@ static void blink_yellow_led(uint32_t period);
 //  ***************************************************************************
 void indication_init(void) {
     
-    is_light_enabled = false;
-
     // Front LED red pin (PB5): output mode, push-pull, high speed, no pull
     GPIOB->BRR      =  (0x01 << (LED_R_PIN * 1));
     GPIOB->MODER   |=  (0x01 << (LED_R_PIN * 2));
@@ -68,40 +64,11 @@ void indication_init(void) {
     LED_TURN_OFF(LED_B_PIN);
     BUZZER_TURN_OFF();
     
-    // Blink R, G, B leds
-    LED_TURN_ON(LED_R_PIN);
-    delay_ms(150);
-    LED_TURN_OFF(LED_R_PIN);
-    LED_TURN_ON(LED_G_PIN);
-    delay_ms(150);
-    LED_TURN_OFF(LED_G_PIN);
-    LED_TURN_ON(LED_B_PIN);
-    delay_ms(150);
-    LED_TURN_OFF(LED_B_PIN);
-    
     // Buzzer
     BUZZER_TURN_ON();
     delay_ms(80);
     BUZZER_TURN_OFF();
-    delay_ms(80);
-    BUZZER_TURN_ON();
-    delay_ms(80);
-    BUZZER_TURN_OFF();
-    delay_ms(80);
-    BUZZER_TURN_ON();
-    delay_ms(80);
-    BUZZER_TURN_OFF();
 }
-
-//  ***************************************************************************
-/// @brief  Switch light state
-/// @param  none
-/// @return none
-//  ***************************************************************************
-void indication_switch_light_state(void) {
-    is_light_enabled = !is_light_enabled;
-}
-
 
 //  ***************************************************************************
 /// @brief  Driver process
@@ -111,17 +78,9 @@ void indication_switch_light_state(void) {
 void indication_process(void) {
     
     if (sysmon_is_error_set(SYSMON_ANY_ERROR) == false) {
-        
-        if (is_light_enabled == true) {
-            LED_TURN_ON(LED_R_PIN);
-            LED_TURN_ON(LED_G_PIN);
-            LED_TURN_ON(LED_B_PIN);
-        }
-        else {
-            LED_TURN_OFF(LED_R_PIN);
-            LED_TURN_ON(LED_G_PIN);
-            LED_TURN_OFF(LED_B_PIN);
-        }
+        LED_TURN_OFF(LED_R_PIN);
+        LED_TURN_ON(LED_G_PIN);
+        LED_TURN_OFF(LED_B_PIN);
         BUZZER_TURN_OFF();
     }
     else {
@@ -132,11 +91,11 @@ void indication_process(void) {
         else if (sysmon_is_error_set(SYSMON_FATAL_ERROR | SYSMON_CONFIG_ERROR | SYSMON_MEMORY_ERROR | SYSMON_MATH_ERROR) == true) {
              blink_red_led(100);
         }
-        else if (sysmon_is_error_set(SYSMON_SYNC_ERROR) == true) {
-            blink_yellow_led(500);
-        }
         else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
              blink_blue_led(500);
+        }
+        else if (sysmon_is_error_set(SYSMON_SYNC_ERROR) == true) {
+            blink_yellow_led(500);
         }
         else {
             blink_red_led_with_buzzer(100);
@@ -251,6 +210,33 @@ static void blink_blue_led(uint32_t period) {
         }
         LED_TURN_OFF(LED_R_PIN);
         LED_TURN_OFF(LED_G_PIN);
+        BUZZER_TURN_OFF();
+        
+        state = !state;
+        start_time = get_time_ms();
+    }
+}
+
+//  ***************************************************************************
+/// @brief  Blink green LED
+/// @param  period: LED switch time
+/// @return none
+//  ***************************************************************************
+static void blink_green_led(uint32_t period) {
+    
+    static uint32_t start_time = 0;
+    static bool state = false;
+    
+    if (get_time_ms() - start_time > period) {
+        
+        if (state == false) {
+            LED_TURN_OFF(LED_G_PIN);
+        }
+        else {
+            LED_TURN_ON(LED_G_PIN);
+        }
+        LED_TURN_OFF(LED_R_PIN);
+        LED_TURN_OFF(LED_B_PIN);
         BUZZER_TURN_OFF();
         
         state = !state;

@@ -35,7 +35,7 @@ signals:
 	void frameReceived();
 	void systemStatusUpdated(QVariant newSystemStatus);
 	void moduleStatusUpdated(QVariant newModuleStatus);
-	void voltageValuesUpdated(QVariant newCellVoltage1, QVariant newCellVoltage2, QVariant newCellVoltage3, QVariant newBatteryVoltage);
+	void voltageValuesUpdated(QVariant newBatteryVoltage);
 	void batteryChargeUpdated(QVariant newBatteryCharge);
 
 public slots:

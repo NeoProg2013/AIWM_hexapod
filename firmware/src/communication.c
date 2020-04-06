@@ -65,7 +65,9 @@ void communication_init(void) {
 //  ***************************************************************************
 void communication_process(void) {
     
+    // We start with SYSMON_CONN_LOST_ERROR error
     static uint64_t frame_received_time = 0;
+    static bool is_first_frame_received = false;
 
     
     if (driver_state == STATE_FRAME_RECEIVED) {
@@ -104,6 +106,7 @@ void communication_process(void) {
         
         // Update frame receive time
         frame_received_time = get_time_ms();
+        is_first_frame_received = true;
     }
     
     
@@ -111,7 +114,7 @@ void communication_process(void) {
     // Process communication timeout feature
     //
     sysmon_clear_error(SYSMON_CONN_LOST_ERROR);
-    if (get_time_ms() - frame_received_time > COMMUNICATION_TIMEOUT && is_switched_to_cli == false) {
+    if ((get_time_ms() - frame_received_time > COMMUNICATION_TIMEOUT && is_switched_to_cli == false) || is_first_frame_received == false) {
         sysmon_set_error(SYSMON_CONN_LOST_ERROR);
     }
 }

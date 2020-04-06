@@ -6,10 +6,8 @@
 #include "stm32f373xc.h"
 #include "systimer.h"
 
-#define ADC_CHANNELS_COUNT              (3)
+#define ADC_CHANNELS_COUNT              (1)
 #define ADC_INPUT_1_PIN                 (3) // PC3 ADC CH13
-#define ADC_INPUT_2_PIN                 (2) // PC2 ADC CH12
-#define ADC_INPUT_3_PIN                 (1) // PC1 ADC CH11
 
 
 static uint16_t adc_data[ADC_CHANNELS_COUNT] = {0};
@@ -29,16 +27,6 @@ void adc_init(void) {
     GPIOC->MODER   |=  (0x03 << (ADC_INPUT_1_PIN * 2));         // Analog mode
     GPIOC->OSPEEDR |=  (0x03 << (ADC_INPUT_1_PIN * 2));         // High speed
     GPIOC->PUPDR   &= ~(0x03 << (ADC_INPUT_1_PIN * 2));         // Disable pull
-    
-    // Setup analog input 2 (PC2)
-    GPIOC->MODER   |=  (0x03 << (ADC_INPUT_2_PIN * 2));         // Analog mode
-    GPIOC->OSPEEDR |=  (0x03 << (ADC_INPUT_2_PIN * 2));         // High speed
-    GPIOC->PUPDR   &= ~(0x03 << (ADC_INPUT_2_PIN * 2));         // Disable pull
-    
-    // Setup analog input 3 (PC1)
-    GPIOC->MODER   |=  (0x03 << (ADC_INPUT_3_PIN * 2));         // Analog mode
-    GPIOC->OSPEEDR |=  (0x03 << (ADC_INPUT_3_PIN * 2));         // High speed
-    GPIOC->PUPDR   &= ~(0x03 << (ADC_INPUT_3_PIN * 2));         // Disable pull
 
 
     //
@@ -61,9 +49,9 @@ void adc_init(void) {
     // Setup ADC
     ADC1->CR1   = ADC_CR1_SCAN;
     ADC1->CR2   = ADC_CR2_EXTTRIG | (0x07 << ADC_CR2_EXTSEL_Pos) | ADC_CR2_DMA; // SWSTART trigger
-    ADC1->SMPR1 = (0x07 << ADC_SMPR1_SMP13_Pos) | (0x07 << ADC_SMPR1_SMP12_Pos) | (0x07 << ADC_SMPR1_SMP11_Pos); // 239 cycles
+    ADC1->SMPR1 = (0x07 << ADC_SMPR1_SMP13_Pos); // 239 cycles
     ADC1->SQR1  = (ADC_CHANNELS_COUNT - 1) << ADC_SQR1_L_Pos; // 3 channels count for conversion
-    ADC1->SQR3  = (13 << ADC_SQR3_SQ3_Pos) | (12 << ADC_SQR3_SQ2_Pos) | (11 << ADC_SQR3_SQ1_Pos); // Conversion sequence [11][12][13]
+    ADC1->SQR3  = (13 << ADC_SQR3_SQ1_Pos); // Conversion sequence [11][12][13]
 
     // Enable ADC
     ADC1->CR2 |= ADC_CR2_ADON;
