@@ -114,7 +114,10 @@ void communication_process(void) {
     // Process communication timeout feature
     //
     sysmon_clear_error(SYSMON_CONN_LOST_ERROR);
-    if ((get_time_ms() - frame_received_time > COMMUNICATION_TIMEOUT && is_switched_to_cli == false) || is_first_frame_received == false) {
+    if (is_first_frame_received == false) {
+        sysmon_set_error(SYSMON_CONN_LOST_ERROR);
+    }
+    if (get_time_ms() - frame_received_time > COMMUNICATION_TIMEOUT && is_switched_to_cli == false) {
         sysmon_set_error(SYSMON_CONN_LOST_ERROR);
     }
 }
