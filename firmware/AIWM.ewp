@@ -2162,6 +2162,12 @@
                 <name>$PROJ_DIR$\src\drivers\i2c1.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\src\drivers\i2c2.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\i2c2.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\drivers\pwm.c</name>
                 <configuration>
                     <name>Debug</name>
@@ -2423,6 +2429,12 @@
                 <name>$PROJ_DIR$\src\drivers\pwm.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\src\drivers\ssd1306_128x64.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\ssd1306_128x64.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\drivers\systimer.c</name>
             </file>
             <file>
@@ -2473,6 +2485,15 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\motion_core.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\oled_gl.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\oled_gl.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\oled_gl_font_6x8.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\project_base.h</name>

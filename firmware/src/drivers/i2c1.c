@@ -9,7 +9,7 @@
 #define I2C_SCL_PIN                     (8) // PB8
 #define I2C_SDA_PIN                     (9) // PB9
 
-#define I2C_WAIT_TIMEOUT_VALUE          (10) // ms
+#define I2C_WAIT_TIMEOUT_VALUE          (2) // ms
 
 
 static bool send_internal_address(uint32_t internal_address, uint8_t internal_address_size);
@@ -60,8 +60,6 @@ void i2c1_init(i2c_speed_t speed) {
 
     // Configure I2C
     I2C1->TIMINGR = speed;
- 
-    
 }
 
 //  ***************************************************************************
@@ -209,12 +207,12 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
 
     uint64_t start_time = get_time_ms();
-    while ((*reg & mask) == 0) {
-        
+    do {
         if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
             return false;
         }
     }
+    while ((*reg & mask) == 0);
     return true;
 }
 
@@ -227,11 +225,11 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
 static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask) {
 
     uint64_t start_time = get_time_ms();
-    while (*reg & mask) {
-        
+    do {
         if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
             return false;
         }
     }
+    while (*reg & mask);
     return true;
 }

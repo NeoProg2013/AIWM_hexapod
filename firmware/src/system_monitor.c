@@ -118,55 +118,55 @@ void sysmon_process(void) {
 
 //  ***************************************************************************
 /// @brief  Set error to system status
-/// @param  error: error mask. @ref sysmon_error_t
+/// @param  error: error mask
 /// @return none
 //  ***************************************************************************
-void sysmon_set_error(sysmon_error_t error) {
+void sysmon_set_error(uint32_t error) {
     sysmon_system_status |= error;
 }
 
 //  ***************************************************************************
 /// @brief  Clear error from system status
-/// @param  error: error mask. @ref sysmon_error_t
+/// @param  error: error mask
 /// @return none
 //  ***************************************************************************
-void sysmon_clear_error(sysmon_error_t error) {
+void sysmon_clear_error(uint32_t error) {
     sysmon_system_status &= ~error;
 }
 
 //  ***************************************************************************
 /// @brief  Disable module
-/// @param  module: module mask. @ref sysmon_module_t
+/// @param  module: module mask
 /// @return none
 //  ***************************************************************************
-void sysmon_disable_module(sysmon_module_t module) {
+void sysmon_disable_module(uint32_t module) {
     sysmon_module_status |= module;
 }
 
 //  ***************************************************************************
 /// @brief  Enable module
-/// @param  module: module mask. @ref sysmon_module_t
+/// @param  module: module mask
 /// @return none
 //  ***************************************************************************
-void sysmon_enable_module(sysmon_module_t module) {
+void sysmon_enable_module(uint32_t module) {
     sysmon_module_status &= ~module;
 }
 
 //  ***************************************************************************
 /// @brief  Check errors in system status
-/// @param  error: error mask. @ref sysmon_error_t
+/// @param  error: error mask
 /// @return true - error is set, false - no
 //  ***************************************************************************
-bool sysmon_is_error_set(sysmon_error_t error) {
+bool sysmon_is_error_set(uint32_t error) {
     return sysmon_system_status & error;
 }
 
 //  ***************************************************************************
 /// @brief  Check module disable bits
-/// @param  module: module mask. @ref sysmon_module_t
+/// @param  module: module mask
 /// @return true - bit is set, false - no
 //  ***************************************************************************
-bool sysmon_is_module_disable(sysmon_module_t module) {
+bool sysmon_is_module_disable(uint32_t module) {
     return sysmon_module_status & module;
 }
 

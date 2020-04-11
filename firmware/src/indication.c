@@ -23,7 +23,7 @@
 static void blink_red_led_with_buzzer(uint32_t period);
 static void blink_red_led(uint32_t period);
 static void blink_blue_led(uint32_t period);
-static void blink_green_led(uint32_t period);
+//static void blink_green_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
 
 
@@ -222,7 +222,7 @@ static void blink_blue_led(uint32_t period) {
 /// @param  period: LED switch time
 /// @return none
 //  ***************************************************************************
-static void blink_green_led(uint32_t period) {
+/*static void blink_green_led(uint32_t period) {
     
     static uint32_t start_time = 0;
     static bool state = false;
@@ -242,4 +242,4 @@ static void blink_green_led(uint32_t period) {
         state = !state;
         start_time = get_time_ms();
     }
-}
+}*/
