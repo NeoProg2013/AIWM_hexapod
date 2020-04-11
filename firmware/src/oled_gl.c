@@ -25,9 +25,8 @@ static driver_state_t driver_state = STATE_NOINIT;
 
 
 //  ***************************************************************************
-/// @brief    Graphic library initialization
-/// @param    none
-/// @return    none
+/// @brief  Graphic library initialization
+/// @return none
 //  ***************************************************************************
 void oled_gl_init(void) {
     
@@ -40,9 +39,8 @@ void oled_gl_init(void) {
 }
 
 //  ***************************************************************************
-/// @brief    Asynchronous display update
-/// @param    none
-/// @return    none
+/// @brief  Graphic library process
+/// @return none
 //  ***************************************************************************
 void oled_gl_process(void) {
     
@@ -50,7 +48,6 @@ void oled_gl_process(void) {
     
     
     static uint32_t current_row = 0;
-    
     switch (driver_state) {
         
         case STATE_IDLE:
@@ -64,7 +61,7 @@ void oled_gl_process(void) {
             }
             
             ++current_row;
-            if (current_row >= 8) {
+            if (current_row >= DISPLAY_MAX_ROW_COUNT) {
                 current_row = 0;
                 driver_state = STATE_IDLE;
                 break;
@@ -86,8 +83,6 @@ void oled_gl_process(void) {
             break;
             
         case STATE_NOINIT:
-            break;
-        
         default:
             sysmon_set_error(SYSMON_FATAL_ERROR);
             sysmon_disable_module(SYSMON_MODULE_OLED_GL);
@@ -96,13 +91,16 @@ void oled_gl_process(void) {
 }
 
 //  ***************************************************************************
-/// @brief    Clear row fragment
-/// @param    row: display row [0; 7]
-/// @param    x, y: left top angle of rectangle (relative row)
-/// @param    width, height: rectangle size (relative row)
-/// @return    none
+/// @brief  Clear row fragment
+/// @param  row: display row [0; 7]
+/// @param  x, y: left top angle of rectangle (relative row)
+/// @param  width, height: rectangle size (relative row)
+/// @return none
 //  ***************************************************************************
 void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+    
+    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
+    
     
     uint8_t mask = 0;
     
@@ -119,73 +117,88 @@ void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t w
 }
 
 //  ***************************************************************************
-/// @brief    Clear display
-/// @param    none
-/// @return    none
+/// @brief  Clear display
+/// @param  none
+/// @return none
 //  ***************************************************************************
 void oled_gl_clear_display(void) {
     
+    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
+    
+    
     for (uint32_t i = 0; i < 8; ++i) {
-        
         uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(i, 0);
         memset(frame_buffer, 0x00, 128);
     }
 }
 
 //  ***************************************************************************
-/// @brief    Draw float number in format n.X
-/// @param    row: display row [0; 7]
-/// @param    x: first symbol position
-/// @param    number: number for draw
-/// @return    none
+/// @brief  Draw float number in format XX.X or X.XX
+/// @param  row: display row [0; 7]
+/// @param  x: first symbol position
+/// @param  number: number for draw
+/// @return none
 //  ***************************************************************************
 void oled_gl_draw_float_number(uint32_t row, uint32_t x, float number) {
     
     char buffer[12] = {0};
     sprintf(buffer, "%04.1f", number);
-    
     oled_gl_draw_string(row, x, buffer);
 }
 
 //  ***************************************************************************
-/// @brief    Draw number in DEC format
-/// @param    row: display row [0; 7]
-/// @param    x: first symbol position
-/// @param    number: number for draw
-/// @return    none
+/// @brief  Draw number in DEC format
+/// @param  row: display row [0; 7]
+/// @param  x: first symbol position
+/// @param  number: number for draw
+/// @return none
 //  ***************************************************************************
 void oled_gl_draw_dec_number(uint32_t row, uint32_t x, int32_t number) {
     
     char buffer[12] = {0};
     sprintf(buffer, "%d", (int)number);
-    
     oled_gl_draw_string(row, x, buffer);
 }
 
 //  ***************************************************************************
-/// @brief    Draw number in HEX format (0xXXXXXXXX)
-/// @param    row: display row [0; 7]
-/// @param    x: first symbol position
-/// @param    number: number for draw
-/// @return    none
+/// @brief  Draw number in HEX format (0xXXXX)
+/// @param  row: display row [0; 7]
+/// @param  x: first symbol position
+/// @param  number: number for draw
+/// @return none
 //  ***************************************************************************
-void oled_gl_draw_hex_number(uint32_t row, uint32_t x, uint32_t number) {
+void oled_gl_draw_hex16(uint32_t row, uint32_t x, uint32_t number) {
     
     char buffer[32] = {0};
-    sprintf(buffer, "%#010X", (int)number);
-    buffer[1] = 'x';
-    
+    sprintf(buffer, "0x%04X", (int)number);
     oled_gl_draw_string(row, x, buffer);
 }
 
 //  ***************************************************************************
-/// @brief    Draw string
-/// @param    row: display row [0; 7]
-/// @param    x: first symbol position
-/// @param    str: string for draw
-/// @return    none
+/// @brief  Draw number in HEX format (0xXXXXXXXX)
+/// @param  row: display row [0; 7]
+/// @param  x: first symbol position
+/// @param  number: number for draw
+/// @return none
+//  ***************************************************************************
+void oled_gl_draw_hex32(uint32_t row, uint32_t x, uint32_t number) {
+    
+    char buffer[32] = {0};
+    sprintf(buffer, "0x%08X", (int)number);
+    oled_gl_draw_string(row, x, buffer);
+}
+
+//  ***************************************************************************
+/// @brief  Draw string
+/// @param  row: display row [0; 7]
+/// @param  x: first symbol position
+/// @param  str: string for draw
+/// @return none
 //  ***************************************************************************
 void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
+    
+    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
+    
     
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
     for (uint32_t i = 0; *str != '\0'; ++str, i += 6) {
@@ -194,13 +207,16 @@ void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
 }
 
 //  ***************************************************************************
-/// @brief    Draw horizontal line
-/// @param    row: display row [0; 7]
-/// @param    x, y: line begin position (relative row)
-/// @param    width: line width
-/// @return    none
+/// @brief  Draw horizontal line
+/// @param  row: display row [0; 7]
+/// @param  x, y: line begin position (relative row)
+/// @param  width: line width
+/// @return none
 //  ***************************************************************************
 void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t width) {
+    
+    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
+    
     
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
     uint8_t mask = (1 << y);
@@ -215,13 +231,16 @@ void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t
 }
 
 //  ***************************************************************************
-/// @brief    Draw rectangle
-/// @param    row: display row [0; 7]
-/// @param    x, y: left top angle of rectangle (relative row)
-/// @param    width, height: rectangle size (relative row)
-/// @return    none
+/// @brief  Draw rectangle
+/// @param  row: display row [0; 7]
+/// @param  x, y: left top angle of rectangle (relative row)
+/// @param  width, height: rectangle size (relative row)
+/// @return none
 //  ***************************************************************************
 void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+    
+    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
+    
     
     uint8_t mask = 0;
     
@@ -238,15 +257,18 @@ void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uin
 }
 
 //  ***************************************************************************
-/// @brief    Draw bitmap
+/// @brief  Draw bitmap
 /// @note   Bitmap height should be divisible of 8
-/// @param    row: display row [0; 7]
-/// @param    x: bitmap position
-/// @param    bitmap_width, bitmap_height: bitmap size
-/// @param    bitmap: bitmap data
-/// @return    none
+/// @param  row: display row [0; 7]
+/// @param  x: bitmap position
+/// @param  bitmap_width, bitmap_height: bitmap size
+/// @param  bitmap: bitmap data
+/// @return none
 //  ***************************************************************************
 void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap) {
+    
+    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
+    
     
     if ((bitmap_height % 8) != 0) {
         sysmon_set_error(SYSMON_FATAL_ERROR);
@@ -254,20 +276,21 @@ void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32
         return;
     }
     
-    
     for (uint32_t i = 0; i < (bitmap_height / 8); ++i, bitmap += bitmap_width) {
-        
         uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row + i, x);
         memcpy(frame_buffer, bitmap, bitmap_width);
     }
 }
 
 //  ***************************************************************************
-/// @brief    Synchronous display update
-/// @param    none
-/// @return    none
+/// @brief  Synchronous display update
+/// @param  none
+/// @return none
 //  ***************************************************************************
-void oled_gl_display_update(void) {
+void oled_gl_sync_display_update(void) {
+    
+    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
+    
     
     if (ssd1306_128x64_full_update() == false) {
         sysmon_set_error(SYSMON_I2C_ERROR);
@@ -276,20 +299,14 @@ void oled_gl_display_update(void) {
 }
 
 //  ***************************************************************************
-/// @brief    Start asynchronous display update
-/// @param    none
-/// @return    none
+/// @brief  Start asynchronous display update
+/// @param  none
+/// @return none
 //  ***************************************************************************
 void oled_gl_start_async_display_update(void) {
-    
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
-    
+
     if (driver_state != STATE_IDLE) {
-        sysmon_set_error(SYSMON_FATAL_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_OLED_GL);
         return;
-    }
-        
+    }   
     driver_state = STATE_UPDATE_ROW;
 }
