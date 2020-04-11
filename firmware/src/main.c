@@ -31,16 +31,11 @@ void main() {
     systimer_init();
     debug_gpio_init();
     
-    gui_init();
-    while (true) {
-        gui_process();
-    }
-    
-    
+    sysmon_init();
     
     indication_init();
-
-    sysmon_init();
+    gui_init();
+    
     config_init();
     communication_init();
     
@@ -64,6 +59,7 @@ void main() {
         servo_driver_process();
         
         indication_process();
+        gui_process();
         
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
             emergency_loop();

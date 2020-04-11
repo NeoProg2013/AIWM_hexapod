@@ -78,7 +78,7 @@ bool ssd1306_128x64_init(void) {
     if (!ssd1306_send_command(SET_DISPLAY_CLOCK_DIV, 0x80, true)) return false;                // Select display clock divide ratio/oscillator frequency register
     
     // Clear buffers
-    memset(frame_buffer, 0xAA, sizeof(frame_buffer));
+    memset(frame_buffer, 0x00, sizeof(frame_buffer));
     return ssd1306_128x64_full_update();
 }
 

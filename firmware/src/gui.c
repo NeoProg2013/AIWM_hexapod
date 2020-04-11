@@ -20,13 +20,26 @@ static const uint8_t battery_bitmap[] = {
     0x93, 0x82, 0xFE
 };
 
+#define SYSTEM_BITMAP_WIDTH                     (13)
+#define SYSTEM_BITMAP_HEIGHT                    (8)
+static const uint8_t system_bitmap[] = {
+    0x7E, 0xC3, 0x42, 0xC3, 0x42, 0xC3, 0x42, 0xC3, 0x42, 0xC3, 
+    0x42, 0xC3, 0x7E
+};
+
+#define MODULE_BITMAP_WIDTH                     (13)
+#define MODULE_BITMAP_HEIGHT                    (8)
+static const uint8_t module_bitmap[] = {
+    0xE7, 0xE7, 0xE7, 0x00, 0x00, 0xE7, 0xE7, 0xE7, 0x00, 0x00, 
+    0xE7, 0xE7, 0xE7
+};
 
 typedef enum {
     STATE_NOINIT,
-    STATE_UPDATE_BATTERY_VOLTAGE,
     STATE_UPDATE_BATTERY_CHARGE,
     STATE_UPDATE_SYSTEM_STATUS,
     STATE_UPDATE_MODULE_STATUS,
+    STATE_UPDATE_SYSTEM_MODE,
     STATE_UPDATE_DISPLAY
 } state_t;
 
@@ -42,40 +55,44 @@ void gui_init(void) {
     
     oled_gl_init();
   
-    // Draw battery voltage
+    // Draw battery voltage (static)
     oled_gl_draw_bitmap(0, 0, BATTERY_BITMAP_WIDTH, BATTERY_BITMAP_HEIGHT, battery_bitmap);
-    oled_gl_draw_float_number(0, 20, 12.6);
-    oled_gl_draw_string(0, 45, "V");
+    oled_gl_draw_dec_number(0, 18, 99);
+    oled_gl_draw_string(0, 35, "%");
     
-    // Draw battery charge voltage
-    oled_gl_draw_bitmap(2, 0, BATTERY_BITMAP_WIDTH, BATTERY_BITMAP_HEIGHT, battery_bitmap);
-    oled_gl_draw_float_number(2, 20, 100);
-    oled_gl_draw_string(2, 45, "%");
+    // Draw system status (static)
+    oled_gl_draw_bitmap(2, 0, SYSTEM_BITMAP_WIDTH, SYSTEM_BITMAP_HEIGHT, system_bitmap);
+    oled_gl_draw_hex16(2, 18, 0x0000);
+    
+    // Draw module status (static)
+    oled_gl_draw_bitmap(4, 0, MODULE_BITMAP_WIDTH, MODULE_BITMAP_HEIGHT, module_bitmap);
+    oled_gl_draw_hex16(4, 18, 0x0000);
 
-    // Draw horizontal separator
+    // Draw horizontal separator (static)
     oled_gl_draw_horizontal_line(5, 0, 7, 128);
     
-    // Draw error status
-    oled_gl_draw_hex16(7, 0, 0x0000);
+    // Draw error status (dynamic)
+    char fw_version[24] = FIRMWARE_VERSION;
+    fw_version[19] = '\0';
+    oled_gl_draw_string(7, 4, fw_version);
     
-    // Draw FW version number
-    oled_gl_draw_string(7, 0, FIRMWARE_VERSION);
+    // Draw vertical separator (static)
+    oled_gl_draw_string(0, 58, "|");
+    oled_gl_draw_string(1, 58, "|");
+    oled_gl_draw_string(2, 58, "|");
+    oled_gl_draw_string(3, 58, "|");
+    oled_gl_draw_string(4, 58, "|");
     
-    // Draw vertical separator
-    oled_gl_draw_string(0, 56, "|");
-    oled_gl_draw_string(1, 56, "|");
-    oled_gl_draw_string(2, 56, "|");
-    oled_gl_draw_string(3, 56, "|");
-    oled_gl_draw_string(4, 56, "|");
-    
-    // Draw system mode
+    // Draw system mode (dynamic)
     oled_gl_draw_string(0, 67, "SYSTEM");
-    oled_gl_draw_string(2, 67, "NORMAL");
+    oled_gl_draw_string(2, 67, "INIT");
     oled_gl_draw_string(4, 67, "MODE");
     
-    oled_gl_sync_display_update();
+    // Draw system active indicator (dynamic)
+    oled_gl_draw_rect(0, 120, 0, 8, 8);
     
-    module_state = STATE_UPDATE_BATTERY_VOLTAGE;
+    oled_gl_sync_display_update();
+    module_state = STATE_UPDATE_BATTERY_CHARGE;
 }
 
 //  ***************************************************************************
@@ -85,46 +102,53 @@ void gui_init(void) {
 //  ***************************************************************************
 void gui_process(void) {
     
-    /*if (callback_is_gui_error_set() == true) return;
+    if (sysmon_is_module_disable(SYSMON_MODULE_GUI) == true) return;
     
     
     static uint32_t prev_update_time = 0;
+    static bool is_system_active_indicator_visible = false;
     
     switch (module_state) {
         
-        case STATE_UPDATE_BATTERY_VOLTAGE:
-            oled_gl_draw_float_number(0, 20, battery_voltage / 10.0);
-            module_state = STATE_UPDATE_PERIPHERY_VOLTAGE;
+        case STATE_UPDATE_BATTERY_CHARGE:
+            oled_gl_draw_dec_number(0, 18, sysmon_battery_charge);
+            module_state = STATE_UPDATE_SYSTEM_STATUS;
             break;
         
-        case STATE_UPDATE_PERIPHERY_VOLTAGE:
-            oled_gl_draw_float_number(2, 20, sensors_voltage / 10.0);
-            module_state = STATE_UPDATE_WIRELESS_VOLTAGE;
+        case STATE_UPDATE_SYSTEM_STATUS:
+            oled_gl_draw_hex16(2, 18, 0x0000);
+            module_state = STATE_UPDATE_MODULE_STATUS;
             break;
             
-        case STATE_UPDATE_WIRELESS_VOLTAGE:
-            oled_gl_draw_float_number(4, 20, wireless_voltage / 10.0);
-            module_state = STATE_UPDATE_ERROR_STATUS;
-            break;
-            
-        case STATE_UPDATE_ERROR_STATUS:
-            oled_gl_draw_hex_number(7, 0, error_status);
+        case STATE_UPDATE_MODULE_STATUS:
+            oled_gl_draw_hex16(4, 18, 0x0000);
             module_state = STATE_UPDATE_SYSTEM_MODE;
             break;
             
         case STATE_UPDATE_SYSTEM_MODE:
-            if (callback_is_emergency_mode_active() == true) {
-                oled_gl_clear_row_fragment(2, 67, 0, 67, 8);
-                oled_gl_draw_string(2, 67, "EMERGENCY");
+            oled_gl_clear_row_fragment(0, 67, 0, 50, 8);
+            oled_gl_clear_row_fragment(2, 67, 0, 67, 8);
+            oled_gl_clear_row_fragment(4, 67, 0, 67, 8);
+            if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
+                
+                if (is_system_active_indicator_visible == true) {
+                    oled_gl_draw_string(0, 67, "SYSTEM");
+                    oled_gl_draw_string(2, 67, "EMERGENCY");
+                    oled_gl_draw_string(4, 67, "MODE");
+                }
             }
-            else if (callback_is_voltage_error_set() == true) {
-                oled_gl_draw_string(0, 67, "BATTERY");
-                oled_gl_draw_string(2, 67, "LOW");
-                oled_gl_draw_string(4, 67, "VOLTAGE");
+            else if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
+                
+                if (is_system_active_indicator_visible == true) {
+                    oled_gl_draw_string(0, 67, "BATTERY");
+                    oled_gl_draw_string(2, 67, "LOW");
+                    oled_gl_draw_string(4, 67, "VOLTAGE");
+                }
             }
             else {
-                oled_gl_clear_row_fragment(2, 67, 0, 67, 8);
+                oled_gl_draw_string(0, 67, "SYSTEM");
                 oled_gl_draw_string(2, 67, "STANDART");
+                oled_gl_draw_string(4, 67, "MODE");
             }
             module_state = STATE_UPDATE_DISPLAY;
             break;
@@ -132,28 +156,29 @@ void gui_process(void) {
         case STATE_UPDATE_DISPLAY:
             if (get_time_ms() - prev_update_time >= DISPLAY_UPDATE_PERIOD) {
                 
-                static bool is_rect_visible = false;
-                if (is_rect_visible == true) {
+                // Blink system active indicator
+                if (is_system_active_indicator_visible == true) {
                     oled_gl_clear_row_fragment(0, 120, 0, 8, 8);
                 }
                 else {
                     oled_gl_draw_rect(0, 120, 0, 8, 8);
                 }
-                is_rect_visible = !is_rect_visible;
+                is_system_active_indicator_visible = !is_system_active_indicator_visible;
                 
+                // Start display update
                 oled_gl_start_async_display_update();
                 prev_update_time = get_time_ms();
                 
-                module_state = STATE_UPDATE_BATTERY_VOLTAGE;
+                module_state = STATE_UPDATE_BATTERY_CHARGE;
             }
             break;
         
         case STATE_NOINIT:
         default:
-            callback_set_internal_error(ERROR_MODULE_GUI);
+            sysmon_set_error(SYSMON_FATAL_ERROR);
+            sysmon_disable_module(SYSMON_MODULE_GUI);
             break;
     }
-    */
     
     oled_gl_process();
 }

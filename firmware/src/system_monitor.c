@@ -201,8 +201,8 @@ static void calculate_battery_voltage(void) {
     if (battery_charge < 0) {
         battery_charge = 0;
     }
-    if (battery_charge > 100) {
-        battery_charge = 100;
+    if (battery_charge > 99) {
+        battery_charge = 99;
     }
     sysmon_battery_charge = (uint8_t)battery_charge;
 }
