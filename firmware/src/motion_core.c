@@ -41,7 +41,7 @@ typedef struct {
 
 typedef struct {
     int32_t curvature;
-	int32_t step_length;
+	int32_t distance;
 } traejctory_config_t;
 
 
@@ -60,6 +60,12 @@ static traejctory_config_t g_next_trajectory_config = {0};
 static bool is_trajectory_config_init = false;
 
 
+
+//  ***************************************************************************
+/// @brief  Motion core initialization
+/// @param  start_point_list: limbs start points list
+/// @return none
+//  ***************************************************************************
 void motion_core_init(const point_3d_t* start_point_list) {
 
     if (read_configuration() == false) {
@@ -91,6 +97,11 @@ void motion_core_init(const point_3d_t* start_point_list) {
     g_core_state = STATE_SYNC;
 }
 
+//  ***************************************************************************
+/// @brief  Start motion
+/// @param  motion_config: motion configuration. @ref motion_config_t
+/// @return none
+//  ***************************************************************************
 void motion_core_start_motion(const motion_config_t* motion_config) {
     
     // Initialize motion configuration
@@ -108,17 +119,33 @@ void motion_core_start_motion(const motion_config_t* motion_config) {
     }
 }
 
+//  ***************************************************************************
+/// @brief  Reset trajectory configuration
+/// @param  none
+/// @return none
+//  ***************************************************************************
 void motion_core_reset_trajectory_config(void) {
     g_current_trajectory_config.curvature = 1;
-    g_current_trajectory_config.step_length = 0;
+    g_current_trajectory_config.distance = 0;
     is_trajectory_config_init = false;
 }
 
-void motion_core_update_trajectory_config(int32_t curvature, int32_t step_length) {
+//  ***************************************************************************
+/// @brief  Update trajectory configuration
+/// @param  curvature: curvature (parameter of trajectory)
+/// @param  distance: distance (parameter of trajectory)
+/// @return none
+//  ***************************************************************************
+void motion_core_update_trajectory_config(int32_t curvature, int32_t distance) {
     g_next_trajectory_config.curvature = curvature;
-    g_next_trajectory_config.step_length = step_length;
+    g_next_trajectory_config.distance = distance;
 }
 
+//  ***************************************************************************
+/// @brief  Motion core process
+/// @param  none
+/// @return none
+//  ***************************************************************************
 void motion_core_process(void) {
 
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
@@ -190,6 +217,11 @@ void motion_core_process(void) {
     }
 }
 
+//  ***************************************************************************
+/// @brief  Check motion status
+/// @param  none
+/// @return true - motion completed, false - motion in progress
+//  ***************************************************************************
 bool motion_core_is_motion_complete(void) {
     return g_motion_config.motion_time >= g_motion_config.time_stop;
 }
@@ -315,10 +347,10 @@ static bool process_advanced_trajectory(float motion_time) {
     //
     // Calculate XZ
     //
-    float step_length = (float)g_current_trajectory_config.step_length;
+    float distance = (float)g_current_trajectory_config.distance;
 
     // Calculation radius of curvature
-    float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * step_length;
+    float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * distance;
 
     // Common calculations
     float trajectory_radius[SUPPORT_LIMBS_COUNT] = {0};
@@ -352,8 +384,8 @@ static bool process_advanced_trajectory(float motion_time) {
     }
 
     // Calculation max angle of arc
-    int32_t curvature_radius_sign = (curvature_radius > 0) ? 1 : -1;
-    float max_arc_angle = curvature_radius_sign * step_length / max_trajectory_radius;
+    int32_t curvature_radius_sign = (curvature_radius >= 0) ? 1 : -1;
+    float max_arc_angle = curvature_radius_sign * distance / max_trajectory_radius;
 
     // Calculation points by time
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {

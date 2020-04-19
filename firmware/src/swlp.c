@@ -59,10 +59,10 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
             sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
             break;
         case SWLP_CMD_SELECT_SEQUENCE_DIRECT:
-            sequences_engine_select_sequence(SEQUENCE_DIRECT, request->curvature, request->step_length);
+            sequences_engine_select_sequence(SEQUENCE_DIRECT, request->curvature, request->distance);
             break;
         case SWLP_CMD_SELECT_SEQUENCE_REVERSE:
-            sequences_engine_select_sequence(SEQUENCE_REVERSE, request->curvature, request->step_length);
+            sequences_engine_select_sequence(SEQUENCE_REVERSE, request->curvature, request->distance);
             break;
         case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
             sequences_engine_select_sequence(SEQUENCE_UP_DOWN, 0, 0);

@@ -195,7 +195,7 @@ Item {
 		}
 
 		StatusLabel {
-			text: "Reserved"
+			text: "I2C\nerror"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
@@ -282,23 +282,23 @@ Item {
 		}
 
 		StatusLabel {
-			text: "Reserved"
+			text: "GUI"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
 			isActive: moduleStatus & 0x40
-			//deactiveColor: "#00DD00"
+			deactiveColor: "#00DD00"
 		}
 
 		StatusLabel {
-			text: "Reserved"
+			text: "OLED GL"
 			Layout.minimumHeight: 40
 			Layout.maximumHeight: 40
 			Layout.preferredWidth: 118
 			Layout.fillWidth: true
 			isActive: moduleStatus & 0x20
-			//deactiveColor: "#00DD00"
+			deactiveColor: "#00DD00"
 		}
 
 		StatusLabel {
