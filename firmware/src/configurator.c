@@ -176,11 +176,10 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             strcpy(response, CLI_MSG("ERROR: Cannot read data from memory"));
             return false;
         }
-
+        
         // Formatting data
         response += sprintf(response, CLI_MSG("      00 01 02 03  04 05 06 07  08 09 0A 0B  0C 0D 0E 0F"));
         for (uint32_t i = 0; i < CONFIG_SECTION_PAGE_SIZE; i += 16) {
-
             response += sprintf(response, CLI_MSG("%04X: %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X"),
                                 i + page * CONFIG_SECTION_PAGE_SIZE, 
                                 cli_buffer[i +  0], cli_buffer[i +  1], cli_buffer[i +  2], cli_buffer[i +  3],
@@ -188,7 +187,30 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
                                 cli_buffer[i +  8], cli_buffer[i +  9], cli_buffer[i + 10], cli_buffer[i + 11],
                                 cli_buffer[i + 12], cli_buffer[i + 13], cli_buffer[i + 14], cli_buffer[i + 15]);
         }
+    }
+    else if (strcmp(cmd, "read_raw") == 0 && argc == 1) {
 
+        // Get page number
+        uint32_t page = atoi(argv[0]);
+        if (page >= CONFIG_SECTION_PAGE_COUNT) {
+            strcpy(response, CLI_MSG("ERROR: Wrong page number"));
+            return false;
+        }
+
+        // Read data
+        if (config_read(page * CONFIG_SECTION_PAGE_SIZE, cli_buffer, CONFIG_SECTION_PAGE_SIZE) == false) {
+            strcpy(response, CLI_MSG("ERROR: Cannot read data from memory"));
+            return false;
+        }
+
+        // Formatting data
+        for (uint32_t i = 0; i < CONFIG_SECTION_PAGE_SIZE; i += 16) {
+            response += sprintf(response, CLI_MSG("%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X"),
+                                cli_buffer[i +  0], cli_buffer[i +  1], cli_buffer[i +  2], cli_buffer[i +  3],
+                                cli_buffer[i +  4], cli_buffer[i +  5], cli_buffer[i +  6], cli_buffer[i +  7],
+                                cli_buffer[i +  8], cli_buffer[i +  9], cli_buffer[i + 10], cli_buffer[i + 11],
+                                cli_buffer[i + 12], cli_buffer[i + 13], cli_buffer[i + 14], cli_buffer[i + 15]);
+        }
     }
     else if (strcmp(cmd, "read16") == 0 && argc == 2) {
 
