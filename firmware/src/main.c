@@ -108,7 +108,7 @@ static void system_init(void) {
     while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
     
     // Switch USARTx clock source to system clock
-    RCC->CFGR3 |= RCC_CFGR3_USART2SW_SYSCLK | RCC_CFGR3_USART3SW_SYSCLK;
+    RCC->CFGR3 |= RCC_CFGR3_USART2SW_SYSCLK;
     
     
     

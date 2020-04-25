@@ -36,7 +36,7 @@
 
 
 #define TIM17_IRQ_PRIORITY					(0)		// 18-channels PWM driver
-#define USART1_IRQ_PRIORITY					(2)		// Main ModBus communication
+#define USART2_IRQ_PRIORITY					(2)		// SWLP communication
 #define I2C2_IRQ_PRIORITY					(7)		// Display communication
 
 

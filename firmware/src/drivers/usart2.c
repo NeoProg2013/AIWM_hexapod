@@ -59,7 +59,7 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     USART2->BRR  = SYSTEM_CLOCK_FREQUENCY / baud_rate;
     USART2->RTOR = 35; // 3.5 char timer
     NVIC_EnableIRQ(USART2_IRQn);
-    NVIC_SetPriority(USART2_IRQn, USART1_IRQ_PRIORITY);
+    NVIC_SetPriority(USART2_IRQn, USART2_IRQ_PRIORITY);
 
     // Setup DMA channel for TX
     DMA1_Channel7->CCR  &= ~DMA_CCR_EN;
@@ -68,7 +68,7 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     DMA1_Channel7->CMAR  = 0;
     DMA1_Channel7->CNDTR = 0;
     NVIC_EnableIRQ(DMA1_Channel7_IRQn);
-    NVIC_SetPriority(DMA1_Channel7_IRQn, USART1_IRQ_PRIORITY);
+    NVIC_SetPriority(DMA1_Channel7_IRQn, USART2_IRQ_PRIORITY);
 
     // Setup DMA channel for RX
     DMA1_Channel6->CCR  &= ~DMA_CCR_EN;
@@ -77,7 +77,7 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     DMA1_Channel6->CMAR  = 0;
     DMA1_Channel6->CNDTR = 0;
     NVIC_EnableIRQ(DMA1_Channel6_IRQn);
-    NVIC_SetPriority(DMA1_Channel6_IRQn, USART1_IRQ_PRIORITY);
+    NVIC_SetPriority(DMA1_Channel6_IRQn, USART2_IRQ_PRIORITY);
 
     // Enable USART
     USART2->CR1 |= USART_CR1_UE;
