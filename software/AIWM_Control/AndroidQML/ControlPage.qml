@@ -72,8 +72,8 @@ Item {
 			smooth: true
 			antialiasing: true
 
-			x: joystickItem.width / 2 - dragItem.width / 2
-			y: joystickItem.height / 2 - dragItem.height / 2
+			x: (joystickItem.width - dragItem.width) / 2
+			y: (joystickItem.height - dragItem.height) / 2
 
 			MouseArea {
 				anchors.fill: parent
@@ -93,7 +93,6 @@ Item {
 					var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2)
 
 					var factor = 25
-
 					var scaled_x = Math.abs(x / factor)
 					var scaled_max_x = (drag.maximumX / 2) / factor
 
@@ -105,7 +104,14 @@ Item {
 						curvature = -curvature
 					}
 
-					var stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+					var deadZoneHeight = 20
+					var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2
+					var maxDeadZone = (joystickItem.height - dragItem.height + deadZoneHeight) / 2
+					var stepLength = 0
+					if (dragItem.y < minDeadZone || dragItem.y > maxDeadZone) {
+						stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+					}
+
 					CppCore.sendStartMotionCommand(Math.round(stepLength),
 												   Math.round(curvature))
 				}
