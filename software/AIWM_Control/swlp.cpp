@@ -54,7 +54,7 @@ void Swlp::runCommunication() {
 	}
 	connect(m_sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent);
 	m_sendTimer->setSingleShot(false);
-	m_sendTimer->setInterval(200);
+	m_sendTimer->setInterval(100);
 	m_sendTimer->start();
 
 	// Start event loop
