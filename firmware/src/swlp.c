@@ -85,28 +85,10 @@ uint32_t swlp_process_frame(const uint8_t* rx_buffer, uint32_t frame_size, uint8
         case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:
             sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, 0, 0);
             break;
-        
-        //case SWLP_CMD_SELECT_SEQUENCE_RUN:                   movement_engine_select_sequence(SEQUENCE_RUN);                   break;
-        //case SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT:       movement_engine_select_sequence(SEQUENCE_DIRECT_MOVEMENT);       break;
-        //case SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT:      movement_engine_select_sequence(SEQUENCE_REVERSE_MOVEMENT);      break;
-        //case SWLP_CMD_SELECT_SEQUENCE_ROTATE_LEFT:           movement_engine_select_sequence(SEQUENCE_ROTATE_LEFT);           break;
-        //case SWLP_CMD_SELECT_SEQUENCE_ROTATE_RIGHT:          movement_engine_select_sequence(SEQUENCE_ROTATE_RIGHT);          break;
-        //case SWLP_CMD_SELECT_SEQUENCE_DIRECT_MOVEMENT_SLOW:  movement_engine_select_sequence(SEQUENCE_DIRECT_MOVEMENT_SLOW);  break;
-        //case SWLP_CMD_SELECT_SEQUENCE_REVERSE_MOVEMENT_SLOW: movement_engine_select_sequence(SEQUENCE_REVERSE_MOVEMENT_SLOW); break;
-        //case SWLP_CMD_SELECT_SEQUENCE_SHIFT_LEFT:            movement_engine_select_sequence(SEQUENCE_SHIFT_LEFT);            break;
-        //case SWLP_CMD_SELECT_SEQUENCE_SHIFT_RIGHT:           movement_engine_select_sequence(SEQUENCE_SHIFT_RIGHT);           break;
-        //case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:           movement_engine_select_sequence(SEQUENCE_ATTACK_LEFT);           break;
-        //case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:          movement_engine_select_sequence(SEQUENCE_ATTACK_RIGHT);          break;
-        //case SWLP_CMD_SELECT_SEQUENCE_DANCE:                 movement_engine_select_sequence(SEQUENCE_DANCE);                 break;
-        //case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:              movement_engine_select_sequence(SEQUENCE_ROTATE_X);              break;
-        ////case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Y:              movement_engine_select_sequence(SEQUENCE_ROTATE_Y);              break;
-        //case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:              movement_engine_select_sequence(SEQUENCE_ROTATE_Z);              break;
         case SWLP_CMD_SELECT_SEQUENCE_NONE:
             sequences_engine_select_sequence(SEQUENCE_NONE, 0, 0);
             break;
-        
-        //case SWLP_CMD_SWITCH_LIGHT:                          indication_switch_light_state();                                 break;                                            break;
-
+            
         default:
             response->command_status = SWLP_CMD_STATUS_ERROR;
     }
