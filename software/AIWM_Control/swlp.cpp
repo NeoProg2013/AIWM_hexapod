@@ -31,7 +31,6 @@ void Swlp::runCommunication() {
 	if (m_isRunning == true) {
 		return;
 	}
-	m_isRunning = true;
 
 	// Clear payloads
 	memset(&m_commandPayload, 0, sizeof(m_commandPayload));
@@ -44,12 +43,18 @@ void Swlp::runCommunication() {
 	}
 	connect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent);
 	if (m_socket->bind(SERVER_PORT) == false) {
+		disconnect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent);
+		delete m_socket;
+		m_socket = nullptr;
 		return;
 	}
 
 	// Setup send command payload timer
 	m_sendTimer = new (std::nothrow) QTimer();
 	if (m_sendTimer == nullptr) {
+		disconnect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent);
+		delete m_socket;
+		m_socket = nullptr;
 		return;
 	}
 	connect(m_sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent);
@@ -59,7 +64,10 @@ void Swlp::runCommunication() {
 
 	// Start event loop
 	m_eventLoop = new QEventLoop;
-	m_eventLoop->exec();
+	if (m_eventLoop != nullptr) {
+		m_isRunning = true;
+		m_eventLoop->exec();
+	}
 
 	// Stop send command payload timer
 	m_sendTimer->stop();
