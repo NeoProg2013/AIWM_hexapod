@@ -99,9 +99,6 @@ void oled_gl_process(void) {
 //  ***************************************************************************
 void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
     
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
-    
     uint8_t mask = 0;
     
     int32_t cursor = height - 1;
@@ -122,9 +119,6 @@ void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t w
 /// @return none
 //  ***************************************************************************
 void oled_gl_clear_display(void) {
-    
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
     
     for (uint32_t i = 0; i < 8; ++i) {
         uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(i, 0);
@@ -197,9 +191,6 @@ void oled_gl_draw_hex32(uint32_t row, uint32_t x, uint32_t number) {
 //  ***************************************************************************
 void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
     
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
-    
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
     for (uint32_t i = 0; *str != '\0'; ++str, i += 6) {
         memcpy(&frame_buffer[i], &font_6x8[(*str - ' ') * 6], 6);
@@ -214,9 +205,6 @@ void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t width) {
-    
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
     
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
     uint8_t mask = (1 << y);
@@ -238,9 +226,6 @@ void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
-    
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
     
     uint8_t mask = 0;
     
@@ -266,9 +251,6 @@ void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uin
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap) {
-    
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
     
     if ((bitmap_height % 8) != 0) {
         sysmon_set_error(SYSMON_FATAL_ERROR);
