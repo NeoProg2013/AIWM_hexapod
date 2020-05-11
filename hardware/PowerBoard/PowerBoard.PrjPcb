@@ -124,23 +124,6 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document6]
-DocumentPath=Power.SchDoc
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=3
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=0
-ClassGenCCAutoRoomEnabled=0
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=NWMYTUAH
-
-[Document7]
 DocumentPath=lib\active.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -157,7 +140,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=MXNPYIAN
 
-[Document8]
+[Document7]
 DocumentPath=lib\analog.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -174,7 +157,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=IDRYCPGF
 
-[Document9]
+[Document8]
 DocumentPath=lib\connectors.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -191,7 +174,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=BRQCUDBK
 
-[Document10]
+[Document9]
 DocumentPath=lib\connectors.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -208,7 +191,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=HDTYIAJC
 
-[Document11]
+[Document10]
 DocumentPath=lib\devices.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -225,7 +208,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=DWXCPVJH
 
-[Document12]
+[Document11]
 DocumentPath=lib\devices.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -242,7 +225,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document13]
+[Document12]
 DocumentPath=lib\digital.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -259,7 +242,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=TDCFNQPU
 
-[Document14]
+[Document13]
 DocumentPath=lib\indication.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -276,7 +259,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document15]
+[Document14]
 DocumentPath=lib\indication.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -293,7 +276,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=AFAWQLOI
 
-[Document16]
+[Document15]
 DocumentPath=lib\logic.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -310,7 +293,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=JRRBMXJC
 
-[Document17]
+[Document16]
 DocumentPath=lib\MCU and memory.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -327,7 +310,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=KKSLMOKA
 
-[Document18]
+[Document17]
 DocumentPath=lib\packages.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -344,7 +327,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=UBISUNGW
 
-[Document19]
+[Document18]
 DocumentPath=lib\passive.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -361,7 +344,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=HPYAELMU
 
-[Document20]
+[Document19]
 DocumentPath=lib\passive.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -378,7 +361,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=OQYFMPNE
 
-[Document21]
+[Document20]
 DocumentPath=lib\power.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -395,7 +378,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=ABVCJEBG
 
-[Document22]
+[Document21]
 DocumentPath=lib\controls.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -412,7 +395,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document23]
+[Document22]
 DocumentPath=lib\controls.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -429,6 +412,40 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
+[Document23]
+DocumentPath=Power.SchDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=3
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=0
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=NWMYTUAH
+
+[Document24]
+DocumentPath=Main DC-DC.SchDoc
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=2
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=0
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=PDLMTGWE
+
 [ProjectVariant1]
 UniqueID=8868E28C-735C-46A3-92BA-5C0D9282813E
 Description=Base
@@ -438,16 +455,16 @@ VariationCount=0
 ParamVariationCount=0
 
 [Parameter1]
-Name=ProjectAuthor
-Value=NeoProg
+Name=ProjectStatus
+Value=D
 
 [Parameter2]
 Name=ProjectRevision
 Value=1.00
 
 [Parameter3]
-Name=ProjectStatus
-Value=D
+Name=ProjectAuthor
+Value=NeoProg
 
 [Configuration1]
 Name=Sources
