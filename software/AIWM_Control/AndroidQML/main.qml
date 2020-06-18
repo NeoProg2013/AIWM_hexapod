@@ -9,15 +9,12 @@ ApplicationWindow {
     color: "#000000"
 
     onClosing: {
-        if (swipeView.currentIndex === 2) {
+        if (swipeView.currentIndex === 1) {
             close.accepted = false
             CppCore.stopCommunication()
-            swipeView.currentIndex = 1
-        } else if (swipeView.currentIndex === 0) {
-            close.accepted = false
-            CppTerminal.stopCommunication()
-            terminalPage.resetTerminalInterface()
-            swipeView.currentIndex = 1
+            CppCore.stopStreamService()
+            controlPage.resetPage()
+            swipeView.currentIndex = 0
         } else {
             close.accepted = true
         }
@@ -26,20 +23,13 @@ ApplicationWindow {
     SwipeView {
         id: swipeView
         anchors.fill: parent
-        currentIndex: 1
+        currentIndex: 0
         interactive: true
-
-        TerminalPage {
-            id: terminalPage
-        }
 
         ConnectionPage {
             id: connectionPage
             onShowControlPage: {
-                swipeView.currentIndex = 2
-            }
-            onShowTerminalPage: {
-                swipeView.currentIndex = 0
+                swipeView.currentIndex = 1
             }
         }
         ControlPage {

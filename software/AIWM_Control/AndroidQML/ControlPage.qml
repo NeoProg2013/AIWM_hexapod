@@ -2,491 +2,487 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
+import QtQuick.Extras 1.4
 
 Item {
 
-	property int systemStatus: 0xFF
-	property int moduleStatus: 0xFF
-	property real batteryVoltage: 0
-	property int batteryCharge: 0
+    id: root
+    width: 400
+    height: 600
+    clip: true
 
-	id: root
-	width: 500
-	height: 888
-	clip: true
+    property int systemStatus: 0xFF
+    property int moduleStatus: 0xFF
 
-	FontLoader {
-		id: fixedFont
-		source: "qrc:/fonts/OpenSans-Regular.ttf"
-	}
+    //property real batteryVoltage: 0
+    //property int batteryCharge: 0
+    function resetPage() {
+        systemStatus = 0xFF
+        moduleStatus = 0xFF
+        //batteryVoltage = 0
+        //batteryCharge = 0
+    }
 
-	Connections {
-		target: CppCore
-		onSystemStatusUpdated: {
-			systemStatus = newSystemStatus
-		}
-		onModuleStatusUpdated: {
-			moduleStatus = newModuleStatus
-		}
-		onVoltageValuesUpdated: {
-			batteryVoltage = newBatteryVoltage / 1000.0
-		}
-		onBatteryChargeUpdated: {
-			batteryCharge = newBatteryCharge
-		}
-	}
+    FontLoader {
+        id: fixedFont
+        source: "qrc:/fonts/OpenSans-Regular.ttf"
+    }
 
-	Rectangle {
-		id: joystickItem
-		y: 653
-		width: 270
-		height: 270
-		anchors.horizontalCenter: parent.horizontalCenter
-		anchors.bottom: parent.bottom
-		anchors.bottomMargin: 20
-		color: "#00000000"
-		border.color: "#AAAAAA"
+    Connections {
+        target: CppCore
+        function onSystemStatusUpdated(newSystemStatus) {
+            systemStatus = newSystemStatus
+        }
+        function onModuleStatusUpdated(newModuleStatus) {
+            moduleStatus = newModuleStatus
+        }
 
-		ParallelAnimation {
-			id: animationReturn
-			NumberAnimation {
-				target: dragItem
-				property: "x"
-				to: joystickItem.width / 2 - dragItem.width / 2
-				duration: 100
-			}
-			NumberAnimation {
-				target: dragItem
-				property: "y"
-				to: joystickItem.height / 2 - dragItem.height / 2
-				duration: 100
-			}
-		}
 
-		ColorOverlay {
-			id: dragItem
-			width: 100
-			height: 100
-			source: joystickImage
-			color: "#FFFFFF"
-			smooth: true
-			antialiasing: true
+        /*onVoltageValuesUpdated: {
+            batteryVoltage = newBatteryVoltage / 1000.0
+        }
+        onBatteryChargeUpdated: {
+            batteryCharge = newBatteryCharge
+        }*/
+    }
 
-			x: (joystickItem.width - dragItem.width) / 2
-			y: (joystickItem.height - dragItem.height) / 2
+    StreamWidget {
+        id: streamWidget
+        anchors.bottom: controls.top
+        anchors.bottomMargin: 10
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.top: parent.top
+    }
 
-			MouseArea {
-				anchors.fill: parent
-				drag.target: dragItem
-				drag.axis: Drag.XAndYAxis
-				drag.minimumX: 0
-				drag.maximumX: joystickItem.width - dragItem.width
-				drag.minimumY: 0
-				drag.maximumY: joystickItem.height - dragItem.height
+    SwipeView {
+        id: controls
+        orientation: Qt.Vertical
+        clip: true
+        height: 270
+        anchors.rightMargin: 10
+        anchors.leftMargin: 10
+        anchors.bottomMargin: 10
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
 
-				onReleased: {
-					animationReturn.start()
-					CppCore.sendStopMoveCommand()
-				}
-				onPositionChanged: {
+        Item {
 
-					var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2)
+            Rectangle {
+                id: joystickItem
+                width: 270
+                height: 270
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                color: "#00000000"
+                border.color: "#AAAAAA"
 
-					var factor = 25
-					var scaled_x = Math.abs(x / factor)
-					var scaled_max_x = (drag.maximumX / 2) / factor
+                ParallelAnimation {
+                    id: animationReturn
+                    NumberAnimation {
+                        target: dragItem
+                        property: "x"
+                        to: joystickItem.width / 2 - dragItem.width / 2
+                        duration: 100
+                    }
+                    NumberAnimation {
+                        target: dragItem
+                        property: "y"
+                        to: joystickItem.height / 2 - dragItem.height / 2
+                        duration: 100
+                    }
+                }
 
-					var curvature = Math.exp(scaled_x) / Math.exp(
-								scaled_max_x) * 1999
+                ColorOverlay {
+                    id: dragItem
+                    width: 100
+                    height: 100
+                    source: joystickImage
+                    color: "#FFFFFF"
+                    smooth: true
+                    antialiasing: true
 
-					curvature = Math.round(curvature)
-					if (x < 0) {
-						curvature = -curvature
-					}
+                    x: (joystickItem.width - dragItem.width) / 2
+                    y: (joystickItem.height - dragItem.height) / 2
 
-					var deadZoneHeight = 20
-					var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2
-					var maxDeadZone = (joystickItem.height - dragItem.height + deadZoneHeight) / 2
-					var stepLength = 0
-					if (dragItem.y < minDeadZone || dragItem.y > maxDeadZone) {
-						stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
-					}
+                    MouseArea {
+                        anchors.fill: parent
+                        drag.target: dragItem
+                        drag.axis: Drag.XAndYAxis
+                        drag.minimumX: 0
+                        drag.maximumX: joystickItem.width - dragItem.width
+                        drag.minimumY: 0
+                        drag.maximumY: joystickItem.height - dragItem.height
 
-					CppCore.sendStartMotionCommand(Math.round(stepLength),
-												   Math.round(curvature))
-				}
-			}
-		}
+                        onReleased: {
+                            animationReturn.start()
+                            CppCore.sendStopMoveCommand()
+                        }
+                        onPositionChanged: {
 
-		Image {
-			id: joystickImage
-			visible: false
-			source: "qrc:/images/joystick.svg"
-			sourceSize.width: dragItem.width
-			sourceSize.height: dragItem.height
-		}
-	}
+                            var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2)
 
-	Item {
-		id: voltage
-		height: 22
-		anchors.right: parent.right
-		anchors.rightMargin: 10
-		anchors.top: errorStatus.bottom
-		anchors.topMargin: 10
-		anchors.left: parent.left
-		anchors.leftMargin: 10
+                            var factor = 25
+                            var scaled_x = Math.abs(x / factor)
+                            var scaled_max_x = (drag.maximumX / 2) / factor
 
-		Label {
-			id: batteryChargeLabel
-			width: 95
-			height: 22
-			anchors.left: parent.left
-			anchors.top: parent.top
-			font.family: fixedFont.name
-			font.pointSize: 10
-			text: qsTr("Battery charge:")
-			horizontalAlignment: Text.AlignLeft
-			verticalAlignment: Text.AlignVCenter
-		}
+                            var curvature = Math.exp(scaled_x) / Math.exp(
+                                        scaled_max_x) * 1999
 
-		ProgressBar {
-			id: batteryVoltageProgressBar
-			width: 165
-			height: 22
-			anchors.top: parent.top
-			anchors.right: batteryChargeValueLabel.left
-			anchors.rightMargin: 0
-			anchors.left: batteryChargeLabel.right
-			anchors.leftMargin: 0
-			value: batteryCharge
-			to: 100
-		}
+                            curvature = Math.round(curvature)
+                            if (x < 0) {
+                                curvature = -curvature
+                            }
 
-		Label {
-			id: batteryChargeValueLabel
-			width: 90
-			height: 22
-			text: batteryVoltageProgressBar.value + "% (" + batteryVoltage + "V)"
-			anchors.top: parent.top
-			anchors.right: parent.right
-			font.family: fixedFont.name
-			font.pointSize: 10
-			verticalAlignment: Text.AlignVCenter
-			horizontalAlignment: Text.AlignHCenter
-		}
-	}
+                            var deadZoneHeight = 20
+                            var minDeadZone = (joystickItem.height - dragItem.height
+                                               - deadZoneHeight) / 2
+                            var maxDeadZone = (joystickItem.height - dragItem.height
+                                               + deadZoneHeight) / 2
+                            var stepLength = 0
+                            if (dragItem.y < minDeadZone
+                                    || dragItem.y > maxDeadZone) {
+                                stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+                            }
 
-	GridLayout {
-		id: errorStatus
-		height: 175
-		columnSpacing: 4
-		rowSpacing: 4
-		anchors.right: parent.horizontalCenter
-		anchors.rightMargin: 2
-		anchors.top: parent.top
-		anchors.topMargin: 10
-		anchors.left: parent.left
-		anchors.leftMargin: 10
-		rows: 4
-		columns: 2
+                            CppCore.sendStartMotionCommand(
+                                        Math.round(stepLength),
+                                        Math.round(curvature))
+                        }
+                    }
+                }
 
-		StatusLabel {
-			text: "Connection\nlost"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x80
-		}
+                Image {
+                    id: joystickImage
+                    visible: false
+                    source: "qrc:/images/joystick.svg"
+                    sourceSize.width: dragItem.width
+                    sourceSize.height: dragItem.height
+                }
+            }
+        }
+        Item {
+            id: element
+            RowLayout {
+                height: 40
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
 
-		StatusLabel {
-			text: "I2C\nerror"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x40
-		}
+                ImageButton {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    imageSrc: "qrc:/images/getUp.svg"
+                    onButtonPressed: {
+                        CppCore.sendGetUpCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
 
-		StatusLabel {
-			text: "Math\nerror"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x20
-		}
+                ImageButton {
+                    Layout.fillWidth: true
+                    imageSrc: "qrc:/images/getDown.svg"
+                    Layout.fillHeight: true
+                    onButtonPressed: {
+                        CppCore.sendGetDownCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
 
-		StatusLabel {
-			text: "Sync\nerror"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x10
-		}
+                ImageButton {
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    imageSrc: "qrc:/images/swordLeft.svg"
+                    onButtonPressed: {
+                        CppCore.sendAttackLeftCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
 
-		StatusLabel {
-			text: "Voltage\nerror"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x08
-		}
+                ImageButton {
+                    Layout.fillWidth: true
+                    imageSrc: "qrc:/images/swordRight.svg"
+                    Layout.fillHeight: true
+                    onButtonPressed: {
+                        CppCore.sendAttackRightCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
+            }
 
-		StatusLabel {
-			text: "Memory\nerror"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x04
-		}
+            RowLayout {
+                y: 45
+                height: 40
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
 
-		StatusLabel {
-			text: "Configuration\nerror"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x02
-		}
+                ImageButton {
+                    imageSrc: "qrc:/images/arrowPushPull.svg"
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
 
-		StatusLabel {
-			text: "Fatal\nerror"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: systemStatus & 0x01
-		}
-	}
+                    onButtonPressed: {
+                        CppCore.sendPushPullCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
 
-	GridLayout {
-		height: 175
-		rowSpacing: 4
-		columnSpacing: 4
-		anchors.left: parent.horizontalCenter
-		anchors.leftMargin: 2
-		anchors.top: parent.top
-		anchors.topMargin: 10
-		anchors.right: parent.right
-		anchors.rightMargin: 10
-		rows: 4
-		columns: 2
+                ImageButton {
+                    imageSrc: "qrc:/images/dance.svg"
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
 
-		StatusLabel {
-			text: "Reserved"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x80
-			//deactiveColor: "#00DD00"
-		}
+                    onButtonPressed: {
+                        CppCore.sendDanceCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
 
-		StatusLabel {
-			text: "GUI"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x40
-			deactiveColor: "#00DD00"
-		}
+                ImageButton {
+                    imageSrc: "qrc:/images/arrowUpDown.svg"
+                    imageRotate: 90
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
 
-		StatusLabel {
-			text: "OLED GL"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x20
-			deactiveColor: "#00DD00"
-		}
+                    onButtonPressed: {
+                        CppCore.sendUpDownCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
 
-		StatusLabel {
-			text: "System\nmonitor"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x10
-			deactiveColor: "#00DD00"
-		}
+                ImageButton {
+                    imageSrc: "qrc:/images/rotateX.svg"
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
 
-		StatusLabel {
-			text: "Sequences\nengine"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x08
-			deactiveColor: "#00DD00"
-		}
+                    onButtonPressed: {
+                        CppCore.sendRotateXCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
 
-		StatusLabel {
-			text: "Motion\ncore"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x04
-			deactiveColor: "#00DD00"
-		}
+                ImageButton {
+                    imageSrc: "qrc:/images/rotateZ.svg"
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
 
-		StatusLabel {
-			text: "Servo\ndriver"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x02
-			deactiveColor: "#00DD00"
-		}
+                    onButtonPressed: {
+                        CppCore.sendRotateZCommand()
+                    }
+                    onButtonReleased: {
+                        CppCore.sendStopMoveCommand()
+                    }
+                }
+            }
+            GridLayout {
+                id: errorStatus
+                y: 95
+                width: 188
+                height: 180
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+                columnSpacing: 4
+                rowSpacing: 4
+                anchors.right: parent.horizontalCenter
+                anchors.rightMargin: 2
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                rows: 4
+                columns: 2
 
-		StatusLabel {
-			text: "Configurator"
-			Layout.minimumHeight: 40
-			Layout.maximumHeight: 40
-			Layout.preferredWidth: 118
-			Layout.fillWidth: true
-			isActive: moduleStatus & 0x01
-			deactiveColor: "#00DD00"
-		}
-	}
+                StatusLabel {
+                    text: "Connection\nlost"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x80
+                }
 
-	SwipeView {
-		clip: true
-		width: 480
-		height: 50
-		anchors.top: voltage.bottom
-		anchors.topMargin: 10
-		anchors.left: parent.left
-		anchors.leftMargin: 10
-		anchors.right: parent.right
-		anchors.rightMargin: 10
+                StatusLabel {
+                    text: "I2C\nerror"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x40
+                }
 
-		RowLayout {
+                StatusLabel {
+                    text: "Math\nerror"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x20
+                }
 
-			ImageButton {
-				Layout.fillHeight: true
-				Layout.fillWidth: true
-				imageSrc: "qrc:/images/getUp.svg"
-				onButtonPressed: {
-					CppCore.sendGetUpCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
+                StatusLabel {
+                    text: "Sync\nerror"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x10
+                }
 
-			ImageButton {
-				Layout.fillWidth: true
-				imageSrc: "qrc:/images/getDown.svg"
-				Layout.fillHeight: true
-				onButtonPressed: {
-					CppCore.sendGetDownCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
+                StatusLabel {
+                    text: "Voltage\nerror"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x08
+                }
 
-			ImageButton {
-				Layout.fillHeight: true
-				Layout.fillWidth: true
-				imageSrc: "qrc:/images/swordLeft.svg"
-				onButtonPressed: {
-					CppCore.sendAttackLeftCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
+                StatusLabel {
+                    text: "Memory\nerror"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x04
+                }
 
-			ImageButton {
-				Layout.fillWidth: true
-				imageSrc: "qrc:/images/swordRight.svg"
-				Layout.fillHeight: true
-				onButtonPressed: {
-					CppCore.sendAttackRightCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
-		}
+                StatusLabel {
+                    text: "Configuration\nerror"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x02
+                }
 
-		RowLayout {
+                StatusLabel {
+                    text: "Fatal\nerror"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: systemStatus & 0x01
+                }
+            }
+            GridLayout {
+                y: 95
+                height: 180
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+                rowSpacing: 4
+                columnSpacing: 4
+                anchors.left: parent.horizontalCenter
+                anchors.leftMargin: 2
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                rows: 4
+                columns: 2
 
-			ImageButton {
-				imageSrc: "qrc:/images/arrowPushPull.svg"
-				Layout.fillHeight: true
-				Layout.fillWidth: true
+                StatusLabel {
+                    text: "Reserved"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x80
+                    //deactiveColor: "#00DD00"
+                }
 
-				onButtonPressed: {
-					CppCore.sendPushPullCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
+                StatusLabel {
+                    text: "GUI"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x40
+                    deactiveColor: "#00DD00"
+                }
 
-			ImageButton {
-				imageSrc: "qrc:/images/dance.svg"
-				Layout.fillHeight: true
-				Layout.fillWidth: true
+                StatusLabel {
+                    text: "OLED GL"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x20
+                    deactiveColor: "#00DD00"
+                }
 
-				onButtonPressed: {
-					CppCore.sendDanceCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
+                StatusLabel {
+                    text: "System\nmonitor"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x10
+                    deactiveColor: "#00DD00"
+                }
 
-			ImageButton {
-				imageSrc: "qrc:/images/arrowUpDown.svg"
-				imageRotate: 90
-				Layout.fillHeight: true
-				Layout.fillWidth: true
+                StatusLabel {
+                    text: "Sequences\nengine"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x08
+                    deactiveColor: "#00DD00"
+                }
 
-				onButtonPressed: {
-					CppCore.sendUpDownCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
+                StatusLabel {
+                    text: "Motion\ncore"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x04
+                    deactiveColor: "#00DD00"
+                }
 
-			ImageButton {
-				imageSrc: "qrc:/images/rotateX.svg"
-				Layout.fillHeight: true
-				Layout.fillWidth: true
+                StatusLabel {
+                    text: "Servo\ndriver"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x02
+                    deactiveColor: "#00DD00"
+                }
 
-				onButtonPressed: {
-					CppCore.sendRotateXCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
-
-			ImageButton {
-				imageSrc: "qrc:/images/rotateZ.svg"
-				Layout.fillHeight: true
-				Layout.fillWidth: true
-
-				onButtonPressed: {
-					CppCore.sendRotateZCommand()
-				}
-				onButtonReleased: {
-					CppCore.sendStopMoveCommand()
-				}
-			}
-		}
-	}
+                StatusLabel {
+                    text: "Configurator"
+                    Layout.minimumHeight: 40
+                    Layout.maximumHeight: 40
+                    Layout.preferredWidth: 118
+                    Layout.fillWidth: true
+                    isActive: moduleStatus & 0x01
+                    deactiveColor: "#00DD00"
+                }
+            }
+        }
+    }
 }
+
+/*##^##
+Designer {
+    D{i:0;formeditorColor:"#000000"}D{i:3;anchors_height:290}D{i:4;anchors_width:270}
+}
+##^##*/
+

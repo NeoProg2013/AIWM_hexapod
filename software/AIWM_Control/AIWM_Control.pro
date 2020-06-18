@@ -13,11 +13,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    clipboardproxy.cpp \
     main.cpp \
     core.cpp \
-    swlp.cpp \
-    terminal.cpp
+    streamframeprovider.cpp \
+    streamservice.cpp \
+    swlp.cpp
 
 RESOURCES += qml.qrc
 
@@ -33,11 +33,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    clipboardproxy.h \
+    streamframeprovider.h \
+    streamservice.h \
     swlp.h \
     swlp_protocol.h \
-    core.h \
-    terminal.h
+    core.h
 
 DISTFILES += \
     android/AndroidManifest.xml \
