@@ -66,6 +66,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        currentIndex: 1
 
         Item {
 

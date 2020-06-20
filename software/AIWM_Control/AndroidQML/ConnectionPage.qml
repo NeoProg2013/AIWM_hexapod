@@ -22,7 +22,6 @@ Item {
             labelText.color = "#FFFFFF"
             connectButton.visible = true
             progressBar.visible = false
-            terminalButton.visible = true
             timeoutTimer.stop()
             showControlPage()
         }
@@ -37,7 +36,6 @@ Item {
             labelText.visible = false
             connectButton.visible = true
             progressBar.visible = false
-            terminalButton.visible = true
 
             CppCore.stopCommunication()
         }
@@ -90,7 +88,6 @@ Item {
             labelText.visible = true
             connectButton.visible = false
             progressBar.visible = true
-            terminalButton.visible = false
 
             CppCore.runCommunication()
             timeoutTimer.start()
