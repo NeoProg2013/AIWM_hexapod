@@ -27,7 +27,7 @@ void StreamService::runService() {
 
     // Send GET request
     m_manager = new QNetworkAccessManager();
-    m_requestReply = m_manager->get(QNetworkRequest(QUrl("http://192.168.1.103/")));
+    m_requestReply = m_manager->get(QNetworkRequest(QUrl("http://192.168.1.105/")));
     m_requestReply->setReadBufferSize(50 * 1024);
 
     // Setup signals
