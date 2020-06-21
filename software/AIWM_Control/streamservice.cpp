@@ -18,7 +18,7 @@ void StreamService::runService() {
         qDebug() << "m_isRunning == true";
         return;
     }
-    qDebug() << "Service started";
+    qDebug() << "StreamService start";
 
     // Setup timeout timer
     m_timeoutTimer = new QTimer;
@@ -59,6 +59,7 @@ void StreamService::runService() {
     m_timeoutTimer = nullptr;
 
     m_isRunning = false;
+    qDebug() << "StreamService stop";
 }
 
 void StreamService::httpDataReceived() {

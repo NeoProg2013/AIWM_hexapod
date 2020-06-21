@@ -3,6 +3,7 @@
 
 #include <QQuickImageProvider>
 #include <QByteArray>
+#include <QFile>
 
 
 class StreamFrameProvider : public QQuickImageProvider
@@ -14,7 +15,10 @@ public:
     virtual void setImageRawData(const QByteArray& rawData);
 
 private:
-    QByteArray m_imageRawData;
+    const int m_imageWidth;
+    const int m_imageHeight;
+    QPixmap m_lastPixmap;
+    QFile file;
 };
 
 #endif // STREAMFRAMEPROVIDER_H

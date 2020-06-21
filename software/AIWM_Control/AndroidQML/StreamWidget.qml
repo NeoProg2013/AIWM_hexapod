@@ -67,9 +67,12 @@ Item {
         id: streamFrame
         visible: false
         anchors.fill: parent
-        source: "image://streamFrameProvider/1"
+        source: ""
         fillMode: Image.PreserveAspectFit
         verticalAlignment: Qt.AlignTop
+        smooth: true
+        cache: false
+        asynchronous: true
 
         property bool flag: false
         function updateSourceImage() {

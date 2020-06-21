@@ -1,31 +1,25 @@
 #include "streamframeprovider.h"
 
-StreamFrameProvider::StreamFrameProvider() : QQuickImageProvider(QQuickImageProvider::Pixmap) {}
+StreamFrameProvider::StreamFrameProvider()
+    : QQuickImageProvider(QQuickImageProvider::Pixmap),
+      m_imageWidth(640), m_imageHeight(480),
+      m_lastPixmap(m_imageWidth, m_imageHeight)
+{
+}
 
 StreamFrameProvider::~StreamFrameProvider() {}
 
 QPixmap StreamFrameProvider::requestPixmap(const QString&, QSize *size, const QSize&)
 {
-    int width = 640;
-    int height = 480;
     if (size) {
-        *size = QSize(width, height);
+        *size = QSize(m_imageWidth, m_imageHeight);
     }
-
-    QPixmap pixmap(width, height);
-    if (m_imageRawData.size() != 0) {
-
-        if (pixmap.loadFromData(m_imageRawData) == false) {
-            pixmap = QPixmap(width, height);
-            pixmap.fill(QColor(0, 0, 0));
-        }
-    }
-    else {
-        pixmap.fill(QColor(0, 0, 0));
-    }
-    return pixmap;
+    return m_lastPixmap;
 }
 
 void StreamFrameProvider::setImageRawData(const QByteArray& rawData) {
-    m_imageRawData = rawData;
+    QPixmap pixmap(m_imageWidth, m_imageHeight);
+    if (pixmap.loadFromData(rawData) == true) {
+        m_lastPixmap = pixmap;
+    }
 }
