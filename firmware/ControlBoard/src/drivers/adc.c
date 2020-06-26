@@ -24,9 +24,9 @@ void adc_init(void) {
     // Setup GPIO
     //
     // Setup analog input 1 (PC3)
-    GPIOC->MODER   |=  (0x03 << (ADC_INPUT_1_PIN * 2));         // Analog mode
-    GPIOC->OSPEEDR |=  (0x03 << (ADC_INPUT_1_PIN * 2));         // High speed
-    GPIOC->PUPDR   &= ~(0x03 << (ADC_INPUT_1_PIN * 2));         // Disable pull
+    GPIOC->MODER   |=  (0x03u << (ADC_INPUT_1_PIN * 2u));         // Analog mode
+    GPIOC->OSPEEDR |=  (0x03u << (ADC_INPUT_1_PIN * 2u));         // High speed
+    GPIOC->PUPDR   &= ~(0x03u << (ADC_INPUT_1_PIN * 2u));         // Disable pull
 
 
     //

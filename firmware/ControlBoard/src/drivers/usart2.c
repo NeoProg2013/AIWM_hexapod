@@ -33,17 +33,17 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     // Setup GPIO
     //
     // Setup TX pin
-    GPIOB->MODER   |=  (0x02 << (USART_TX_PIN * 2)); // Alternate function mode
-    GPIOB->OSPEEDR |=  (0x03 << (USART_TX_PIN * 2)); // High speed
-    GPIOB->PUPDR   &= ~(0x03 << (USART_TX_PIN * 2)); // Disable pull
-    GPIOB->AFR[0]  |=  (0x07 << (USART_TX_PIN * 4)); // AF7
+    GPIOB->MODER   |=  (0x02u << (USART_TX_PIN * 2u)); // Alternate function mode
+    GPIOB->OSPEEDR |=  (0x03u << (USART_TX_PIN * 2u)); // High speed
+    GPIOB->PUPDR   &= ~(0x03u << (USART_TX_PIN * 2u)); // Disable pull
+    GPIOB->AFR[0]  |=  (0x07u << (USART_TX_PIN * 4u)); // AF7
     
     // Setup RX pin
-    GPIOB->MODER   |=  (0x02 << (USART_RX_PIN * 2)); // Alternate function mode
-    GPIOB->OSPEEDR |=  (0x03 << (USART_RX_PIN * 2)); // High speed
-    GPIOB->PUPDR   &= ~(0x03 << (USART_RX_PIN * 2)); // Disable pull
-    GPIOB->PUPDR   |=  (0x01 << (USART_RX_PIN * 2)); // Enable pull up
-    GPIOB->AFR[0]  |=  (0x07 << (USART_RX_PIN * 4)); // AF7
+    GPIOB->MODER   |=  (0x02u << (USART_RX_PIN * 2u)); // Alternate function mode
+    GPIOB->OSPEEDR |=  (0x03u << (USART_RX_PIN * 2u)); // High speed
+    GPIOB->PUPDR   &= ~(0x03u << (USART_RX_PIN * 2u)); // Disable pull
+    GPIOB->PUPDR   |=  (0x01u << (USART_RX_PIN * 2u)); // Enable pull up
+    GPIOB->AFR[0]  |=  (0x07u << (USART_RX_PIN * 4u)); // AF7
     
     
     //

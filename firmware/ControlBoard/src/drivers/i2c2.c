@@ -33,28 +33,28 @@ void i2c2_init(i2c_speed_t speed) {
     // Setup GPIO
     //
     // Send 9 pulses on SCL
-    GPIOF->MODER   |=  (0x01 << (I2C_SCL_PIN * 2));     // Output mode
-    GPIOF->OTYPER  |=  (0x01 << (I2C_SCL_PIN * 1));     // Open drain
-    GPIOF->OSPEEDR |=  (0x03 << (I2C_SCL_PIN * 2));     // High speed
-    GPIOF->PUPDR   &= ~(0x03 << (I2C_SCL_PIN * 2));     // Disable pull
+    GPIOF->MODER   |=  (0x01u << (I2C_SCL_PIN * 2u));     // Output mode
+    GPIOF->OTYPER  |=  (0x01u << (I2C_SCL_PIN * 1u));     // Open drain
+    GPIOF->OSPEEDR |=  (0x03u << (I2C_SCL_PIN * 2u));     // High speed
+    GPIOF->PUPDR   &= ~(0x03u << (I2C_SCL_PIN * 2u));     // Disable pull
     for (uint32_t i = 0; i < 10; ++i) {
-        GPIOF->BRR = 0x01 << I2C_SCL_PIN;
+        GPIOF->BRR = 0x01u << I2C_SCL_PIN;
         delay_ms(1);
-        GPIOF->BSRR = 0x01 << I2C_SCL_PIN;
+        GPIOF->BSRR = 0x01u << I2C_SCL_PIN;
         delay_ms(1);
     }
-    GPIOF->MODER   &= ~(0x03 << (I2C_SCL_PIN * 2));
+    GPIOF->MODER   &= ~(0x03u << (I2C_SCL_PIN * 2u));
     
     // Setup SCL pin (PB8)
-    GPIOF->MODER   |=  (0x02 << (I2C_SCL_PIN * 2));     // Alternate function mode
-    GPIOF->AFR[0]  |=  (0x04 << (I2C_SCL_PIN * 4));     // AF4
+    GPIOF->MODER   |=  (0x02u << (I2C_SCL_PIN * 2u));     // Alternate function mode
+    GPIOF->AFR[0]  |=  (0x04u << (I2C_SCL_PIN * 4u));     // AF4
     
     // Setup SDA pin (PB9)
-    GPIOF->MODER   |=  (0x02 << (I2C_SDA_PIN * 2));     // Alternate function mode
-    GPIOF->OTYPER  |=  (0x01 << (I2C_SDA_PIN * 1));     // Open drain
-    GPIOF->OSPEEDR |=  (0x03 << (I2C_SDA_PIN * 2));     // High speed
-    GPIOF->PUPDR   &= ~(0x03 << (I2C_SDA_PIN * 2));     // Disable pull
-    GPIOF->AFR[0]  |=  (0x04 << (I2C_SDA_PIN * 4));     // AF4
+    GPIOF->MODER   |=  (0x02u << (I2C_SDA_PIN * 2u));     // Alternate function mode
+    GPIOF->OTYPER  |=  (0x01u << (I2C_SDA_PIN * 1u));     // Open drain
+    GPIOF->OSPEEDR |=  (0x03u << (I2C_SDA_PIN * 2u));     // High speed
+    GPIOF->PUPDR   &= ~(0x03u << (I2C_SDA_PIN * 2u));     // Disable pull
+    GPIOF->AFR[0]  |=  (0x04u << (I2C_SDA_PIN * 4u));     // AF4
     
     
     //

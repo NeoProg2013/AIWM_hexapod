@@ -145,28 +145,28 @@ static void system_init(void) {
 static void debug_gpio_init(void) {
     
     // TP1 pin (PC9): output mode, push-pull, high speed, no pull
-    GPIOC->BRR      =  (0x01 << (DEBUG_TP1_PIN * 1));
-    GPIOC->MODER   |=  (0x01 << (DEBUG_TP1_PIN * 2));
-    GPIOC->OSPEEDR |=  (0x03 << (DEBUG_TP1_PIN * 2));
-    GPIOC->PUPDR   &= ~(0x03 << (DEBUG_TP1_PIN * 2));
+    GPIOC->BRR      =  (0x01u << (DEBUG_TP1_PIN * 1u));
+    GPIOC->MODER   |=  (0x01u << (DEBUG_TP1_PIN * 2u));
+    GPIOC->OSPEEDR |=  (0x03u << (DEBUG_TP1_PIN * 2u));
+    GPIOC->PUPDR   &= ~(0x03u << (DEBUG_TP1_PIN * 2u));
     
     // TP2 pin (PA8): output mode, push-pull, high speed, no pull
-    GPIOA->BRR      =  (0x01 << (DEBUG_TP2_PIN * 1));
-    GPIOA->MODER   |=  (0x01 << (DEBUG_TP2_PIN * 2));
-    GPIOA->OSPEEDR |=  (0x03 << (DEBUG_TP2_PIN * 2));
-    GPIOA->PUPDR   &= ~(0x03 << (DEBUG_TP2_PIN * 2));
+    GPIOA->BRR      =  (0x01u << (DEBUG_TP2_PIN * 1u));
+    GPIOA->MODER   |=  (0x01u << (DEBUG_TP2_PIN * 2u));
+    GPIOA->OSPEEDR |=  (0x03u << (DEBUG_TP2_PIN * 2u));
+    GPIOA->PUPDR   &= ~(0x03u << (DEBUG_TP2_PIN * 2u));
     
     // TP3 pin (PC12): output mode, push-pull, high speed, no pull
-    GPIOC->BRR      =  (0x01 << (DEBUG_TP3_PIN * 1));
-    GPIOC->MODER   |=  (0x01 << (DEBUG_TP3_PIN * 2));
-    GPIOC->OSPEEDR |=  (0x03 << (DEBUG_TP3_PIN * 2));
-    GPIOC->PUPDR   &= ~(0x03 << (DEBUG_TP3_PIN * 2));
+    GPIOC->BRR      =  (0x01u << (DEBUG_TP3_PIN * 1));
+    GPIOC->MODER   |=  (0x01u << (DEBUG_TP3_PIN * 2));
+    GPIOC->OSPEEDR |=  (0x03u << (DEBUG_TP3_PIN * 2));
+    GPIOC->PUPDR   &= ~(0x03u << (DEBUG_TP3_PIN * 2));
     
     // TP4 pin (PD2): output mode, push-pull, high speed, no pull
-    GPIOD->BRR      =  (0x01 << (DEBUG_TP4_PIN * 1));
-    GPIOD->MODER   |=  (0x01 << (DEBUG_TP4_PIN * 2));
-    GPIOD->OSPEEDR |=  (0x03 << (DEBUG_TP4_PIN * 2));
-    GPIOD->PUPDR   &= ~(0x03 << (DEBUG_TP4_PIN * 2));
+    GPIOD->BRR      =  (0x01u << (DEBUG_TP4_PIN * 1));
+    GPIOD->MODER   |=  (0x01u << (DEBUG_TP4_PIN * 2));
+    GPIOD->OSPEEDR |=  (0x03u << (DEBUG_TP4_PIN * 2));
+    GPIOD->PUPDR   &= ~(0x03u << (DEBUG_TP4_PIN * 2));
 }
 
 void HardFault_Handler(void) {

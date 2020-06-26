@@ -35,28 +35,28 @@ static void blink_yellow_led(uint32_t period);
 void indication_init(void) {
     
     // Front LED red pin (PB5): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01 << (LED_R_PIN * 1));
-    GPIOB->MODER   |=  (0x01 << (LED_R_PIN * 2));
-    GPIOB->OSPEEDR |=  (0x03 << (LED_R_PIN * 2));
-    GPIOB->PUPDR   &= ~(0x03 << (LED_R_PIN * 2));
+    GPIOB->BRR      =  (0x01u << (LED_R_PIN * 1u));
+    GPIOB->MODER   |=  (0x01u << (LED_R_PIN * 2u));
+    GPIOB->OSPEEDR |=  (0x03u << (LED_R_PIN * 2u));
+    GPIOB->PUPDR   &= ~(0x03u << (LED_R_PIN * 2u));
     
     // Front LED green pin (PB6): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01 << (LED_G_PIN * 1));
-    GPIOB->MODER   |=  (0x01 << (LED_G_PIN * 2));
-    GPIOB->OSPEEDR |=  (0x03 << (LED_G_PIN * 2));
-    GPIOB->PUPDR   &= ~(0x03 << (LED_G_PIN * 2));
+    GPIOB->BRR      =  (0x01u << (LED_G_PIN * 1u));
+    GPIOB->MODER   |=  (0x01u << (LED_G_PIN * 2u));
+    GPIOB->OSPEEDR |=  (0x03u << (LED_G_PIN * 2u));
+    GPIOB->PUPDR   &= ~(0x03u << (LED_G_PIN * 2u));
     
     // Front LED blue pin (PB7): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01 << (LED_B_PIN * 1));
-    GPIOB->MODER   |=  (0x01 << (LED_B_PIN * 2));
-    GPIOB->OSPEEDR |=  (0x03 << (LED_B_PIN * 2));
-    GPIOB->PUPDR   &= ~(0x03 << (LED_B_PIN * 2));
+    GPIOB->BRR      =  (0x01u << (LED_B_PIN * 1u));
+    GPIOB->MODER   |=  (0x01u << (LED_B_PIN * 2u));
+    GPIOB->OSPEEDR |=  (0x03u << (LED_B_PIN * 2u));
+    GPIOB->PUPDR   &= ~(0x03u << (LED_B_PIN * 2u));
     
     // Buzzer pin (PC0): output mode, push-pull, high speed, no pull
-    GPIOC->BRR      =  (0x01 << (0 * 1));
-    GPIOC->MODER   |=  (0x01 << (0 * 2));
-    GPIOC->OSPEEDR |=  (0x03 << (0 * 2));
-    GPIOC->PUPDR   &= ~(0x03 << (0 * 2));
+    GPIOC->BRR      =  (0x01u << (0 * 1u));
+    GPIOC->MODER   |=  (0x01u << (0 * 2u));
+    GPIOC->OSPEEDR |=  (0x03u << (0 * 2u));
+    GPIOC->PUPDR   &= ~(0x03u << (0 * 2u));
     
     // Disable all
     LED_TURN_OFF(LED_R_PIN);

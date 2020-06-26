@@ -28,28 +28,28 @@ void i2c1_init(i2c_speed_t speed) {
     // Setup GPIO
     //
     // Send 9 pulses on SCL
-    GPIOB->MODER   |=  (0x01 << (I2C_SCL_PIN * 2));         // Output mode
-    GPIOB->OTYPER  |=  (0x01 << (I2C_SCL_PIN * 1));         // Open drain
-    GPIOB->OSPEEDR |=  (0x03 << (I2C_SCL_PIN * 2));         // High speed
-    GPIOB->PUPDR   &= ~(0x03 << (I2C_SCL_PIN * 2));         // Disable pull
+    GPIOB->MODER   |=  (0x01u << (I2C_SCL_PIN * 2u));         // Output mode
+    GPIOB->OTYPER  |=  (0x01u << (I2C_SCL_PIN * 1u));         // Open drain
+    GPIOB->OSPEEDR |=  (0x03u << (I2C_SCL_PIN * 2u));         // High speed
+    GPIOB->PUPDR   &= ~(0x03u << (I2C_SCL_PIN * 2u));         // Disable pull
     for (uint32_t i = 0; i < 10; ++i) {
-        GPIOB->BRR = 0x01 << I2C_SCL_PIN;
+        GPIOB->BRR = 0x01u << I2C_SCL_PIN;
         delay_ms(1);
-        GPIOB->BSRR = 0x01 << I2C_SCL_PIN;
+        GPIOB->BSRR = 0x01u << I2C_SCL_PIN;
         delay_ms(1);
     }
-    GPIOB->MODER   &= ~(0x03 << (I2C_SCL_PIN * 2));
+    GPIOB->MODER   &= ~(0x03u << (I2C_SCL_PIN * 2u));
     
     // Setup SCL pin (PB8)
-    GPIOB->MODER   |=  (0x02 << (I2C_SCL_PIN * 2));         // Alternate function mode
-    GPIOB->AFR[1]  |=  (0x04 << (I2C_SCL_PIN * 4 - 32));    // AF4
+    GPIOB->MODER   |=  (0x02u << (I2C_SCL_PIN * 2u));         // Alternate function mode
+    GPIOB->AFR[1]  |=  (0x04u << (I2C_SCL_PIN * 4u - 32u));    // AF4
     
     // Setup SDA pin (PB9)
-    GPIOB->MODER   |=  (0x02 << (I2C_SDA_PIN * 2));         // Alternate function mode
-    GPIOB->OTYPER  |=  (0x01 << (I2C_SDA_PIN * 1));         // Open drain
-    GPIOB->OSPEEDR |=  (0x03 << (I2C_SDA_PIN * 2));         // High speed
-    GPIOB->PUPDR   &= ~(0x03 << (I2C_SDA_PIN * 2));         // Disable pull
-    GPIOB->AFR[1]  |=  (0x04 << (I2C_SDA_PIN * 4 - 32));    // AF4
+    GPIOB->MODER   |=  (0x02u << (I2C_SDA_PIN * 2u));         // Alternate function mode
+    GPIOB->OTYPER  |=  (0x01u << (I2C_SDA_PIN * 1u));         // Open drain
+    GPIOB->OSPEEDR |=  (0x03u << (I2C_SDA_PIN * 2u));         // High speed
+    GPIOB->PUPDR   &= ~(0x03u << (I2C_SDA_PIN * 2u));         // Disable pull
+    GPIOB->AFR[1]  |=  (0x04u << (I2C_SDA_PIN * 4u - 32u));    // AF4
     
     
     //
