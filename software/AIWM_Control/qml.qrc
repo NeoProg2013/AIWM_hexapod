@@ -34,14 +34,13 @@
         <file>swlp.cpp</file>
         <file>swlp.h</file>
         <file>swlp_protocol.h</file>
-        <file>terminal.cpp</file>
-        <file>terminal.h</file>
         <file>fonts/RobotoMono-Regular.ttf</file>
-        <file>AndroidQML/TerminalPage.qml</file>
         <file>images/joystick.svg</file>
         <file>images/arrowUpDown.svg</file>
         <file>images/arrowPushPull.svg</file>
         <file>fonts/OpenSans-Regular.ttf</file>
+        <file>AndroidQML/StreamWidget.qml</file>
+        <file>images/noise.gif</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>
