@@ -28,7 +28,7 @@ typedef struct {
 static pwm_channel_t* active_buffer_ptr[SUPPORT_PWM_CHANNELS_COUNT]; // Array of pointers to active buffer. For fast sorting
 static pwm_channel_t active_buffer[SUPPORT_PWM_CHANNELS_COUNT];      // Mirror of shadow buffer
 static pwm_channel_t shadow_buffer[SUPPORT_PWM_CHANNELS_COUNT] = {   // Not sorted buffer. Using for write data from user.
-	{ .gpio_port = GPIOD, .gpio_pin =  8, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    { .gpio_port = GPIOD, .gpio_pin =  8, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOB, .gpio_pin = 15, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOB, .gpio_pin = 14, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOE, .gpio_pin =  9, .ticks = PWM_CHANNEL_DISABLE_VALUE },
@@ -45,7 +45,7 @@ static pwm_channel_t shadow_buffer[SUPPORT_PWM_CHANNELS_COUNT] = {   // Not sort
     { .gpio_port = GPIOA, .gpio_pin =  3, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOA, .gpio_pin =  2, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOA, .gpio_pin =  1, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-	{ .gpio_port = GPIOA, .gpio_pin =  0, .ticks = PWM_CHANNEL_DISABLE_VALUE }
+    { .gpio_port = GPIOA, .gpio_pin =  0, .ticks = PWM_CHANNEL_DISABLE_VALUE }
 };
 static bool shadow_buffer_is_lock = false;
 static bool pwm_disable_is_requested = false;
@@ -62,20 +62,20 @@ void pwm_init(void) {
     
     // Initialization active buffer
     for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
-		active_buffer[i] = shadow_buffer[i];
+        active_buffer[i] = shadow_buffer[i];
         active_buffer_ptr[i] = &active_buffer[i];
-	}
+    }
 
     
     //
     // Setup GPIO
     //
     for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
-		active_buffer[i].gpio_port->BRR      =  (0x01 << (active_buffer[i].gpio_pin * 1));   // Reset output
-		active_buffer[i].gpio_port->MODER   |=  (0x01 << (active_buffer[i].gpio_pin * 2));   // Output mode
-		active_buffer[i].gpio_port->OSPEEDR |=  (0x03 << (active_buffer[i].gpio_pin * 2));   // High speed
-		active_buffer[i].gpio_port->PUPDR   &= ~(0x03 << (active_buffer[i].gpio_pin * 2));   // Disable pull
-	}
+        active_buffer[i].gpio_port->BRR      =  (0x01 << (active_buffer[i].gpio_pin * 1));   // Reset output
+        active_buffer[i].gpio_port->MODER   |=  (0x01 << (active_buffer[i].gpio_pin * 2));   // Output mode
+        active_buffer[i].gpio_port->OSPEEDR |=  (0x03 << (active_buffer[i].gpio_pin * 2));   // High speed
+        active_buffer[i].gpio_port->PUPDR   &= ~(0x03 << (active_buffer[i].gpio_pin * 2));   // Disable pull
+    }
 
     
     //

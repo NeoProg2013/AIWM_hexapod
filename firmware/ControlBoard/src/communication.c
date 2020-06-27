@@ -75,7 +75,7 @@ void communication_process(void) {
         uint32_t bytes_for_tx = 0;
 
         // Check switch CLI sequence
-		memset(tx_buffer, 0, sizeof(tx_buffer));
+        memset(tx_buffer, 0, sizeof(tx_buffer));
         if (rx_buffer[0] == 'c' && rx_buffer[1] == 'l' && rx_buffer[2] == 'i') {
             is_switched_to_cli = true;
             strcpy((char*)tx_buffer, CLI_MSG("Main communication protocol - CLI"));
@@ -90,7 +90,7 @@ void communication_process(void) {
                 bytes_for_tx = swlp_process_frame(rx_buffer, received_frame_size, tx_buffer);
             }
         }
-		memset(rx_buffer, 0, sizeof(rx_buffer));
+        memset(rx_buffer, 0, sizeof(rx_buffer));
 
         
         if (bytes_for_tx != 0) {

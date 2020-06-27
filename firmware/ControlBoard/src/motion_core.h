@@ -21,28 +21,28 @@
 
 
 typedef enum {
-	TRAJECTORY_XYZ_LINEAR,
-	TRAJECTORY_XZ_ADV_Y_CONST,
-	TRAJECTORY_XZ_ADV_Y_SINUS
+    TRAJECTORY_XYZ_LINEAR,
+    TRAJECTORY_XZ_ADV_Y_CONST,
+    TRAJECTORY_XZ_ADV_Y_SINUS
 } trajectory_t;
 
 typedef enum {
-	TIME_DIR_REVERSE = -1,
-	TIME_DIR_DIRECT = 1
+    TIME_DIR_REVERSE = -1,
+    TIME_DIR_DIRECT = 1
 } time_dir_t;
 
 typedef struct {
-	float x;
-	float y;
-	float z;
+    float x;
+    float y;
+    float z;
 } point_3d_t;
 
 typedef struct {
-	point_3d_t   dest_positions[SUPPORT_LIMBS_COUNT];     // Destination point for each limb
-	trajectory_t trajectories[SUPPORT_LIMBS_COUNT];       // Motion trajectory
-	time_dir_t   time_directions[SUPPORT_LIMBS_COUNT];    // Motion time direction for each limb
+    point_3d_t   dest_positions[SUPPORT_LIMBS_COUNT];     // Destination point for each limb
+    trajectory_t trajectories[SUPPORT_LIMBS_COUNT];       // Motion trajectory
+    time_dir_t   time_directions[SUPPORT_LIMBS_COUNT];    // Motion time direction for each limb
     point_3d_t   start_positions[SUPPORT_LIMBS_COUNT];    // Initialize auto when motion started
-	int32_t      motion_time;                             // Trajectory motion time. Can use for set start motion time value
+    int32_t      motion_time;                             // Trajectory motion time. Can use for set start motion time value
     int32_t      time_stop;                               // Trajectory stop time
     int32_t      time_update;                             // Motion time value for motion configuration update
     int32_t      time_step;                               // Trajectory time step (speed)

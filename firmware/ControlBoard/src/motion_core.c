@@ -24,24 +24,24 @@ typedef enum {
 } core_state_t;
 
 typedef struct {
-	float    angle;
-	uint16_t length;
-	int16_t  zero_rotate;
+    float    angle;
+    uint16_t length;
+    int16_t  zero_rotate;
     
     int16_t  prot_min_angle; // Protection min angle, [degree]
     int16_t  prot_max_angle; // Protection max angle, [degree]
 } link_t;
 
 typedef struct {
-	point_3d_t position;
-	link_t coxa;
-	link_t femur;
-	link_t tibia;
+    point_3d_t position;
+    link_t coxa;
+    link_t femur;
+    link_t tibia;
 } limb_t;
 
 typedef struct {
     int32_t curvature;
-	int32_t distance;
+    int32_t distance;
 } traejctory_config_t;
 
 

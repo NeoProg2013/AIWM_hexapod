@@ -20,7 +20,7 @@ extern void servo_driver_move(uint32_t ch, float angle);
 extern void servo_driver_process(void);
 
 extern bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], 
-									         uint32_t argc, char* response);
+                                             uint32_t argc, char* response);
 
 
 #endif // _SERVO_DRIVER_H_

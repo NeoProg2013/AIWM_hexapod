@@ -93,13 +93,13 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_MSG("    - exit                                - switch to SWLP protocol")
                           CLI_MSG("    - help                                - display this message again")
                           CLI_MSG("    - ?                                   - display this message again")
-						  CLI_MSG("\"system\" commands description")
+                          CLI_MSG("\"system\" commands description")
                           CLI_MSG("    - version                             - print firmware version")
                           CLI_MSG("    - status                              - get current system status")
                           CLI_MSG("    - reset                               - reset MCU")
                           CLI_MSG("")
                           CLI_MSG("\"servo\" driver commands description")
-						  CLI_MSG("    - calibration <pulse_width>           - start servo calibration")
+                          CLI_MSG("    - calibration <pulse_width>           - start servo calibration")
                           CLI_MSG("    - set_override_level <servo> <level>  - set override level")
                           CLI_MSG("    - set_override_value <servo> <value>  - set override value")
                           CLI_MSG("")
@@ -115,7 +115,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_MSG("    - verify <page>                       - verify page checksum")
                           CLI_MSG("")
                           CLI_MSG("For example you can send me next command: system status")
-						  CLI_MSG("I hope now you can work with me :)"));
+                          CLI_MSG("I hope now you can work with me :)"));
     }
     else if (strcmp(module, "exit") == 0) {
         communication_switch_to_swlp();

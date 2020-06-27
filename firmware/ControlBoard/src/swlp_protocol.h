@@ -56,8 +56,8 @@ typedef struct {
     uint8_t  module_status;
     uint8_t  system_status;
     uint16_t battery_voltage;
-	uint8_t  battery_charge;
-	uint8_t  reserved[11];
+    uint8_t  battery_charge;
+    uint8_t  reserved[11];
 } swlp_status_payload_t;
 #pragma pack(pop)
 

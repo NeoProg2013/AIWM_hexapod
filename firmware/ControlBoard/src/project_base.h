@@ -7,10 +7,10 @@
 #define _PROJECT_BASE_H_
 
 
-#define SYSTEM_CLOCK_FREQUENCY				(72000000)
-#define AHB_CLOCK_FREQUENCY					(72000000)
-#define APB1_CLOCK_FREQUENCY				(36000000)
-#define APB2_CLOCK_FREQUENCY				(72000000)
+#define SYSTEM_CLOCK_FREQUENCY              (72000000)
+#define AHB_CLOCK_FREQUENCY                 (72000000)
+#define APB1_CLOCK_FREQUENCY                (36000000)
+#define APB2_CLOCK_FREQUENCY                (72000000)
 
 
 #define DEBUG_TP1_PIN                       (9)     // PC9
@@ -35,9 +35,9 @@
 #define DEBUG_TP4_PIN_TOGGLE                (GPIOD->ODR ^= 0x01 << DEBUG_TP4_PIN)
 
 
-#define TIM17_IRQ_PRIORITY					(0)		// 18-channels PWM driver
-#define USART2_IRQ_PRIORITY					(2)		// SWLP communication
-#define I2C2_IRQ_PRIORITY					(7)		// Display communication
+#define TIM17_IRQ_PRIORITY                  (0)        // 18-channels PWM driver
+#define USART2_IRQ_PRIORITY                 (2)        // SWLP communication
+#define I2C2_IRQ_PRIORITY                   (7)        // Display communication
 
 
 #endif // _PROJECT_BASE_H_
