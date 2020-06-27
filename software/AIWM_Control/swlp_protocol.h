@@ -19,7 +19,7 @@
 #define SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL              (0x06)
 #define SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT            (0x07)
 #define SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT           (0x08)
-#define SWLP_CMD_SELECT_SEQUENCE_DANCE					(0x09)
+#define SWLP_CMD_SELECT_SEQUENCE_DANCE                    (0x09)
 #define SWLP_CMD_SELECT_SEQUENCE_ROTATE_X               (0x10)
 #define SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z               (0x11)
 #define SWLP_CMD_SELECT_SEQUENCE_NONE                   (0x90)
@@ -33,9 +33,9 @@
 
 #pragma pack(push, 1)
 struct swlp_frame_t {
-	uint32_t start_mark;
-	uint8_t  payload[18];
-	uint16_t crc16;
+    uint32_t start_mark;
+    uint8_t  payload[18];
+    uint16_t crc16;
 };
 
 struct swlp_command_payload_t {
@@ -46,13 +46,13 @@ struct swlp_command_payload_t {
 };
 
 struct swlp_status_payload_t {
-	uint8_t  command;
-	uint8_t  command_status;
-	uint8_t  module_status;
-	uint8_t  system_status;
-	uint16_t battery_voltage;
-	uint8_t  battery_charge;
-	uint8_t reserved[11];
+    uint8_t  command;
+    uint8_t  command_status;
+    uint8_t  module_status;
+    uint8_t  system_status;
+    uint16_t battery_voltage;
+    uint8_t  battery_charge;
+    uint8_t reserved[11];
 };
 #pragma pack(pop)
 

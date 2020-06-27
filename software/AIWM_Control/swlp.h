@@ -10,33 +10,33 @@
 
 class Swlp : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit Swlp(QObject* parent = nullptr);
-	virtual ~Swlp();
+    explicit Swlp(QObject* parent = nullptr);
+    virtual ~Swlp();
 
 public slots:
-	void runCommunication();
+    void runCommunication();
 
 signals:
-	void requestCommandPayload(swlp_command_payload_t* payload);
-	void statusPayloadReceived(const swlp_status_payload_t* payload);
+    void requestCommandPayload(swlp_command_payload_t* payload);
+    void statusPayloadReceived(const swlp_status_payload_t* payload);
 
 
 protected slots:
-	void datagramReceivedEvent();
-	void sendCommandPayloadEvent();
+    void datagramReceivedEvent();
+    void sendCommandPayloadEvent();
 
 protected:
-	uint16_t calculateCRC16(const uint8_t *frameByteArray, int size);
+    uint16_t calculateCRC16(const uint8_t *frameByteArray, int size);
 
 private:
-	bool m_isRunning;
-	QEventLoop* m_eventLoop;
-	QUdpSocket* m_socket;
-	QTimer* m_sendTimer;
-	swlp_command_payload_t m_commandPayload;
-	swlp_status_payload_t m_statusPayload;
+    bool m_isRunning;
+    QEventLoop* m_eventLoop;
+    QUdpSocket* m_socket;
+    QTimer* m_sendTimer;
+    swlp_command_payload_t m_commandPayload;
+    swlp_status_payload_t m_statusPayload;
 };
 
 #endif // SWLP_H
