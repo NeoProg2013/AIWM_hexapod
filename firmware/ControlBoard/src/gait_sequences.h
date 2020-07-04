@@ -10,7 +10,7 @@
 
 
 #define LIMB_UP_Y                       (LIMB_DOWN_Y + LIMB_STEP_HEIGHT)
-#define LIMB_DOWN_Y                     (-80)
+#define LIMB_DOWN_Y                     (-85)
 
 
 typedef struct {
