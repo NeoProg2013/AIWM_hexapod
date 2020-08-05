@@ -1,0 +1,13 @@
+DRC Rules Export File for PCB: C:\Users\NeoProg\Desktop\Projects\Hexapod\AIWM_hexapod\hardware\PowerBoard\PCB.PcbDoc
+RuleKind=Clearance|RuleName=Clearance-1 1 Oz|Scope=Board|Minimum=7.87
+RuleKind=Clearance|RuleName=Clearance-1 1/2 Oz|Scope=Board|Minimum=4.92
+RuleKind=Clearance|RuleName=Clearance-2 1 Oz|Scope=Board|Minimum=5.91
+RuleKind=Clearance|RuleName=Clearance-2 1/2 Oz|Scope=Board|Minimum=3.94
+RuleKind=Width|RuleName=Width 1 Oz|Scope=Board|Minimum=5.91
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion-1|Scope=Board|Minimum=1.97
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion LDI|Scope=Board|Minimum=0.98
+RuleKind=ShortCircuit|RuleName=ShortCircuit|Scope=Board|Allowed=0
+RuleKind=MinimumAnnularRing|RuleName=Minimum AR VIA Standart|Scope=Board|Minimum=5.91
+RuleKind=MinimumAnnularRing|RuleName=Minimum AR PAD Standart|Scope=Board|Minimum=7.87
+RuleKind=MinimumAnnularRing|RuleName=Minimum AR VIA Advance|Scope=Board|Minimum=3.94
+RuleKind=MinimumAnnularRing|RuleName=Minimum AR PAD Advance|Scope=Board|Minimum=5.91
