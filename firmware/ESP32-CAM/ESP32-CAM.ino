@@ -9,7 +9,7 @@
 #include "esp_http_server.h"
  
 // Wifi setup
-const char* ssid = "WIFI-Home";
+const char* ssid = "NeoHome";
 const char* password = "03121994+";
  
 #define PART_BOUNDARY "123456789000000000000987654321"
@@ -117,8 +117,11 @@ static void startCameraServer() {
  
 void setup() {
 	
-	pinMode(4, OUTPUT);
-	digitalWrite(4, LOW);
+	  pinMode(4, OUTPUT);
+	  digitalWrite(4, LOW);
+
+    pinMode(33, OUTPUT);
+    digitalWrite(33, LOW);
     
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable brownout detector
     
@@ -189,4 +192,16 @@ void setup() {
  
 void loop() {
 
+    static bool is_led_enabled = false;
+    static uint32_t prev_time = 0;
+    if (millis() - prev_time > 500) {
+        if (is_led_enabled) {
+            digitalWrite(33, HIGH);
+        }
+        else {
+            digitalWrite(33, LOW);
+        }
+        is_led_enabled = !is_led_enabled;
+        prev_time = millis();
+    }
 }
