@@ -10,3 +10,5 @@
 /blueprint/Подшипник/*.bak
 /hardware/PowerBoard/debug.log
 /blueprint/*.bak
+/hardware/ControlBoard/History
+/hardware/ControlBoard/debug.log
