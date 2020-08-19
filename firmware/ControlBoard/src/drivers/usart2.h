@@ -17,7 +17,6 @@ typedef struct {
 
 
 extern void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks);
-extern void usart2_set_baud_rate(uint32_t baud_rate);
 extern void usart2_start_tx(uint8_t* tx_buffer, uint32_t bytes_count);
 extern void usart2_start_rx(uint8_t* rx_buffer, uint32_t buffer_size);
 

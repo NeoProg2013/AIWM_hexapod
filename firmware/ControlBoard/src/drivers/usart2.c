@@ -14,13 +14,13 @@
 static void usart_reset(bool reset_tx, bool reset_rx);
 
 static usart2_callbacks_t usart_callbacks;
-static uint32_t last_buffer_size = 0;
+static uint32_t last_buffer_size = 0; // For calculate rx bytes count
 
 
 //  ***************************************************************************
 /// @brief  USART initialization
-/// @param  callbacks: USART callbacks addresses
 /// @param  baud_rate: USART baud rate
+/// @param  callbacks: USART callbacks
 /// @return none
 //  ***************************************************************************
 void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
@@ -85,24 +85,6 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
 }
 
 //  ***************************************************************************
-/// @brief  USART set new baud rate
-/// @param  baud_rate:new baud rate
-/// @return none
-//  ***************************************************************************
-void usart2_set_baud_rate(uint32_t baud_rate) {
-
-    // Disable DMA and USART
-    usart_reset(true, true);
-    USART2->CR1 &= ~USART_CR1_UE;
-
-    // Change baud rate
-    USART2->BRR  = SYSTEM_CLOCK_FREQUENCY / baud_rate;
-
-    // Enable USART
-    USART2->CR1 |= USART_CR1_UE;
-}
-
-//  ***************************************************************************
 /// @brief  USART start frame TX
 /// @param  tx_buffer: pointer to buffer
 /// @param  bytes_count: bytes count for transmit
@@ -149,14 +131,13 @@ void usart2_start_rx(uint8_t* rx_buffer, uint32_t buffer_size) {
 //  ***************************************************************************
 static void usart_reset(bool reset_tx, bool reset_rx) {
 
-    if (reset_tx == true) {
+    if (reset_tx) {
         USART2->CR1 &= ~USART_CR1_TE;
         USART2->ICR |= USART_ICR_FECF;
         DMA1_Channel7->CCR &= ~DMA_CCR_EN;
         DMA1->IFCR = DMA_IFCR_CGIF7;
     }
-
-    if (reset_rx == true) {
+    if (reset_rx) {
         USART2->CR1 &= ~USART_CR1_RE;
         USART2->ICR |= USART_ICR_RTOCF | USART_ICR_FECF | USART_ICR_NCF | USART_ICR_ORECF | USART_ICR_PECF;
         DMA1_Channel6->CCR &= ~DMA_CCR_EN;

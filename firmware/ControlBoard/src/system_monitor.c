@@ -25,7 +25,7 @@ typedef enum {
 
 static monitor_state_t monitor_state = STATE_NO_INIT;
 static uint32_t acc_adc_bins[ADC_CHANNELS_COUNT] = {0};
-static int16_t  battery_voltage_offset = 690;
+static int16_t  battery_voltage_offset = 0;
 
 uint8_t  sysmon_system_status = 0;
 uint8_t  sysmon_module_status = 0;
