@@ -14,10 +14,19 @@
 #include "indication.h"
 #include "gui.h"
 
+#include "usart1.h"
+#include "cli_core.h"
+
 
 static void system_init(void);
 static void debug_gpio_init(void);
 static void emergency_loop(void);
+
+
+void send_data(const char* data) {
+    uint32_t bytes_count = strlen(data);
+    usart1_write((uint8_t*)data, bytes_count);
+}
 
 
 //  ***************************************************************************
@@ -30,6 +39,22 @@ void main() {
     system_init();
     systimer_init();
     debug_gpio_init();
+    
+    usart1_init(115200);
+    cli_core_init(send_data);
+    
+    while (true) {
+        
+        uint8_t data = 0;
+        bool read_result = false;
+        if (usart1_is_ready_read()) {
+            read_result = usart1_read(&data);
+        }
+        if (read_result) {
+            cli_core_symbol_received(data);
+        }
+    }
+    
     
     sysmon_init();
     
@@ -108,7 +133,7 @@ static void system_init(void) {
     while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
     
     // Switch USARTx clock source to system clock
-    RCC->CFGR3 |= RCC_CFGR3_USART2SW_SYSCLK;
+    RCC->CFGR3 |= RCC_CFGR3_USART2SW_SYSCLK | RCC_CFGR3_USART1SW_SYSCLK;
     
     
     
@@ -127,6 +152,10 @@ static void system_init(void) {
     // Enable clocks for USART2
     RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_USART2EN) == 0);
+    
+    // Enable clocks for USART1
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+    while ((RCC->APB2ENR & RCC_APB2ENR_USART1EN) == 0);
     
     // Enable clocks for I2C1
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;

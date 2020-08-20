@@ -353,6 +353,7 @@
                     <state>$PROJ_DIR$\CMSIS\Include</state>
                     <state>$PROJ_DIR$\CMSIS\STM32F3xx</state>
                     <state>$PROJ_DIR$\src\drivers</state>
+                    <state>$PROJ_DIR$\src\tools</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -2453,6 +2454,30 @@
                 <name>$PROJ_DIR$\src\drivers\usart2.h</name>
             </file>
         </group>
+        <group>
+            <name>tools</name>
+            <file>
+                <name>$PROJ_DIR$\src\tools\cli_core.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\cli_core.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\oled_gl.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\oled_gl.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\oled_gl_font_6x8.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\usart1_queue.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\usart1_queue.h</name>
+            </file>
+        </group>
         <file>
             <name>$PROJ_DIR$\src\cli.c</name>
         </file>
@@ -2497,15 +2522,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\motion_core.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\oled_gl.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\oled_gl.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\oled_gl_font_6x8.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\project_base.h</name>

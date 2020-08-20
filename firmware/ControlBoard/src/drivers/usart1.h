@@ -11,8 +11,9 @@
 
 
 extern void usart1_init(uint32_t baud_rate);
-extern bool usart1_read(uint8_t* buffer, uint32_t count);
-extern bool usart1_write(uint8_t* buffer, uint32_t count);
+extern bool usart1_is_ready_read(void);
+extern bool usart1_read(uint8_t* buffer);
+extern bool usart1_write(uint8_t* data, uint32_t count);
 
 
 #endif // _USART2_H_
