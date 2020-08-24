@@ -142,7 +142,7 @@ void servo_driver_process(void) {
             }
 
             // Load pulse width
-            pwm_set_width(servo_config_list[i].pwm_channel, info->pulse_width);
+            pwm_set_width(i, info->pulse_width);
         }
         pwm_set_shadow_buffer_lock_state(false);
 
@@ -163,12 +163,12 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
 
     // Get servo index
     if (argc == 0) {
-        strcpy(response, CLI_MSG("ERROR: Servo index is not found"));
+        strcpy(response, CLI_ERROR("Servo index is not found"));
         return false;
     }
     uint32_t servo_index = atoi(argv[0]);
     if (servo_index > SUPPORT_SERVO_COUNT) {
-        sprintf(response, CLI_MSG("ERROR: Servo index %d is out of range"), servo_index);
+        strcpy(response, CLI_ERROR("Servo index is out of range"));
         return false;
     }
     
@@ -180,12 +180,12 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
     //
     if (strcmp(cmd, "status") == 0 && argc == 1) {
 
-        sprintf(response, CLI_MSG("servo status report")
-                          CLI_MSG("    - override level: %ld")
-                          CLI_MSG("    - override value: %ld")
-                          CLI_MSG("    - logic angle: %ld")
-                          CLI_MSG("    - physic angle: %ld")
-                          CLI_MSG("    - pulse width: %lu"),
+        sprintf(response, CLI_OK("servo status report")
+                          CLI_OK("    - override level: %ld")
+                          CLI_OK("    - override value: %ld")
+                          CLI_OK("    - logic angle: %ld")
+                          CLI_OK("    - physic angle: %ld")
+                          CLI_OK("    - pulse width: %lu"),
                 info->override_level, info->override_value,
                 (int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
     }
@@ -205,23 +205,23 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
             info->override_value = atoi(argv[2]);
         }
         else {
-            sprintf(response, CLI_MSG("ERROR: Unknown override level %s"), argv[1]);
+            strcpy(response, CLI_ERROR("Unknown override level"));
             return false;
         }
-        sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, info->override_level);
+        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
     else if (strcmp(cmd, "zero") == 0 && argc == 1) {
         info->override_level = OVERRIDE_LEVEL_PHYSIC_ANGLE;
         info->override_value = (int32_t)calculate_physic_angle(0, &servo_config_list[servo_index]);
-        sprintf(response, CLI_MSG("[%lu] moved to zero"), servo_index);
+        sprintf(response, CLI_OK("[%lu] moved to zero"), servo_index);
     }
     else if (strcmp(cmd, "reset") == 0 && argc == 1) {
         info->override_level = OVERRIDE_LEVEL_NO;
         info->override_value = 0;
-        sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, info->override_level);
+        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
     else {
-        sprintf(response, CLI_MSG("ERROR: Unknown command or format '%s' for servo driver"), cmd);
+        strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
         return false;
     }
     return true;

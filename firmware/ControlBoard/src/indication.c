@@ -119,18 +119,40 @@ void indication_process(void) {
 //  ***************************************************************************
 bool indication_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
 
-    if (strcmp(cmd, "external-control") == 0 && argc == 1) {
+    if (strcmp(cmd, "ext-ctrl") == 0 && argc == 1) {
         is_cli_control_enabled = atoi(argv[0]);
-    }
-    if (strcmp(cmd, "led") == 0 && argc == 2) {
-        char color = argv[0][0];
-        if (color != 'r' && color != 'g' && color != 'b' && color != 'w') {
-            strcpy(response, CLI_MSG("ERROR: Wrong color. Possible values: r, g, b, w"));
-            return false;
+        LED_TURN_OFF(LED_R_PIN);
+        LED_TURN_OFF(LED_G_PIN);
+        LED_TURN_OFF(LED_B_PIN);
+        BUZZER_TURN_OFF();
+        if (is_cli_control_enabled) {
+            strcpy(response, CLI_OK("Indication now is under control by CLI"));
+        }
+        else {
+            strcpy(response, CLI_OK("Indication now is under control by MCU"));
         }
     }
+    else if (strcmp(cmd, "set-state") == 0 && argc == 1) {
+        char r = argv[0][0];
+        char g = argv[0][1];
+        char b = argv[0][2];
+        char buzzer = argv[0][3];
+        if (r != '0' && r != '1' || g != '0' && g != '1' || b != '0' && b != '1' || buzzer != '0' && buzzer != '1') {
+            strcpy(response, CLI_ERROR("Wrong argument value. Possible 0 or 1"));
+            return false;
+        }
+        
+        if (r == '1') LED_TURN_ON(LED_R_PIN);
+        else          LED_TURN_OFF(LED_R_PIN);
+        if (g == '1') LED_TURN_ON(LED_G_PIN);
+        else          LED_TURN_OFF(LED_G_PIN);
+        if (b == '1') LED_TURN_ON(LED_B_PIN);
+        else          LED_TURN_OFF(LED_B_PIN);
+        if (buzzer == '1') BUZZER_TURN_ON();
+        else               BUZZER_TURN_OFF();
+    }
     else {
-        sprintf(response, CLI_MSG("ERROR: Unknown command '%s' for indication"), cmd);
+        strcpy(response, CLI_ERROR("Unknown command or format for indication"));
         return false;
     }
     return true;
