@@ -3,17 +3,13 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "motion_core.h"
+#include "project_base.h"
 #include "servo_driver.h"
 #include "configurator.h"
 #include "systimer.h"
 #include "pwm.h"
 #include "system_monitor.h"
 #include <math.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 
 typedef enum {

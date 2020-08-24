@@ -15,7 +15,7 @@
 
 
 extern void cli_init(void);
-extern uint32_t cli_process_frame(char* rx_buffer, char* tx_buffer);
+extern void cli_process(void);
 
 
 #endif // _CLI_H_

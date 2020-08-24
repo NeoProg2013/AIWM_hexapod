@@ -3,6 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "system_monitor.h"
+#include "project_base.h"
 #include "adc.h"
 #include "systimer.h"
 

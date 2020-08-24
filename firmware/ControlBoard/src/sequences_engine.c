@@ -3,13 +3,11 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "sequences_engine.h"
+#include "project_base.h"
 #include "motion_core.h"
 #include "gait_sequences.h"
 #include "system_monitor.h"
 #include "systimer.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
 
 #define AUTO_SELECT_DOWN_SEQUENCE_TIME              (20000) // 20s
 

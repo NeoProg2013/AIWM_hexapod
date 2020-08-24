@@ -7,6 +7,7 @@
 #define _USART2_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
 typedef struct {
@@ -17,8 +18,10 @@ typedef struct {
 
 
 extern void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks);
-extern void usart2_start_tx(uint8_t* tx_buffer, uint32_t bytes_count);
-extern void usart2_start_rx(uint8_t* rx_buffer, uint32_t buffer_size);
+extern void usart2_start_tx(uint32_t bytes_count);
+extern void usart2_start_rx(void);
+extern uint8_t* usart2_get_tx_buffer(void);
+extern uint8_t* usart2_get_rx_buffer(void);
 
 
 #endif // _USART2_H_

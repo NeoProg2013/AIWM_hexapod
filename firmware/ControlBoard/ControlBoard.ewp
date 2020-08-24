@@ -2457,12 +2457,6 @@
         <group>
             <name>tools</name>
             <file>
-                <name>$PROJ_DIR$\src\tools\cli_core.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\tools\cli_core.h</name>
-            </file>
-            <file>
                 <name>$PROJ_DIR$\src\tools\oled_gl.c</name>
             </file>
             <file>
@@ -2471,24 +2465,12 @@
             <file>
                 <name>$PROJ_DIR$\src\tools\oled_gl_font_6x8.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\src\tools\usart1_queue.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\tools\usart1_queue.h</name>
-            </file>
         </group>
         <file>
             <name>$PROJ_DIR$\src\cli.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\cli.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\communication.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\communication.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\configurator.c</name>

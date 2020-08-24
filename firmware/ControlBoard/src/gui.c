@@ -3,8 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "gui.h"
-#include <stdint.h>
-#include <stdbool.h>
+#include "project_base.h"
 #include "oled_gl.h"
 #include "system_monitor.h"
 #include "systimer.h"

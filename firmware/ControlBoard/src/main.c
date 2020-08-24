@@ -2,31 +2,22 @@
 /// @file    main.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "stm32f373xc.h"
 #include "project_base.h"
-#include "communication.h"
 #include "configurator.h"
 #include "system_monitor.h"
-#include "systimer.h"
+#include "swlp.h"
+#include "cli.h"
 #include "servo_driver.h"
 #include "motion_core.h"
 #include "sequences_engine.h"
 #include "indication.h"
 #include "gui.h"
-
-#include "usart1.h"
-#include "cli_core.h"
+#include "systimer.h"
 
 
 static void system_init(void);
 static void debug_gpio_init(void);
 static void emergency_loop(void);
-
-
-void send_data(const char* data) {
-    uint32_t bytes_count = strlen(data);
-    usart1_write((uint8_t*)data, bytes_count);
-}
 
 
 //  ***************************************************************************
@@ -40,36 +31,22 @@ void main() {
     systimer_init();
     debug_gpio_init();
     
-    usart1_init(115200);
-    cli_core_init(send_data);
-    
-    while (true) {
-        
-        uint8_t data = 0;
-        bool read_result = false;
-        if (usart1_is_ready_read()) {
-            read_result = usart1_read(&data);
-        }
-        if (read_result) {
-            cli_core_symbol_received(data);
-        }
-    }
-    
-    
     sysmon_init();
     
     indication_init();
     gui_init();
-    
     config_init();
-    communication_init();
+    
+    swlp_init();
+    cli_init();
     
     sequences_engine_init();
     
     while (true) {
         
         sysmon_process();
-        communication_process();
+        swlp_process();
+        cli_process();
         
         // Override select sequence if need
         if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true ||
@@ -101,7 +78,8 @@ static void emergency_loop(void) {
     
     while (true) {
         sysmon_process();
-        communication_process();
+        swlp_process();
+        cli_process();
         indication_process();
     }
 }

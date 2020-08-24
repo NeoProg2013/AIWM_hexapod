@@ -10,10 +10,18 @@
 #include <stdbool.h>
 
 
-extern void usart1_init(uint32_t baud_rate);
-extern bool usart1_is_ready_read(void);
-extern bool usart1_read(uint8_t* buffer);
-extern bool usart1_write(uint8_t* data, uint32_t count);
+typedef struct {
+    void(*frame_received_callback)(uint32_t frame_size);
+    void(*frame_transmitted_callback)(void);
+    void(*error_callback)(void);
+} usart1_callbacks_t;
+
+
+extern void usart1_init(uint32_t baud_rate, usart1_callbacks_t* callbacks);
+extern void usart1_start_tx(uint32_t bytes_count);
+extern void usart1_start_rx(void);
+extern uint8_t* usart1_get_tx_buffer(void);
+extern uint8_t* usart1_get_rx_buffer(void);
 
 
 #endif // _USART2_H_

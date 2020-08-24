@@ -7,6 +7,14 @@
 #define _PROJECT_BASE_H_
 
 
+#include "stm32f373xc.h"
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdio.h>
+
+
 #define SYSTEM_CLOCK_FREQUENCY              (72000000)
 #define AHB_CLOCK_FREQUENCY                 (72000000)
 #define APB1_CLOCK_FREQUENCY                (36000000)

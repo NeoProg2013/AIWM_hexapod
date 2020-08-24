@@ -3,16 +3,12 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "servo_driver.h"
+#include "project_base.h"
 #include "configurator.h"
 #include "cli.h"
 #include "pwm.h"
 #include "system_monitor.h"
 #include "systimer.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #define SERVO_DS3218MG_270_ID                   (0x00)
 #define       DS3218MG_MIN_PULSE_WIDTH          (500)

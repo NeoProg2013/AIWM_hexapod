@@ -3,18 +3,18 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "usart2.h"
-#include "stm32f373xc.h"
 #include "project_base.h"
-#include <stdbool.h>
 
 #define USART_TX_PIN                    (3) // PB3
 #define USART_RX_PIN                    (4) // PB4
 
 
-static void usart_reset(bool reset_tx, bool reset_rx);
-
+static uint8_t  tx_buffer[64] = {0};
+static uint8_t  rx_buffer[64] = {0};
 static usart2_callbacks_t usart_callbacks;
-static uint32_t last_buffer_size = 0; // For calculate rx bytes count
+
+
+static void usart_reset(bool reset_tx, bool reset_rx);
 
 
 //  ***************************************************************************
@@ -52,7 +52,7 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     RCC->APB1RSTR |= RCC_APB1RSTR_USART2RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_USART2RST;
 
-    // Setup USART: 115200 8N2, DMA for TX and RX
+    // Setup USART: 8N2, DMA for TX and RX
     USART2->CR1  = USART_CR1_RTOIE;
     USART2->CR2  = USART_CR2_RTOEN | USART_CR2_STOP_1;
     USART2->CR3  = USART_CR3_DMAT | USART_CR3_DMAR | USART_CR3_EIE;
@@ -85,15 +85,12 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
 }
 
 //  ***************************************************************************
-/// @brief  USART start frame TX
-/// @param  tx_buffer: pointer to buffer
+/// @brief  USART start frame transmit
 /// @param  bytes_count: bytes count for transmit
 /// @return none
 //  ***************************************************************************
-void usart2_start_tx(uint8_t* tx_buffer, uint32_t bytes_count) {
-
+void usart2_start_tx(uint32_t bytes_count) {
     usart_reset(true, false);
-
     DMA1_Channel7->CMAR  = (uint32_t)tx_buffer;
     DMA1_Channel7->CNDTR = bytes_count;
     DMA1_Channel7->CCR  |= DMA_CCR_EN;
@@ -101,21 +98,35 @@ void usart2_start_tx(uint8_t* tx_buffer, uint32_t bytes_count) {
 }
 
 //  ***************************************************************************
-/// @brief  USART start frame TX
-/// @param  tx_buffer: pointer to buffer
-/// @param  bytes_count: bytes count for receive
+/// @brief  USART start frame receive
+/// @param  none
 /// @return none
 //  ***************************************************************************
-void usart2_start_rx(uint8_t* rx_buffer, uint32_t buffer_size) {
-
+void usart2_start_rx(void) {
     usart_reset(false, true);
-
+    memset(rx_buffer, 0, sizeof(rx_buffer));
     DMA1_Channel6->CMAR  = (uint32_t)rx_buffer;
-    DMA1_Channel6->CNDTR = buffer_size;
+    DMA1_Channel6->CNDTR = sizeof(rx_buffer);
     DMA1_Channel6->CCR  |= DMA_CCR_EN;
     USART2->CR1 |= USART_CR1_RE;
+}
 
-    last_buffer_size = buffer_size;
+//  ***************************************************************************
+/// @brief  Get USART TX buffer address
+/// @param  none
+/// @return TX buffer address
+//  ***************************************************************************
+uint8_t* usart2_get_tx_buffer(void) {
+    return tx_buffer;
+}
+
+//  ***************************************************************************
+/// @brief  Get USART RX buffer address
+/// @param  none
+/// @return RX buffer address
+//  ***************************************************************************
+uint8_t* usart2_get_rx_buffer(void) {
+    return rx_buffer;
 }
 
 
@@ -131,12 +142,15 @@ void usart2_start_rx(uint8_t* rx_buffer, uint32_t buffer_size) {
 //  ***************************************************************************
 static void usart_reset(bool reset_tx, bool reset_rx) {
 
+    // Reset TX
     if (reset_tx) {
         USART2->CR1 &= ~USART_CR1_TE;
-        USART2->ICR |= USART_ICR_FECF;
+        USART2->ICR |= USART_ICR_FECF | USART_ICR_TCCF;
         DMA1_Channel7->CCR &= ~DMA_CCR_EN;
         DMA1->IFCR = DMA_IFCR_CGIF7;
     }
+    
+    // Reset RX
     if (reset_rx) {
         USART2->CR1 &= ~USART_CR1_RE;
         USART2->ICR |= USART_ICR_RTOCF | USART_ICR_FECF | USART_ICR_NCF | USART_ICR_ORECF | USART_ICR_PECF;
@@ -196,13 +210,12 @@ void USART2_IRQHandler(void) {
 
     uint32_t status = USART2->ISR;
 
-    if (status & USART_ISR_RTOF) {
-        usart_reset(false, true);
-        usart_callbacks.frame_received_callback(last_buffer_size - DMA1_Channel6->CNDTR);
-    }
-
     if (status & (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE | USART_ISR_PE)) {
         usart_reset(true, true);
         usart_callbacks.error_callback();
+    }
+    if (status & USART_ISR_RTOF) {
+        usart_reset(false, true);
+        usart_callbacks.frame_received_callback(sizeof(rx_buffer) - DMA1_Channel6->CNDTR);
     }
 }
