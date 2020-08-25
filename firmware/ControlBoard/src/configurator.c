@@ -40,13 +40,13 @@ void config_init(void) {
     
     i2c1_init(I2C_SPEED_400KHZ);
 
-    for (uint32_t page = 0; page < CONFIG_SECTION_PAGE_COUNT; ++page) {
+    /*for (uint32_t page = 0; page < CONFIG_SECTION_PAGE_COUNT; ++page) {
         if (config_check_page_integrity(page) == false) {
             sysmon_set_error(SYSMON_MEMORY_ERROR);
             sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
             return;
         }
-    }
+    }*/
 }
 
 //  ***************************************************************************
