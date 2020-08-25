@@ -24,5 +24,3 @@ extern void pwm_set_width(uint32_t channel, uint32_t width);
 
 
 #endif // _PWM_H_
-
-

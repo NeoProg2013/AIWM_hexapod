@@ -61,10 +61,10 @@ bool ssd1306_128x64_init(void) {
     if (!ssd1306_128x64_set_state(false)) return false;
     
     // Base configuration
-    if (!ssd1306_send_command(SET_DISPLAY_RESUME, 0x00, false)) return false;                 // Output follows RAM content
+    if (!ssd1306_send_command(SET_DISPLAY_RESUME, 0x00, false)) return false;                  // Output follows RAM content
 
     // Addressing configuration
-    if (!ssd1306_send_command(SET_MEMORY_MODE, MEMORY_MODE_PAGE, true)) return false;         // Set page addressing mode
+    if (!ssd1306_send_command(SET_MEMORY_MODE, MEMORY_MODE_PAGE, true)) return false;          // Set page addressing mode
 
     // Hardware configuration
     if (!ssd1306_send_command(SET_START_LINE, 0x00, false)) return false;                      // Set start line address = 0
@@ -88,7 +88,6 @@ bool ssd1306_128x64_init(void) {
 /// @return    true - success, false - error
 //  ***************************************************************************
 bool ssd1306_128x64_set_contrast(uint8_t contrast) {
-    
     return ssd1306_send_command(SET_CONTRAST, contrast, true); // Set contrast
 }
 
@@ -98,7 +97,6 @@ bool ssd1306_128x64_set_contrast(uint8_t contrast) {
 /// @return    true - success, false - error
 //  ***************************************************************************
 bool ssd1306_128x64_set_inverse(bool is_inverse) {
-    
     uint8_t cmd = (is_inverse == true) ? SET_INVERT_DISPLAY : SET_NORMAL_DISPLAY;
     return ssd1306_send_command(cmd, 0x00, false); // Enable display
 }
@@ -109,7 +107,6 @@ bool ssd1306_128x64_set_inverse(bool is_inverse) {
 /// @return    true - success, false - error
 //  ***************************************************************************
 bool ssd1306_128x64_set_state(bool is_enable) {
-    
     if (is_enable == true) {
         if (!ssd1306_send_command(SET_DC_DC_SETTINGS, DC_DC_SETTINGS_ENABLE, true)) return false; // Enable DC-DC
         if (!ssd1306_send_command(SET_DISPLAY_ON, 0x00, false)) return false; // Enable display
@@ -118,7 +115,6 @@ bool ssd1306_128x64_set_state(bool is_enable) {
         if (!ssd1306_send_command(SET_DC_DC_SETTINGS, DC_DC_SETTINGS_DISABLE, true)) return false; // Disable DC-DC
         if (!ssd1306_send_command(SET_DISPLAY_OFF, 0x00, false)) return false; // Disable display
     }
-    
     return true;
 }
 
@@ -170,7 +166,6 @@ bool ssd1306_128x64_full_update(void) {
         
         if (!ssd1306_send_bytes(&frame_buffer[FRAME_COLUMN_COUNT * i], FRAME_COLUMN_COUNT)) return false;
     }
-    
     return true;
 }
 
@@ -181,7 +176,6 @@ bool ssd1306_128x64_full_update(void) {
 /// @return    pointer to fragment of frame buffer
 //  ***************************************************************************
 uint8_t* ssd1306_128x64_get_frame_buffer(uint32_t row, uint32_t column) {
-    
     return &frame_buffer[row * FRAME_COLUMN_COUNT + column + FRAME_BEGIN_DEAD_ZONE];
 }
 

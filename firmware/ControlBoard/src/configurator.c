@@ -22,9 +22,12 @@
 
 static uint8_t cli_buffer[CONFIG_SECTION_PAGE_SIZE] = {0};
 
-
-static bool config_calc_checksum(uint32_t page, uint32_t *checksum);
-static bool config_verify_checksum(uint32_t page);
+static bool config_write_8(uint32_t address, uint8_t data);
+static bool config_write_16(uint32_t address, uint16_t data);
+static bool config_write_32(uint32_t address, uint32_t data);
+static bool config_calc_checksum(uint32_t page, uint16_t *checksum);
+static bool config_check_page_integrity(uint32_t page);
+static bool config_update_checksum(uint32_t page);
 static bool config_erase(void);
 
 
@@ -37,14 +40,13 @@ void config_init(void) {
     
     i2c1_init(I2C_SPEED_400KHZ);
 
-    /*for (uint32_t page = 0; page < CONFIG_SECTION_PAGE_COUNT; ++page) {
-
-        if (config_verify_checksum(page) == false) {
+    for (uint32_t page = 0; page < CONFIG_SECTION_PAGE_COUNT; ++page) {
+        if (config_check_page_integrity(page) == false) {
             sysmon_set_error(SYSMON_MEMORY_ERROR);
             sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
             return;
         }
-    }*/
+    }
 }
 
 //  ***************************************************************************
@@ -84,7 +86,6 @@ bool config_read(uint32_t address, uint8_t* buffer, uint32_t bytes_count) {
         address += bytes_count;
         buffer += bytes_count;
     }
-    
     return true;
 }
 
@@ -137,16 +138,6 @@ bool config_read_16(uint32_t address, uint16_t* buffer) { return config_read(add
 bool config_read_32(uint32_t address, uint32_t* buffer) { return config_read(address, (uint8_t*)buffer, 4); }
 
 //  ***************************************************************************
-/// @brief  Write BYTE/WORD/DWORD to configuration section
-/// @param  address: data block address
-/// @param  data: data for write
-/// @return true - success, false - error
-//  ***************************************************************************
-bool config_write_8(uint32_t address, uint8_t data)   { return config_write(address, (uint8_t*)&data, 1); }
-bool config_write_16(uint32_t address, uint16_t data) { return config_write(address, (uint8_t*)&data, 2); }
-bool config_write_32(uint32_t address, uint32_t data) { return config_write(address, (uint8_t*)&data, 4); }
-
-//  ***************************************************************************
 /// @brief  CLI command process
 /// @param  cmd: command string
 /// @param  argv: argument list
@@ -186,7 +177,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
                                 cli_buffer[i + 12], cli_buffer[i + 13], cli_buffer[i + 14], cli_buffer[i + 15]);
         }
     }
-    else if (strcmp(cmd, "read_raw") == 0 && argc == 1) {
+    else if (strcmp(cmd, "read-raw") == 0 && argc == 1) {
 
         // Get page number
         uint32_t page = atoi(argv[0]);
@@ -328,7 +319,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         }
     }
     else if (strcmp(cmd, "erase") == 0 && argc == 0) {
-
+        
         if (config_erase() == false) {
             strcpy(response, CLI_ERROR("Cannot write data to memory"));
             return false;
@@ -343,12 +334,12 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             return false;
         }
 
-        if (config_verify_checksum(page) == false) {
+        if (config_check_page_integrity(page) == false) {
             strcpy(response, CLI_ERROR("Verification failed"));
             return false;
         }
     }
-    else if (strcmp(cmd, "calc_checksum") == 0 && argc == 1) {
+    else if (strcmp(cmd, "update-checksum") == 0 && argc == 1) {
 
         // Get page number
         uint32_t page = atoi(argv[0]);
@@ -357,16 +348,9 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             return false;
         }
 
-        // Calculate checksum
-        uint32_t checksum = 0;
-        if (config_calc_checksum(page, &checksum) == false) {
-            strcpy(response, CLI_ERROR("Cannot read checksum"));
-            return false;
-        }
-
-        // Write checksum value
-        if (config_write_32(page * CONFIG_SECTION_PAGE_SIZE + MM_PAGE_CHECKSUM_OFFSET, checksum) == false) {
-            strcpy(response, CLI_ERROR("Cannot write checksum"));
+        // Update checksum
+        if (config_update_checksum(page) == false) {
+            strcpy(response, CLI_ERROR("Can't update checksum"));
             return false;
         }
     }
@@ -382,50 +366,74 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
 
 
 //  ***************************************************************************
+/// @brief  Write BYTE/WORD/DWORD to configuration section
+/// @param  address: data block address
+/// @param  data: data for write
+/// @return true - success, false - error
+//  ***************************************************************************
+static bool config_write_8(uint32_t address, uint8_t data)   { return config_write(address, (uint8_t*)&data, 1); }
+static bool config_write_16(uint32_t address, uint16_t data) { return config_write(address, (uint8_t*)&data, 2); }
+static bool config_write_32(uint32_t address, uint32_t data) { return config_write(address, (uint8_t*)&data, 4); }
+
+//  ***************************************************************************
 /// @brief  Calculate checksum for page
 /// @param  page: page number
 /// @param  checksum: checksum value
 /// @retval checksum
 /// @return true - success, false - error
 //  ***************************************************************************
-static bool config_calc_checksum(uint32_t page, uint32_t *checksum) {
+static bool config_calc_checksum(uint32_t page, uint16_t *checksum) {
 
     *checksum = 0;
 
     uint32_t offset = page * CONFIG_SECTION_PAGE_SIZE;
-    for (uint32_t address = 0; address < CONFIG_SECTION_PAGE_SIZE - 4; ++address) { // 4 - checksum size
+    for (uint32_t address = 0; address < CONFIG_SECTION_PAGE_SIZE - MM_PAGE_CHECKSUM_SIZE; ++address) {
 
         uint8_t byte = 0;
         if (config_read_8(address + offset, &byte) == false) {
             return false;
         }
-
         *checksum += byte;
     }
-
     return true;
 }
 
 //  ***************************************************************************
-/// @brief  Verify checksum for page
+/// @brief  Check page integrity
 /// @param  page: page number
 /// @return true - success, false - error
 //  ***************************************************************************
-static bool config_verify_checksum(uint32_t page) {
+static bool config_check_page_integrity(uint32_t page) {
 
     // Calculate checksum
-    uint32_t checksum = 0;
+    uint16_t checksum = 0;
     if (config_calc_checksum(page, &checksum) == false) {
         return false;
     }
 
     // Read checksum value
-    uint32_t current_checksum = 0;
-    if (config_read_32(page * CONFIG_SECTION_PAGE_SIZE + MM_PAGE_CHECKSUM_OFFSET, &current_checksum) == false) {
+    uint16_t current_checksum = 0;
+    if (config_read_16(page * CONFIG_SECTION_PAGE_SIZE + MM_PAGE_CHECKSUM_OFFSET, &current_checksum) == false) {
         return false;
     }
-
     return checksum == current_checksum;
+}
+
+//  ***************************************************************************
+/// @brief  Update checksum for page
+/// @param  page: page number
+/// @return true - success, false - error
+//  ***************************************************************************
+static bool config_update_checksum(uint32_t page) {
+
+    // Calculate checksum
+    uint16_t checksum = 0;
+    if (config_calc_checksum(page, &checksum) == false) {
+        return false;
+    }
+    
+    // Write checksum value
+    return config_write_16(page * CONFIG_SECTION_PAGE_SIZE + MM_PAGE_CHECKSUM_OFFSET, checksum);
 }
 
 //  ***************************************************************************
@@ -435,10 +443,10 @@ static bool config_verify_checksum(uint32_t page) {
 //  ***************************************************************************
 static bool config_erase(void) {
 
-    uint8_t clear_data[32] = {0};
+    uint8_t clear_data[CONFIG_SECTION_MAX_WRITE_SIZE] = {0};
     memset(clear_data, 0xFF, sizeof(clear_data));
 
-    for (uint32_t address = 0; address < CONFIG_SECTION_SIZE; address += 32) {
+    for (uint32_t address = 0; address < CONFIG_SECTION_SIZE; address += CONFIG_SECTION_MAX_WRITE_SIZE) {
         if (config_write(address, clear_data, sizeof(clear_data)) == false) {
             return false;
         }

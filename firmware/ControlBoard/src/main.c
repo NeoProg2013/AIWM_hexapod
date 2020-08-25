@@ -180,10 +180,3 @@ void HardFault_Handler(void) {
     
     while (true);
 }
-
-
-
-
-
-
-

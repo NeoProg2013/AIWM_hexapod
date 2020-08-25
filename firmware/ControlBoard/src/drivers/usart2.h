@@ -25,4 +25,3 @@ extern uint8_t* usart2_get_rx_buffer(void);
 
 
 #endif // _USART2_H_
-

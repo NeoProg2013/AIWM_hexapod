@@ -1,12 +1,14 @@
 //  ***************************************************************************
 /// @file    mamory_map.c
 /// @author  NeoProg
-/// @brief   onfigurator memory map
+/// @brief   Configurator memory map
 //  ***************************************************************************
 #ifndef _MEMORY_MAP_H_
 #define _MEMORY_MAP_H_
 
-#define MM_PAGE_CHECKSUM_OFFSET                             (0xFC)      ///< U32 Page checksum
+
+#define MM_PAGE_CHECKSUM_OFFSET                             (0xFE)      ///< U16 Page checksum
+#define MM_PAGE_CHECKSUM_SIZE                               (2)
 
 //
 // Configuration map for limbs
@@ -39,4 +41,3 @@
 
 
 #endif // _MEMORY_MAP_H_
-

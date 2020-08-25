@@ -53,4 +53,3 @@ extern bool sysmon_is_module_disable(uint32_t module);
 
 
 #endif // _SYSTEM_MONITOR_H_
-
