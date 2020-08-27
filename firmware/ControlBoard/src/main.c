@@ -42,6 +42,8 @@ void main() {
     
     sequences_engine_init();
     
+    delay_ms(1000);
+    
     while (true) {
         
         sysmon_process();
