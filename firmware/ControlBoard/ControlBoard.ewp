@@ -2453,6 +2453,12 @@
             <file>
                 <name>$PROJ_DIR$\src\drivers\usart2.h</name>
             </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\usart3.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\usart3.h</name>
+            </file>
         </group>
         <group>
             <name>tools</name>
@@ -2466,6 +2472,12 @@
                 <name>$PROJ_DIR$\src\tools\oled_gl_font_6x8.h</name>
             </file>
         </group>
+        <file>
+            <name>$PROJ_DIR$\src\camera.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\camera.h</name>
+        </file>
         <file>
             <name>$PROJ_DIR$\src\cli.c</name>
         </file>

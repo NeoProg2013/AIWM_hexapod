@@ -13,7 +13,7 @@
 typedef struct {
     void(*frame_received_callback)(uint32_t frame_size);
     void(*frame_transmitted_callback)(void);
-    void(*error_callback)(void);
+    void(*frame_error_callback)(void);
 } usart2_callbacks_t;
 
 

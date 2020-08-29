@@ -13,7 +13,6 @@
 #include "indication.h"
 #include "version.h"
 
-
 #define COMMUNICATION_BAUD_RATE                     (115200)
 
 
@@ -44,7 +43,7 @@ void cli_init(void) {
     usart1_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
     callbacks.frame_transmitted_callback = frame_transmitted_or_error_callback;
-    callbacks.error_callback = frame_transmitted_or_error_callback;
+    callbacks.frame_error_callback = frame_transmitted_or_error_callback;
     usart1_init(COMMUNICATION_BAUD_RATE, &callbacks);
     
     state = STATE_WAIT_FRAME;

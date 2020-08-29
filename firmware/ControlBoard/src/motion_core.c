@@ -147,7 +147,7 @@ void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
 
     
-    static uint64_t prev_synchro_value = 0;
+    static uint64_t prev_synchro_value = 0;    
     float scaled_motion_time = 0;
     switch (g_core_state) {
 

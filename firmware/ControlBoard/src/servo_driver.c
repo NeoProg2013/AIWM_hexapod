@@ -108,11 +108,12 @@ void servo_driver_process(void) {
         return;
     }
     
-    static uint64_t prev_synchro = 0;
-    if (synchro != prev_synchro) {
+    
+    static uint64_t prev_synchro_value = 0;
+    if (synchro != prev_synchro_value) {
 
         // We skip PWM period - this is error and calculations have long time
-        if (synchro - prev_synchro > 1) {
+        if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0) {
             sysmon_set_error(SYSMON_SYNC_ERROR);
         }
 
@@ -146,7 +147,7 @@ void servo_driver_process(void) {
         }
         pwm_set_shadow_buffer_lock_state(false);
 
-        prev_synchro = synchro;
+        prev_synchro_value = synchro;
     }
 }
 

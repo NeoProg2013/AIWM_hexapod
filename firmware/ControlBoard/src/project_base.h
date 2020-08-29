@@ -46,6 +46,7 @@
 #define TIM17_IRQ_PRIORITY                  (0)        // 18-channels PWM driver
 #define USART2_IRQ_PRIORITY                 (2)        // SWLP communication
 #define USART1_IRQ_PRIORITY                 (7)        // CLI communication
+#define USART3_IRQ_PRIORITY                 (7)        // Camera communication
 #define I2C2_IRQ_PRIORITY                   (7)        // Display communication
 
 

@@ -12,12 +12,15 @@
 #include "sequences_engine.h"
 #include "indication.h"
 #include "gui.h"
+#include "camera.h"
+#include "pwm.h"
 #include "systimer.h"
 
 
 static void system_init(void);
 static void debug_gpio_init(void);
 static void emergency_loop(void);
+
 
 
 //  ***************************************************************************
@@ -36,19 +39,21 @@ void main() {
     indication_init();
     gui_init();
     config_init();
+    camera_init();
     
     swlp_init();
     cli_init();
     
     sequences_engine_init();
     
-    delay_ms(1000);
-    
+    delay_ms(100);
     while (true) {
         
         sysmon_process();
         swlp_process();
         cli_process();
+        
+        camera_process();
         
         // Override select sequence if need
         if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true ||
@@ -113,7 +118,7 @@ static void system_init(void) {
     while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
     
     // Switch USARTx clock source to system clock
-    RCC->CFGR3 |= RCC_CFGR3_USART2SW_SYSCLK | RCC_CFGR3_USART1SW_SYSCLK;
+    RCC->CFGR3 |= RCC_CFGR3_USART3SW_SYSCLK | RCC_CFGR3_USART2SW_SYSCLK | RCC_CFGR3_USART1SW_SYSCLK;
     
     
     
@@ -128,6 +133,10 @@ static void system_init(void) {
     // Enable clocks for TIM17
     RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
     while ((RCC->APB2ENR & RCC_APB2ENR_TIM17EN) == 0);    
+    
+    // Enable clocks for USART3
+    RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
+    while ((RCC->APB1ENR & RCC_APB1ENR_USART3EN) == 0);
 
     // Enable clocks for USART2
     RCC->APB1ENR |= RCC_APB1ENR_USART2EN;

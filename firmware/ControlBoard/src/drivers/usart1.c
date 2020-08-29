@@ -53,8 +53,8 @@ void usart1_init(uint32_t baud_rate, usart1_callbacks_t* callbacks) {
     RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;
     RCC->APB2RSTR &= ~RCC_APB2RSTR_USART1RST;
 
-    // Setup USART: 8N2
-    USART1->CR2  = USART_CR2_RTOEN | USART_CR2_STOP_1;
+    // Setup USART: 8N1
+    USART1->CR2  = USART_CR2_RTOEN;
     USART1->CR3  = USART_CR3_EIE;
     USART1->BRR  = SYSTEM_CLOCK_FREQUENCY / baud_rate;
     USART1->RTOR = 35; // 3.5 char timer
@@ -155,22 +155,21 @@ void USART1_IRQHandler(void) {
     uint32_t status = USART1->ISR;
     if (status & (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE | USART_ISR_PE)) {
         usart_reset(false, true);
-        if (usart_callbacks.error_callback) {
-            usart_callbacks.error_callback();
-        }
+        usart_callbacks.frame_error_callback();
+        return;
     }
     if ((status & USART_ISR_RTOF) && (USART1->CR1 & USART_CR1_RTOIE)) {
         usart_reset(false, true);
-        if (usart_callbacks.frame_received_callback) {
-            usart_callbacks.frame_received_callback(rx_bytes_count);
-        }
+        usart_callbacks.frame_received_callback(rx_bytes_count);
     }
     if ((status & USART_ISR_RXNE) && (USART1->CR1 & USART_CR1_RXNEIE)) {
-        (*rx_buffer_cursor) = USART1->RDR;
-        ++rx_bytes_count;
-        ++rx_buffer_cursor;
-        if (rx_bytes_count > sizeof(rx_buffer)) {
-            usart_reset(false, true);
+        if (rx_bytes_count < sizeof(rx_buffer)) {
+            (*rx_buffer_cursor) = USART1->RDR;
+            ++rx_bytes_count;
+            ++rx_buffer_cursor;
+        }
+        else {
+            USART1->RDR; // Dummy read
         }
     }
     if ((status & USART_ISR_TXE) && (USART1->CR1 & USART_CR1_TXEIE)) {
@@ -184,8 +183,6 @@ void USART1_IRQHandler(void) {
     }
     if ((status & USART_ISR_TC) && (USART1->CR1 & USART_CR1_TCIE)) {
         usart_reset(true, false);
-        if (usart_callbacks.frame_transmitted_callback) {
-            usart_callbacks.frame_transmitted_callback();
-        }
+        usart_callbacks.frame_transmitted_callback();
     }
 }

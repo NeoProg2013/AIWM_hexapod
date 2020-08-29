@@ -28,19 +28,11 @@ Item {
             noiseImage.visible = true
             streamFrame.visible = false
         }
+        function onStreamServiceIpAddressUpdate(ipAddress) {
+            ipAddressLabel.text = "IP: " + ipAddress
+        }
     }
 
-
-    /*Timer {
-        id: connectionTimer
-        repeat: false
-        interval: 1000
-        running: true
-        onTriggered: {
-            CppCore.stopStreamService()
-            CppCore.runStreamService()
-        }
-    }*/
     Button {
         visible: noiseImage.visible
         z: 1
@@ -84,11 +76,20 @@ Item {
             flag = !flag
         }
     }
+
+    Label {
+        id: ipAddressLabel
+        x: 5
+        y: 5
+        width: 120
+        height: 17
+        text: "IP: 255.255.255.255"
+    }
 }
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:2;anchors_y:407}D{i:5;anchors_x:5}
+    D{i:0;formeditorColor:"#000000"}D{i:2;anchors_y:407}D{i:6;anchors_x:5}
 }
 ##^##*/
 

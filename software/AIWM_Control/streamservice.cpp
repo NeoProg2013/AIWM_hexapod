@@ -2,23 +2,17 @@
 #include <QTimer>
 
 StreamService::StreamService(StreamFrameProvider* frameProvider, QObject *parent)
-    : QObject(parent),
-      m_isRunning(false),
-      m_eventLoop(nullptr),
-      m_manager(nullptr),
-      m_requestReply(nullptr),
-      m_timeoutTimer(nullptr),
-      m_frameProvider(frameProvider) {}
+    : QObject(parent), m_frameProvider(frameProvider) {}
 
 StreamService::~StreamService() {}
 
-void StreamService::runService() {
+void StreamService::runService(QString cameraIp) {
 
     if (m_isRunning == true) {
         qDebug() << "m_isRunning == true";
         return;
     }
-    qDebug() << "StreamService start";
+    qDebug() << "StreamService start. IP: " << cameraIp;
 
     // Setup timeout timer
     m_timeoutTimer = new QTimer;
@@ -27,7 +21,7 @@ void StreamService::runService() {
 
     // Send GET request
     m_manager = new QNetworkAccessManager();
-    m_requestReply = m_manager->get(QNetworkRequest(QUrl("http://192.168.1.105/")));
+    m_requestReply = m_manager->get(QNetworkRequest(QUrl("http://" + cameraIp + "/")));
     m_requestReply->setReadBufferSize(50 * 1024);
 
     // Setup signals

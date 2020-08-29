@@ -52,9 +52,9 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     RCC->APB1RSTR |= RCC_APB1RSTR_USART2RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_USART2RST;
 
-    // Setup USART: 8N2, DMA for TX and RX
+    // Setup USART: 8N1, DMA for TX and RX
     USART2->CR1  = USART_CR1_RTOIE;
-    USART2->CR2  = USART_CR2_RTOEN | USART_CR2_STOP_1;
+    USART2->CR2  = USART_CR2_RTOEN;
     USART2->CR3  = USART_CR3_DMAT | USART_CR3_DMAR | USART_CR3_EIE;
     USART2->BRR  = SYSTEM_CLOCK_FREQUENCY / baud_rate;
     USART2->RTOR = 35; // 3.5 char timer
@@ -178,7 +178,7 @@ void DMA1_Channel7_IRQHandler(void) {
     }
     if (status & DMA_ISR_TEIF7) {   // DMA memory access error
         usart_reset(true, false);
-        usart_callbacks.error_callback();
+        usart_callbacks.frame_error_callback();
     }
 }
 
@@ -193,11 +193,11 @@ void DMA1_Channel6_IRQHandler(void) {
 
     if (status & DMA_ISR_TCIF6) {
         usart_reset(false, true);
-        usart_callbacks.error_callback();
+        usart_callbacks.frame_error_callback();
     }
     if (status & DMA_ISR_TEIF6) {   // DMA memory access error
         usart_reset(false, true);
-        usart_callbacks.error_callback();
+        usart_callbacks.frame_error_callback();
     }
 }
 
@@ -212,7 +212,7 @@ void USART2_IRQHandler(void) {
 
     if (status & (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE | USART_ISR_PE)) {
         usart_reset(true, true);
-        usart_callbacks.error_callback();
+        usart_callbacks.frame_error_callback();
     }
     if (status & USART_ISR_RTOF) {
         usart_reset(false, true);

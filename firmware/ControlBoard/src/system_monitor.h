@@ -30,6 +30,7 @@
 #define SYSMON_MODULE_SYSTEM_MONITOR    (0x10)
 #define SYSMON_MODULE_OLED_GL           (0x20)
 #define SYSMON_MODULE_GUI               (0x40)
+#define SYSMON_MODULE_CAMERA            (0x80)
 
 
 // NOTE: Need use external functions for access to this variables

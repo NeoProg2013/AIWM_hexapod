@@ -8,6 +8,7 @@
 #include "usart2.h"
 #include "sequences_engine.h"
 #include "indication.h"
+#include "camera.h"
 #include "system_monitor.h"
 #include "systimer.h"
 
@@ -42,7 +43,7 @@ void swlp_init(void) {
     usart2_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
     callbacks.frame_transmitted_callback = frame_transmitted_or_error_callback;
-    callbacks.error_callback = frame_transmitted_or_error_callback;
+    callbacks.frame_error_callback = frame_transmitted_or_error_callback;
     usart2_init(COMMUNICATION_BAUD_RATE, &callbacks);
     
     sysmon_set_error(SYSMON_CONN_LOST_ERROR);
@@ -62,8 +63,7 @@ void swlp_init(void) {
 void swlp_process(void) {
     
     // We are start with SYSMON_CONN_LOST_ERROR error
-    static uint64_t frame_received_time = COMMUNICATION_TIMEOUT;
-    
+    static uint64_t frame_receive_time = 0;
     if (state == STATE_FRAME_RECEIVED) {
         
         uint8_t* tx_buffer = usart2_get_tx_buffer();
@@ -82,6 +82,7 @@ void swlp_process(void) {
 
         swlp_frame_t* swlp_tx_frame = (swlp_frame_t*)tx_buffer;
         swlp_status_payload_t* response = (swlp_status_payload_t*)swlp_tx_frame->payload;
+        memset(swlp_tx_frame, 0, sizeof(swlp_tx_frame));
 
         // Process command
         response->command_status = SWLP_CMD_STATUS_OK;
@@ -136,6 +137,7 @@ void swlp_process(void) {
         response->system_status = sysmon_system_status;
         response->battery_voltage = sysmon_battery_voltage;
         response->battery_charge = sysmon_battery_charge;
+        camera_get_ip_address(response->camera_ip);
 
         // Prepare response
         swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
@@ -146,14 +148,14 @@ void swlp_process(void) {
         usart2_start_tx(sizeof(swlp_frame_t));
         
         // Update frame receive time
-        frame_received_time = get_time_ms();
+        frame_receive_time = get_time_ms();
     }
     
     //
     // Process communication timeout feature
     //
     sysmon_clear_error(SYSMON_CONN_LOST_ERROR);
-    if (get_time_ms() - frame_received_time > COMMUNICATION_TIMEOUT) {
+    if (get_time_ms() - frame_receive_time > COMMUNICATION_TIMEOUT || frame_receive_time == 0) {
         sysmon_set_error(SYSMON_CONN_LOST_ERROR);
     }
 }

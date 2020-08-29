@@ -7,27 +7,19 @@
 #define SERVER_PORT                          (3333)
 
 
-Swlp::Swlp(QObject* parent) : QObject(parent) {
-
-    m_socket = nullptr;
-    m_sendTimer = nullptr;
-    m_isRunning = false;
-}
+Swlp::Swlp(QObject* parent) : QObject(parent) { }
 
 Swlp::~Swlp() {
-
     if (m_socket != nullptr) {
         m_sendTimer->stop();
         delete m_sendTimer;
     }
-
     if (m_socket != nullptr) {
         delete m_socket;
     }
 }
 
 void Swlp::runCommunication() {
-
     if (m_isRunning == true) {
         return;
     }
