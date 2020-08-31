@@ -65,6 +65,7 @@ Item {
         smooth: true
         cache: false
         asynchronous: true
+        rotation: 90
 
         property bool flag: false
         function updateSourceImage() {
