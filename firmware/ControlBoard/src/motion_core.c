@@ -79,6 +79,7 @@ void motion_core_init(const point_3d_t* start_point_list) {
     if (kinematic_calculate_angles() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        // Do not return - need init servo driver for CLI access
     }
     
     // Initialize servo driver
@@ -87,6 +88,11 @@ void motion_core_init(const point_3d_t* start_point_list) {
         servo_driver_move(i * 3 + 0, g_limbs_list[i].coxa.angle);
         servo_driver_move(i * 3 + 1, g_limbs_list[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
+    }
+    
+    // Enable servo power
+    if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == false) {
+        servo_driver_power_on();
     }
     
     // Initialize driver state

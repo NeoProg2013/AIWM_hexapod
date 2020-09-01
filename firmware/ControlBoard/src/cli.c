@@ -159,7 +159,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                     sysmon_system_status, sysmon_module_status, sysmon_battery_voltage);
         }
         else if (strcmp(cmd, "reset") == 0) {
-            servo_driver_safe_shutdown();
+            servo_driver_power_off();
             NVIC_SystemReset();
         }
         else {
