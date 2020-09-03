@@ -31,7 +31,6 @@ typedef enum {
 
 typedef struct {
     uint8_t  config;                        // Servo mode configuration
-    uint8_t  pwm_channel;                   // PWM channel
     int16_t  zero_trim;                     // Zero trim
                                    
     uint16_t logic_zero;                    // Logic zero
@@ -290,12 +289,6 @@ static bool read_configuration(void) {
         }
         else {
             // Unknown servo type
-            return false;
-        }
-
-        // Read PWM channel
-        if (config_read_8(base_address + MM_SERVO_PWM_CHANNEL_OFFSET, &servo_config->pwm_channel) == false) return false;
-        if (servo_config->pwm_channel >= SUPPORT_PWM_CHANNELS_COUNT) {
             return false;
         }
 
