@@ -160,7 +160,7 @@ static bool check_ip_address(const char* ip_address, uint32_t len) {
             }
         }
     }
-    return (points_count == 3) && (digits_count != 0 && points_count <= 3);
+    return points_count == 3 && digits_count != 0;
 }
 
 //  ***************************************************************************

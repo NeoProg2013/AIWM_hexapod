@@ -69,12 +69,12 @@ void cli_process(void) {
         tx_buffer[0] = '\0';
         if (parse_command_line(rx_buffer, module, cmd, argv, &argc) == true) {
             if (process_command(module, cmd, argv, argc, tx_buffer) == false) {
-                if (strlen(tx_buffer) == 0) {
+                if (tx_buffer[0] == '\0') {
                     strcpy(tx_buffer, CLI_ERROR("ERROR"));
                 }
             }
             else {
-                if (strlen(tx_buffer) == 0) {
+                if (tx_buffer[0] == '\0') {
                     strcpy(tx_buffer, CLI_OK("OK"));
                 }
             }

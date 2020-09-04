@@ -233,11 +233,6 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
         info->override_value = atoi(argv[1]);
         sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
-    else if (strcmp(cmd, "set-logic") == 0 && argc == 2) {
-        info->override_level = OVERRIDE_LEVEL_LOGIC_ANGLE;
-        info->override_value = atoi(argv[1]);
-        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
-    }
     else if (strcmp(cmd, "zero") == 0 && argc == 1) {
         info->override_level = OVERRIDE_LEVEL_PHYSIC_ANGLE;
         info->override_value = (int32_t)calculate_physic_angle(0, &servo_config_list[servo_index]);

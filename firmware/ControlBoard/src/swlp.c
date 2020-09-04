@@ -82,7 +82,7 @@ void swlp_process(void) {
 
         swlp_frame_t* swlp_tx_frame = (swlp_frame_t*)tx_buffer;
         swlp_status_payload_t* response = (swlp_status_payload_t*)swlp_tx_frame->payload;
-        memset(swlp_tx_frame, 0, sizeof(swlp_tx_frame));
+        memset(swlp_tx_frame, 0, sizeof(swlp_frame_t));
 
         // Process command
         response->command_status = SWLP_CMD_STATUS_OK;

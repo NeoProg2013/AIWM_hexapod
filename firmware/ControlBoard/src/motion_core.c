@@ -341,10 +341,11 @@ static bool process_advanced_trajectory(float motion_time) {
     }
     
     // Check curvature value
-    float curvature = (float)g_current_trajectory_config.curvature / 1000.0f;
-    if (g_current_trajectory_config.curvature == 0)    curvature = +0.001f;
-    if (g_current_trajectory_config.curvature > 1999)  curvature = +1.999f;
-    if (g_current_trajectory_config.curvature < -1999) curvature = -1.999f;
+    float curvature = 0;
+    if (g_current_trajectory_config.curvature == 0)         curvature = +0.001f;
+    else if (g_current_trajectory_config.curvature > 1999)  curvature = +1.999f;
+    else if (g_current_trajectory_config.curvature < -1999) curvature = -1.999f;
+    else                                                    curvature = (float)g_current_trajectory_config.curvature / 1000.0f;
     
     //
     // Calculate XZ
