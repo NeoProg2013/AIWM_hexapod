@@ -52,7 +52,7 @@ static esp_err_t stream_handler(httpd_req_t* req) {
         
         camera_fb_t* fb = esp_camera_fb_get();
         if (!fb) {
-            Serial.println("ERROR: Camera capture failed");
+            Serial.println("ERROR");
             res = ESP_FAIL;
         } 
         else {
@@ -61,7 +61,7 @@ static esp_err_t stream_handler(httpd_req_t* req) {
                 esp_camera_fb_return(fb);
                 fb = NULL;
                 if (!jpeg_converted) {
-                    Serial.println("ERROR: JPEG compression failed");
+                    Serial.println("ERROR");
                     res = ESP_FAIL;
                 }
             } 
@@ -175,7 +175,6 @@ void setup() {
 
     // Start streaming web server
     startCameraServer();
-    Serial.print(WiFi.localIP());
 }
  
 void loop() {
