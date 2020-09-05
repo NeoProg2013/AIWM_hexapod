@@ -134,12 +134,10 @@ void sequences_engine_process(void) {
             }
             if (sequence_stage == STAGE_FINALIZE && current_motion >= current_sequence_info->total_motions_count) {
                 engine_state = STATE_CHANGE_SEQUENCE;
+                hexapod_state = (current_sequence == SEQUENCE_DOWN) ? HEXAPOD_STATE_DOWN : HEXAPOD_STATE_UP;
             }    
-            
-            // Change hexapod state
-            hexapod_state = (current_sequence == SEQUENCE_DOWN) ? HEXAPOD_STATE_DOWN : HEXAPOD_STATE_UP;
             break;
-            
+
         case STATE_CHANGE_SEQUENCE:
             current_sequence      = next_sequence;
             current_sequence_info = next_sequence_info;
