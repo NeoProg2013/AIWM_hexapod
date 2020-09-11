@@ -2,22 +2,25 @@
 /// @file    main.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "stm32f373xc.h"
 #include "project_base.h"
-#include "communication.h"
 #include "configurator.h"
 #include "system_monitor.h"
-#include "systimer.h"
+#include "swlp.h"
+#include "cli.h"
 #include "servo_driver.h"
 #include "motion_core.h"
 #include "sequences_engine.h"
 #include "indication.h"
 #include "gui.h"
+#include "camera.h"
+#include "pwm.h"
+#include "systimer.h"
 
 
 static void system_init(void);
 static void debug_gpio_init(void);
 static void emergency_loop(void);
+
 
 
 //  ***************************************************************************
@@ -35,21 +38,31 @@ void main() {
     
     indication_init();
     gui_init();
-    
     config_init();
-    communication_init();
+    camera_init();
+    
+    swlp_init();
+    cli_init();
     
     sequences_engine_init();
     
+    delay_ms(100);
     while (true) {
         
         sysmon_process();
-        communication_process();
+        swlp_process();
+        cli_process();
+        
+        camera_process();
         
         // Override select sequence if need
-        if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true ||
-            sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
+        if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
             sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
+        }
+        // Disable servo power if low supply voltage
+        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
+            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
+            servo_driver_power_off();
         }
         
         // Motion process
@@ -62,6 +75,7 @@ void main() {
         gui_process();
         
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
+            servo_driver_power_off();
             emergency_loop();
         }
     }
@@ -76,7 +90,8 @@ static void emergency_loop(void) {
     
     while (true) {
         sysmon_process();
-        communication_process();
+        swlp_process();
+        cli_process();
         indication_process();
     }
 }
@@ -107,8 +122,11 @@ static void system_init(void) {
     RCC->CFGR |= RCC_CFGR_SW_PLL;
     while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
     
+    // Enable MCO
+    RCC->CFGR |= RCC_CFGR_MCOSEL_SYSCLK;
+    
     // Switch USARTx clock source to system clock
-    RCC->CFGR3 |= RCC_CFGR3_USART2SW_SYSCLK;
+    RCC->CFGR3 |= RCC_CFGR3_USART3SW_SYSCLK | RCC_CFGR3_USART2SW_SYSCLK | RCC_CFGR3_USART1SW_SYSCLK;
     
     
     
@@ -123,10 +141,18 @@ static void system_init(void) {
     // Enable clocks for TIM17
     RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
     while ((RCC->APB2ENR & RCC_APB2ENR_TIM17EN) == 0);    
+    
+    // Enable clocks for USART3
+    RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
+    while ((RCC->APB1ENR & RCC_APB1ENR_USART3EN) == 0);
 
     // Enable clocks for USART2
     RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_USART2EN) == 0);
+    
+    // Enable clocks for USART1
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+    while ((RCC->APB2ENR & RCC_APB2ENR_USART1EN) == 0);
     
     // Enable clocks for I2C1
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
@@ -150,33 +176,13 @@ static void debug_gpio_init(void) {
     GPIOC->OSPEEDR |=  (0x03u << (DEBUG_TP1_PIN * 2u));
     GPIOC->PUPDR   &= ~(0x03u << (DEBUG_TP1_PIN * 2u));
     
-    // TP2 pin (PA8): output mode, push-pull, high speed, no pull
-    GPIOA->BRR      =  (0x01u << (DEBUG_TP2_PIN * 1u));
-    GPIOA->MODER   |=  (0x01u << (DEBUG_TP2_PIN * 2u));
-    GPIOA->OSPEEDR |=  (0x03u << (DEBUG_TP2_PIN * 2u));
-    GPIOA->PUPDR   &= ~(0x03u << (DEBUG_TP2_PIN * 2u));
-    
-    // TP3 pin (PC12): output mode, push-pull, high speed, no pull
-    GPIOC->BRR      =  (0x01u << (DEBUG_TP3_PIN * 1));
-    GPIOC->MODER   |=  (0x01u << (DEBUG_TP3_PIN * 2));
-    GPIOC->OSPEEDR |=  (0x03u << (DEBUG_TP3_PIN * 2));
-    GPIOC->PUPDR   &= ~(0x03u << (DEBUG_TP3_PIN * 2));
-    
-    // TP4 pin (PD2): output mode, push-pull, high speed, no pull
-    GPIOD->BRR      =  (0x01u << (DEBUG_TP4_PIN * 1));
-    GPIOD->MODER   |=  (0x01u << (DEBUG_TP4_PIN * 2));
-    GPIOD->OSPEEDR |=  (0x03u << (DEBUG_TP4_PIN * 2));
-    GPIOD->PUPDR   &= ~(0x03u << (DEBUG_TP4_PIN * 2));
+    // TP3 pin (PA11): output mode, push-pull, high speed, no pull
+    GPIOA->BRR      =  (0x01u << (DEBUG_TP3_PIN * 1));
+    GPIOA->MODER   |=  (0x01u << (DEBUG_TP3_PIN * 2));
+    GPIOA->OSPEEDR |=  (0x03u << (DEBUG_TP3_PIN * 2));
+    GPIOA->PUPDR   &= ~(0x03u << (DEBUG_TP3_PIN * 2));
 }
 
 void HardFault_Handler(void) {
-    
     while (true);
 }
-
-
-
-
-
-
-

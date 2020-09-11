@@ -3,11 +3,9 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "indication.h"
-#include "stm32f373xc.h"
+#include "project_base.h"
 #include "system_monitor.h"
 #include "systimer.h"
-#include <stdint.h>
-#include <stdbool.h>
 
 #define LED_R_PIN                   (5) // PB5
 #define LED_G_PIN                   (6) // PB6
@@ -18,6 +16,9 @@
 #define LED_TURN_ON(pin)            ( GPIOB->BSRR = (uint32_t)(0x01 << ((pin) * 1)) )
 #define BUZZER_TURN_OFF()           ( GPIOC->BRR  = (uint32_t)(0x01 << (BUZZER_PIN * 1)) )
 #define BUZZER_TURN_ON()            ( GPIOC->BSRR = (uint32_t)(0x01 << (BUZZER_PIN * 1)) )
+
+
+static bool is_cli_control_enabled = false;
 
 
 static void blink_red_led_with_buzzer(uint32_t period);
@@ -77,6 +78,10 @@ void indication_init(void) {
 //  ***************************************************************************
 void indication_process(void) {
     
+    if (is_cli_control_enabled) {
+        return;
+    }
+    
     if (sysmon_is_error_set(SYSMON_ANY_ERROR) == false) {
         LED_TURN_OFF(LED_R_PIN);
         LED_TURN_ON(LED_G_PIN);
@@ -101,6 +106,56 @@ void indication_process(void) {
             blink_red_led_with_buzzer(100);
         }
     }
+}
+
+//  ***************************************************************************
+/// @brief  CLI command process
+/// @param  cmd: command string
+/// @param  argv: argument list
+/// @param  argc: arguments count
+/// @param  response: response
+/// @retval response
+/// @return true - success, false - fail
+//  ***************************************************************************
+bool indication_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
+
+    if (strcmp(cmd, "ext-ctrl") == 0 && argc == 1) {
+        is_cli_control_enabled = atoi(argv[0]);
+        LED_TURN_OFF(LED_R_PIN);
+        LED_TURN_OFF(LED_G_PIN);
+        LED_TURN_OFF(LED_B_PIN);
+        BUZZER_TURN_OFF();
+        if (is_cli_control_enabled) {
+            strcpy(response, CLI_OK("Indication now is under control by CLI"));
+        }
+        else {
+            strcpy(response, CLI_OK("Indication now is under control by MCU"));
+        }
+    }
+    else if (strcmp(cmd, "set-state") == 0 && argc == 1) {
+        char r = argv[0][0];
+        char g = argv[0][1];
+        char b = argv[0][2];
+        char buzzer = argv[0][3];
+        if (r != '0' && r != '1' || g != '0' && g != '1' || b != '0' && b != '1' || buzzer != '0' && buzzer != '1') {
+            strcpy(response, CLI_ERROR("Wrong argument value. Possible 0 or 1"));
+            return false;
+        }
+        
+        if (r == '1') LED_TURN_ON(LED_R_PIN);
+        else          LED_TURN_OFF(LED_R_PIN);
+        if (g == '1') LED_TURN_ON(LED_G_PIN);
+        else          LED_TURN_OFF(LED_G_PIN);
+        if (b == '1') LED_TURN_ON(LED_B_PIN);
+        else          LED_TURN_OFF(LED_B_PIN);
+        if (buzzer == '1') BUZZER_TURN_ON();
+        else               BUZZER_TURN_OFF();
+    }
+    else {
+        strcpy(response, CLI_ERROR("Unknown command or format for indication"));
+        return false;
+    }
+    return true;
 }
 
 

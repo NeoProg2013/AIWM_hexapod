@@ -3,16 +3,17 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "servo_driver.h"
+#include "project_base.h"
 #include "configurator.h"
 #include "cli.h"
 #include "pwm.h"
 #include "system_monitor.h"
 #include "systimer.h"
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+
+#define SERVO_POWER_EN_PIN                      (2) // PC2
+#define SERVO_TURN_POWER_ON()                   (GPIOC->BSRR |= 0x01u << SERVO_POWER_EN_PIN)
+#define SERVO_TURN_POWER_OFF()                  (GPIOC->BRR  |= 0x01u << SERVO_POWER_EN_PIN)
+
 
 #define SERVO_DS3218MG_270_ID                   (0x00)
 #define       DS3218MG_MIN_PULSE_WIDTH          (500)
@@ -30,7 +31,6 @@ typedef enum {
 
 typedef struct {
     uint8_t  config;                        // Servo mode configuration
-    uint8_t  pwm_channel;                   // PWM channel
     int16_t  zero_trim;                     // Zero trim
                                    
     uint16_t logic_zero;                    // Logic zero
@@ -64,14 +64,19 @@ static uint32_t convert_angle_to_pulse_width(float physic_angle, const servo_con
 //  ***************************************************************************
 void servo_driver_init(void) {
     
+    // Init servo power enable pin PC2): output mode, push-pull, high speed, no pull
+    SERVO_TURN_POWER_OFF();
+    GPIOC->MODER   |=  (0x01u << (SERVO_POWER_EN_PIN * 2u));
+    GPIOC->OSPEEDR |=  (0x03u << (SERVO_POWER_EN_PIN * 2u));
+    GPIOC->PUPDR   &= ~(0x03u << (SERVO_POWER_EN_PIN * 2u));
+    
     if (read_configuration() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
         return;
     }
-
+    
     pwm_init();
-    pwm_enable();
 }
 
 //  ***************************************************************************
@@ -93,12 +98,20 @@ void servo_driver_move(uint32_t ch, float angle) {
 }
 
 //  ***************************************************************************
-/// @brief  Servo driver safe shutdown
+/// @brief  Servo driver power ON
+//  ***************************************************************************
+void servo_driver_power_on(void) {
+    SERVO_TURN_POWER_ON();
+    pwm_enable();
+}
+
+//  ***************************************************************************
+/// @brief  Servo driver power OFF
 /// @note   Call before system reset
 //  ***************************************************************************
-void servo_driver_safe_shutdown(void) {
+void servo_driver_power_off(void) {
     pwm_disable();
-    delay_ms(30);
+    SERVO_TURN_POWER_OFF();
 }
 
 //  ***************************************************************************
@@ -108,15 +121,17 @@ void servo_driver_safe_shutdown(void) {
 void servo_driver_process(void) {
 
     if (sysmon_is_module_disable(SYSMON_MODULE_SERVO_DRIVER) == true) {
+        SERVO_TURN_POWER_OFF();
         pwm_disable();
         return;
     }
     
-    static uint64_t prev_synchro = 0;
-    if (synchro != prev_synchro) {
+    
+    static uint64_t prev_synchro_value = 0;
+    if (synchro != prev_synchro_value) {
 
         // We skip PWM period - this is error and calculations have long time
-        if (synchro - prev_synchro > 1) {
+        if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0) {
             sysmon_set_error(SYSMON_SYNC_ERROR);
         }
 
@@ -146,11 +161,11 @@ void servo_driver_process(void) {
             }
 
             // Load pulse width
-            pwm_set_width(servo_config_list[i].pwm_channel, info->pulse_width);
+            pwm_set_width(i, info->pulse_width);
         }
         pwm_set_shadow_buffer_lock_state(false);
 
-        prev_synchro = synchro;
+        prev_synchro_value = synchro;
     }
 }
 
@@ -164,15 +179,25 @@ void servo_driver_process(void) {
 /// @return true - success, false - fail
 //  ***************************************************************************
 bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
+    
+    // Process commands without args
+    if (strcmp(cmd, "power-off") == 0 && argc == 0) {
+        servo_driver_power_off();
+        return true;
+    }
+    else if (strcmp(cmd, "power-on") == 0 && argc == 0) {
+        servo_driver_power_on();
+        return true;
+    }
 
     // Get servo index
     if (argc == 0) {
-        strcpy(response, CLI_MSG("ERROR: Servo index is not found"));
+        strcpy(response, CLI_ERROR("Servo index is not found"));
         return false;
     }
     uint32_t servo_index = atoi(argv[0]);
     if (servo_index > SUPPORT_SERVO_COUNT) {
-        sprintf(response, CLI_MSG("ERROR: Servo index %d is out of range"), servo_index);
+        strcpy(response, CLI_ERROR("Servo index is out of range"));
         return false;
     }
     
@@ -184,48 +209,42 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
     //
     if (strcmp(cmd, "status") == 0 && argc == 1) {
 
-        sprintf(response, CLI_MSG("servo status report")
-                          CLI_MSG("    - override level: %ld")
-                          CLI_MSG("    - override value: %ld")
-                          CLI_MSG("    - logic angle: %ld")
-                          CLI_MSG("    - physic angle: %ld")
-                          CLI_MSG("    - pulse width: %lu"),
+        sprintf(response, CLI_OK("servo status report")
+                          CLI_OK("    - override level: %ld")
+                          CLI_OK("    - override value: %ld")
+                          CLI_OK("    - logic angle: %ld")
+                          CLI_OK("    - physic angle: %ld")
+                          CLI_OK("    - pulse width: %lu"),
                 info->override_level, info->override_value,
                 (int32_t)info->logic_angle, (int32_t)info->physic_angle, info->pulse_width);
     }
-    else if (strcmp(cmd, "set") == 0 && argc == 3) {
-
-        // Set override level
-        if (strcmp(argv[1], "logic") == 0) {
-            info->override_level = OVERRIDE_LEVEL_LOGIC_ANGLE;
-            info->override_value = atoi(argv[2]);
-        } 
-        else if (strcmp(argv[1], "physic") == 0) {
-            info->override_level = OVERRIDE_LEVEL_PHYSIC_ANGLE;
-            info->override_value = atoi(argv[2]);
-        }
-        else if (strcmp(argv[1], "pulse") == 0) {
-            info->override_level = OVERRIDE_LEVEL_PULSE_WIDTH;
-            info->override_value = atoi(argv[2]);
-        }
-        else {
-            sprintf(response, CLI_MSG("ERROR: Unknown override level %s"), argv[1]);
-            return false;
-        }
-        sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, info->override_level);
+    else if (strcmp(cmd, "set-logic") == 0 && argc == 2) {
+        info->override_level = OVERRIDE_LEVEL_LOGIC_ANGLE;
+        info->override_value = atoi(argv[1]);
+        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
+    }
+    else if (strcmp(cmd, "set-physic") == 0 && argc == 2) {
+        info->override_level = OVERRIDE_LEVEL_LOGIC_ANGLE;
+        info->override_value = atoi(argv[1]);
+        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
+    }
+    else if (strcmp(cmd, "set-pulse") == 0 && argc == 2) {
+        info->override_level = OVERRIDE_LEVEL_LOGIC_ANGLE;
+        info->override_value = atoi(argv[1]);
+        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
     else if (strcmp(cmd, "zero") == 0 && argc == 1) {
         info->override_level = OVERRIDE_LEVEL_PHYSIC_ANGLE;
         info->override_value = (int32_t)calculate_physic_angle(0, &servo_config_list[servo_index]);
-        sprintf(response, CLI_MSG("[%lu] moved to zero"), servo_index);
+        sprintf(response, CLI_OK("[%lu] moved to zero"), servo_index);
     }
     else if (strcmp(cmd, "reset") == 0 && argc == 1) {
         info->override_level = OVERRIDE_LEVEL_NO;
         info->override_value = 0;
-        sprintf(response, CLI_MSG("[%lu] has new override level %lu"), servo_index, info->override_level);
+        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, info->override_level);
     }
     else {
-        sprintf(response, CLI_MSG("ERROR: Unknown command or format '%s' for servo driver"), cmd);
+        strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
         return false;
     }
     return true;
@@ -265,12 +284,6 @@ static bool read_configuration(void) {
         }
         else {
             // Unknown servo type
-            return false;
-        }
-
-        // Read PWM channel
-        if (config_read_8(base_address + MM_SERVO_PWM_CHANNEL_OFFSET, &servo_config->pwm_channel) == false) return false;
-        if (servo_config->pwm_channel >= SUPPORT_PWM_CHANNELS_COUNT) {
             return false;
         }
 

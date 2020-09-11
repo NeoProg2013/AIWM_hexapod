@@ -8,9 +8,9 @@
 #include "soc/rtc_cntl_reg.h"
 #include "esp_http_server.h"
  
-// Wifi setup
-const char* ssid = "NeoHome";
-const char* password = "03121994+";
+// WiFi setup
+const char* ssid = "AIWM hexapod";
+const char* password = "12345678";
  
 #define PART_BOUNDARY "123456789000000000000987654321"
  
@@ -52,25 +52,23 @@ static esp_err_t stream_handler(httpd_req_t* req) {
         
         camera_fb_t* fb = esp_camera_fb_get();
         if (!fb) {
-            Serial.println("ERROR: Camera capture failed");
+            Serial.println("ERROR");
             res = ESP_FAIL;
         } 
         else {
-            //if (fb->width > 400) {
-                if (fb->format != PIXFORMAT_JPEG){
-                    bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
-                    esp_camera_fb_return(fb);
-                    fb = NULL;
-                    if (!jpeg_converted) {
-                        Serial.println("ERROR: JPEG compression failed");
-                        res = ESP_FAIL;
-                    }
-                } 
-                else {
-                    _jpg_buf_len = fb->len;
-                    _jpg_buf = fb->buf;
+            if (fb->format != PIXFORMAT_JPEG){
+                bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
+                esp_camera_fb_return(fb);
+                fb = NULL;
+                if (!jpeg_converted) {
+                    Serial.println("ERROR");
+                    res = ESP_FAIL;
                 }
-            //}
+            } 
+            else {
+                _jpg_buf_len = fb->len;
+                _jpg_buf = fb->buf;
+            }
         }
         if (res == ESP_OK) {
             size_t hlen = snprintf((char*)part_buf, 64, _STREAM_PART, _jpg_buf_len);
@@ -126,11 +124,7 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable brownout detector
     
     Serial.setDebugOutput(false);
-    Serial.begin(115200);
-    
-    delay(2000);     // Delay for STM32 startup completed
-    Serial.println("STATUS: ESP32 is ready");
-    delay(5);         // Delay for STM32 USART message recognition 
+    Serial.begin(9600);
      
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -159,7 +153,7 @@ void setup() {
      
     // Camera initialization
     if (esp_camera_init(&config) != ESP_OK) {
-        Serial.println("ERROR: camera init failed");
+        Serial.print("ERROR");
         return;
     }
 
@@ -168,26 +162,19 @@ void setup() {
     s->set_contrast(s, 2);
     s->set_brightness(s, -2);
     s->set_saturation(s, 1);
-    Serial.println("STATUS: camera is ready");
-    
-    // Delay for STM32 USART message recognition 
-    delay(5);
     
     // Wi-Fi connection
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
+    for (uint32_t i = 0; WiFi.status() != WL_CONNECTED && i < 60; ++i) {
+        WiFi.begin(ssid, password);
+        delay(1000);
     }
-    Serial.println("STATUS: WIFI connected");
-    
-    // Delay for STM32 USART message recognition 
-    delay(5);
-     
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.print("ERROR");
+        return;
+    }
+
     // Start streaming web server
     startCameraServer();
-    Serial.println("STATUS: stream server is ready");
-    Serial.print("IP: "); 
-    Serial.println(WiFi.localIP());
 }
  
 void loop() {
@@ -203,5 +190,16 @@ void loop() {
         }
         is_led_enabled = !is_led_enabled;
         prev_time = millis();
+    }
+
+    static uint32_t prev_send_ip_time = 0;
+    if (millis() - prev_send_ip_time > 1000) {
+        if (WiFi.status() != WL_CONNECTED) {
+            Serial.print("ERROR");
+        }
+        else {
+            Serial.print(WiFi.localIP());
+        }
+        prev_send_ip_time = millis();
     }
 }

@@ -37,7 +37,7 @@ signals:
     void swlpRunCommunication();
     
     // To StreamService module
-    void streamServiceRun();
+    void streamServiceRun(QString cameraIp);
 
     // To QML
     void frameReceived();
@@ -50,6 +50,7 @@ signals:
     void streamServiceFrameReceived();
     void streamServiceBadFrameReceived();
     void streamServiceConnectionClosed();
+    void streamServiceIpAddressUpdate(QVariant ipAddress);
 
 public slots:
     // From SWLP module
@@ -63,9 +64,11 @@ protected:
     QThread m_streamServiceThread;
     QThread m_swlpThread;
 
-    uint8_t m_commandForSend;
-    uint8_t m_stepLenght;
-    int16_t m_curvature;
+    uint8_t m_commandForSend        {SWLP_CMD_SELECT_SEQUENCE_NONE};
+    uint8_t m_stepLenght            {0};
+    int16_t m_curvature             {0};
+
+    QString m_cameraIp              {"255.255.255.255"};
 };
 
 #endif // CORE_H

@@ -39,7 +39,7 @@
 #pragma pack(push, 1)
 typedef struct {
     uint32_t start_mark;
-    uint8_t  payload[18];
+    uint8_t  payload[26];
     uint16_t crc16;
 } swlp_frame_t;
 
@@ -47,7 +47,7 @@ typedef struct {
     uint8_t command;
     uint8_t distance;
     int16_t curvature;
-    uint8_t reserved[14];
+    uint8_t reserved[22];
 } swlp_command_payload_t;
 
 typedef struct {
@@ -57,7 +57,8 @@ typedef struct {
     uint8_t  system_status;
     uint16_t battery_voltage;
     uint8_t  battery_charge;
-    uint8_t  reserved[11];
+    uint8_t  camera_ip[16]; // xxx.xxx.xxx.xxx\0
+    uint8_t  reserved[3];
 } swlp_status_payload_t;
 #pragma pack(pop)
 

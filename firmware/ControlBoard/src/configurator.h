@@ -20,12 +20,7 @@ extern bool config_read_8(uint32_t address, uint8_t* buffer);
 extern bool config_read_16(uint32_t address, uint16_t* buffer);
 extern bool config_read_32(uint32_t address, uint32_t* buffer);
 
-extern bool config_write_8(uint32_t address, uint8_t data);
-extern bool config_write_16(uint32_t address, uint16_t data);
-extern bool config_write_32(uint32_t address, uint32_t data);
-
 extern bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response);
 
 
 #endif // _CONFIGURATOR_H_
-

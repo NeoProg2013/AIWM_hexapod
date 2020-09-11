@@ -3,8 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "gui.h"
-#include <stdint.h>
-#include <stdbool.h>
+#include "project_base.h"
 #include "oled_gl.h"
 #include "system_monitor.h"
 #include "systimer.h"
@@ -71,9 +70,9 @@ void gui_init(void) {
     // Draw horizontal separator (static)
     oled_gl_draw_horizontal_line(5, 0, 7, 128);
     
-    // Draw error status (dynamic)
-    char fw_version[24] = FIRMWARE_VERSION;
-    fw_version[19] = '\0';
+    // Draw firmware version (static)
+    char fw_version[] = FIRMWARE_VERSION;
+    fw_version[19] = '\0'; // Example: 1.0.200825 100773 D
     oled_gl_draw_string(7, 4, fw_version);
     
     // Draw vertical separator (static)

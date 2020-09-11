@@ -10,7 +10,7 @@
 #define PWM_CHANNEL_DISABLE_VALUE       (0xFFFF)
 #define PWM_CHANNEL_PULSE_TRIM          (3)
 
-#define PWM_FREQUENCY_HZ                (250)
+#define PWM_FREQUENCY_HZ                (270)
 #define PWM_PERIOD_US                   (1000000 / PWM_FREQUENCY_HZ)
 
 #if PWM_PERIOD_US > 65535
@@ -37,15 +37,16 @@ static pwm_channel_t shadow_buffer[SUPPORT_PWM_CHANNELS_COUNT] = {   // Not sort
     { .gpio_port = GPIOB, .gpio_pin =  1, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOB, .gpio_pin =  0, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOC, .gpio_pin =  5, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOC, .gpio_pin =  4, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOA, .gpio_pin =  7, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOA, .gpio_pin =  6, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOA, .gpio_pin =  5, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOA, .gpio_pin =  4, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOA, .gpio_pin =  3, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOA, .gpio_pin =  2, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    
+    { .gpio_port = GPIOA, .gpio_pin =  0, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOA, .gpio_pin =  1, .ticks = PWM_CHANNEL_DISABLE_VALUE },
-    { .gpio_port = GPIOA, .gpio_pin =  0, .ticks = PWM_CHANNEL_DISABLE_VALUE }
+    { .gpio_port = GPIOA, .gpio_pin =  2, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    { .gpio_port = GPIOA, .gpio_pin =  3, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    { .gpio_port = GPIOA, .gpio_pin =  4, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    { .gpio_port = GPIOA, .gpio_pin =  5, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    { .gpio_port = GPIOA, .gpio_pin =  6, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    { .gpio_port = GPIOA, .gpio_pin =  7, .ticks = PWM_CHANNEL_DISABLE_VALUE },
+    { .gpio_port = GPIOC, .gpio_pin =  4, .ticks = PWM_CHANNEL_DISABLE_VALUE },
 };
 static bool shadow_buffer_is_lock = false;
 static bool pwm_disable_is_requested = false;

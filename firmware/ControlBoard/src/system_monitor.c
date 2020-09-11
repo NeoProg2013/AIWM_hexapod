@@ -3,6 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "system_monitor.h"
+#include "project_base.h"
 #include "adc.h"
 #include "systimer.h"
 
@@ -25,12 +26,12 @@ typedef enum {
 
 static monitor_state_t monitor_state = STATE_NO_INIT;
 static uint32_t acc_adc_bins[ADC_CHANNELS_COUNT] = {0};
-static int16_t  battery_voltage_offset = 690;
+static int16_t  battery_voltage_offset = 0;
 
 uint8_t  sysmon_system_status = 0;
 uint8_t  sysmon_module_status = 0;
-uint16_t sysmon_battery_voltage = 0;
-uint8_t  sysmon_battery_charge = 0;
+uint16_t sysmon_battery_voltage = 12600; // mV
+uint8_t  sysmon_battery_charge = 99; // %
 
 
 static void calculate_battery_voltage(void);
@@ -193,8 +194,10 @@ static void calculate_battery_voltage(void) {
     int32_t battery_voltage = (uint32_t)(input_voltage * voltage_div_factor);
 
     // Offset battery voltage
-    sysmon_battery_voltage = battery_voltage;
-    sysmon_battery_voltage += battery_voltage_offset;
+    battery_voltage += battery_voltage_offset;
+    if (sysmon_battery_voltage > battery_voltage) {
+        sysmon_battery_voltage = battery_voltage;
+    }
     
     // Calculate battery charge persents
     float battery_charge = (sysmon_battery_voltage - 9000.0f) / (12600.0f - 9000.0f) * 100.0f;
