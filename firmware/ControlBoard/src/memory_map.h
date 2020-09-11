@@ -1,12 +1,14 @@
 //  ***************************************************************************
 /// @file    mamory_map.c
 /// @author  NeoProg
-/// @brief   onfigurator memory map
+/// @brief   Configurator memory map
 //  ***************************************************************************
 #ifndef _MEMORY_MAP_H_
 #define _MEMORY_MAP_H_
 
-#define MM_PAGE_CHECKSUM_OFFSET                             (0xFC)      ///< U32 Page checksum
+
+#define MM_PAGE_CHECKSUM_OFFSET                             (0xFE)      ///< U16 Page checksum
+#define MM_PAGE_CHECKSUM_SIZE                               (2)
 
 //
 // Configuration map for limbs
@@ -34,9 +36,7 @@
 #define MM_SERVO_CONFIG_OFFSET                              (0)          ///< U8  Servo configuration
 #define     MM_SERVO_CONFIG_REVERSE_DIRECTION_MASK          (0x01)
 #define     MM_SERVO_CONFIG_SERVO_TYPE_MASK                 (0xF0)
-#define MM_SERVO_PWM_CHANNEL_OFFSET                         (1)          ///< U8  PWM channel
 #define MM_SERVO_ZERO_TRIM_OFFSET                           (2)          ///< S16 Servo zero trim
 
 
 #endif // _MEMORY_MAP_H_
-

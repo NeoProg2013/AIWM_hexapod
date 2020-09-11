@@ -14,13 +14,9 @@ Item {
     property int systemStatus: 0xFF
     property int moduleStatus: 0xFF
 
-    //property real batteryVoltage: 0
-    //property int batteryCharge: 0
     function resetPage() {
         systemStatus = 0xFF
         moduleStatus = 0xFF
-        //batteryVoltage = 0
-        //batteryCharge = 0
     }
 
     FontLoader {
@@ -36,14 +32,6 @@ Item {
         function onModuleStatusUpdated(newModuleStatus) {
             moduleStatus = newModuleStatus
         }
-
-
-        /*onVoltageValuesUpdated: {
-            batteryVoltage = newBatteryVoltage / 1000.0
-        }
-        onBatteryChargeUpdated: {
-            batteryCharge = newBatteryCharge
-        }*/
     }
 
     StreamWidget {
@@ -398,13 +386,13 @@ Item {
                 columns: 2
 
                 StatusLabel {
-                    text: "Reserved"
+                    text: "Camera"
                     Layout.minimumHeight: 40
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
                     isActive: moduleStatus & 0x80
-                    //deactiveColor: "#00DD00"
+                    deactiveColor: "#00DD00"
                 }
 
                 StatusLabel {

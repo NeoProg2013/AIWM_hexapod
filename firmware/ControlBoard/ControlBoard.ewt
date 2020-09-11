@@ -1116,11 +1116,11 @@
                 <debug>1</debug>
                 <option>
                     <name>GenRtcDebugHeap</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>GenRtcEnableBoundsChecking</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>GenRtcCheckPtrsNonInstrMem</name>
@@ -2500,23 +2500,47 @@
                 <name>$PROJ_DIR$\src\drivers\systimer.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\src\drivers\usart1.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\usart1.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\drivers\usart2.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\src\drivers\usart2.h</name>
             </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\usart3.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\usart3.h</name>
+            </file>
         </group>
+        <group>
+            <name>tools</name>
+            <file>
+                <name>$PROJ_DIR$\src\tools\oled_gl.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\oled_gl.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\tools\oled_gl_font_6x8.h</name>
+            </file>
+        </group>
+        <file>
+            <name>$PROJ_DIR$\src\camera.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\camera.h</name>
+        </file>
         <file>
             <name>$PROJ_DIR$\src\cli.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\cli.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\communication.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\communication.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\configurator.c</name>
@@ -2550,15 +2574,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\motion_core.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\oled_gl.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\oled_gl.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\oled_gl_font_6x8.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\project_base.h</name>

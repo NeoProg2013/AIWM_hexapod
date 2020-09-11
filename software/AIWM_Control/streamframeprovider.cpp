@@ -2,7 +2,7 @@
 
 StreamFrameProvider::StreamFrameProvider()
     : QQuickImageProvider(QQuickImageProvider::Pixmap),
-      m_imageWidth(640), m_imageHeight(480),
+      m_imageWidth(480), m_imageHeight(480),
       m_lastPixmap(m_imageWidth, m_imageHeight)
 {
 }
@@ -20,6 +20,6 @@ QPixmap StreamFrameProvider::requestPixmap(const QString&, QSize *size, const QS
 void StreamFrameProvider::setImageRawData(const QByteArray& rawData) {
     QPixmap pixmap(m_imageWidth, m_imageHeight);
     if (pixmap.loadFromData(rawData) == true) {
-        m_lastPixmap = pixmap;
+        m_lastPixmap = pixmap.copy(80, 0, 480, 480);
     }
 }

@@ -42,7 +42,7 @@ void Core::stopCommunication() {
 
 void Core::runStreamService() {
     m_streamServiceThread.start();
-    emit streamServiceRun();
+    emit streamServiceRun(m_cameraIp);
 }
 
 void Core::stopStreamService() {
@@ -80,6 +80,15 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
     emit moduleStatusUpdated(payload->module_status);
     emit voltageValuesUpdated(payload->battery_voltage);
     emit batteryChargeUpdated(payload->battery_charge);
+
+    QByteArray ipAddress(reinterpret_cast<const char*>(payload->camera_ip));
+    QString newCameraIp(ipAddress);
+    if (newCameraIp != m_cameraIp) {
+        this->stopStreamService();
+    }
+
+    m_cameraIp = QString(ipAddress);
+    emit streamServiceIpAddressUpdate(m_cameraIp);
 }
 
 void Core::swlpCommandPayloadPrepare(swlp_command_payload_t* payload) {

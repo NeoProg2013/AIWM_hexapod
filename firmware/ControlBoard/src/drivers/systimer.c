@@ -44,7 +44,6 @@ uint64_t get_time_ms(void) {
 /// @return none
 //  ***************************************************************************
 void delay_ms(uint32_t ms) {
-    
     uint64_t start = systime_ms;
     while (systime_ms - start < ms);
 }

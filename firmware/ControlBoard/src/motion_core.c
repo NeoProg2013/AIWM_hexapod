@@ -3,17 +3,13 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "motion_core.h"
+#include "project_base.h"
 #include "servo_driver.h"
 #include "configurator.h"
 #include "systimer.h"
 #include "pwm.h"
 #include "system_monitor.h"
 #include <math.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 
 typedef enum {
@@ -83,6 +79,7 @@ void motion_core_init(const point_3d_t* start_point_list) {
     if (kinematic_calculate_angles() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        // Do not return - need init servo driver for CLI access
     }
     
     // Initialize servo driver
@@ -91,6 +88,11 @@ void motion_core_init(const point_3d_t* start_point_list) {
         servo_driver_move(i * 3 + 0, g_limbs_list[i].coxa.angle);
         servo_driver_move(i * 3 + 1, g_limbs_list[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
+    }
+    
+    // Enable servo power
+    if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == false) {
+        servo_driver_power_on();
     }
     
     // Initialize driver state
@@ -151,7 +153,7 @@ void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
 
     
-    static uint64_t prev_synchro_value = 0;
+    static uint64_t prev_synchro_value = 0;    
     float scaled_motion_time = 0;
     switch (g_core_state) {
 
@@ -339,10 +341,11 @@ static bool process_advanced_trajectory(float motion_time) {
     }
     
     // Check curvature value
-    float curvature = (float)g_current_trajectory_config.curvature / 1000.0f;
-    if (g_current_trajectory_config.curvature == 0)    curvature = +0.001f;
-    if (g_current_trajectory_config.curvature > 1999)  curvature = +1.999f;
-    if (g_current_trajectory_config.curvature < -1999) curvature = -1.999f;
+    float curvature = 0;
+    if (g_current_trajectory_config.curvature == 0)         curvature = +0.001f;
+    else if (g_current_trajectory_config.curvature > 1999)  curvature = +1.999f;
+    else if (g_current_trajectory_config.curvature < -1999) curvature = -1.999f;
+    else                                                    curvature = (float)g_current_trajectory_config.curvature / 1000.0f;
     
     //
     // Calculate XZ

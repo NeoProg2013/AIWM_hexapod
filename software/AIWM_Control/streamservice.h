@@ -15,7 +15,6 @@ class StreamService : public QObject
 public:
     explicit StreamService(StreamFrameProvider* frameProvider, QObject *parent = nullptr);
     virtual ~StreamService();
-    virtual void runService();
 
 signals:
     void frameReceived();
@@ -23,20 +22,18 @@ signals:
     void connectionClosed();
 
 public slots:
+    virtual void runService(QString cameraIp);
     void httpDataReceived();
     void httpConnectionClosed();
 
 private:
-    bool m_isRunning;
-    QEventLoop* m_eventLoop;
-
-    QNetworkAccessManager* m_manager;
-    QNetworkReply* m_requestReply;
-    QTimer* m_timeoutTimer;
-
+    bool m_isRunning                        {false};
+    QEventLoop* m_eventLoop                 {nullptr};
+    QNetworkAccessManager* m_manager        {nullptr};
+    QNetworkReply* m_requestReply           {nullptr};
+    QTimer* m_timeoutTimer                  {nullptr};
+    StreamFrameProvider* m_frameProvider    {nullptr};
     QByteArray m_imageBuffer;
-
-    StreamFrameProvider* m_frameProvider;
 };
 
 #endif // TCPCLIENT_H

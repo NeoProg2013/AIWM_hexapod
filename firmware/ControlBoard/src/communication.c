@@ -46,11 +46,7 @@ void communication_init(void) {
     cli_init();
     swlp_init();
 
-    usart2_callbacks_t callbacks;
-    callbacks.frame_received_callback = frame_received_callback;
-    callbacks.frame_transmitted_callback = frame_transmitted_or_error_callback;
-    callbacks.error_callback = frame_transmitted_or_error_callback;
-    usart2_init(COMMUNICATION_BAUD_RATE, &callbacks);
+    
     
     is_switched_to_cli = false;
     

@@ -31,10 +31,10 @@ protected:
     uint16_t calculateCRC16(const uint8_t *frameByteArray, int size);
 
 private:
-    bool m_isRunning;
-    QEventLoop* m_eventLoop;
-    QUdpSocket* m_socket;
-    QTimer* m_sendTimer;
+    bool m_isRunning                            {false};
+    QEventLoop* m_eventLoop                     {nullptr};
+    QUdpSocket* m_socket                        {nullptr};
+    QTimer* m_sendTimer                         {nullptr};
     swlp_command_payload_t m_commandPayload;
     swlp_status_payload_t m_statusPayload;
 };

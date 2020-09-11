@@ -50,8 +50,8 @@ void adc_init(void) {
     ADC1->CR1   = ADC_CR1_SCAN;
     ADC1->CR2   = ADC_CR2_EXTTRIG | (0x07 << ADC_CR2_EXTSEL_Pos) | ADC_CR2_DMA; // SWSTART trigger
     ADC1->SMPR1 = (0x07 << ADC_SMPR1_SMP13_Pos); // 239 cycles
-    ADC1->SQR1  = (ADC_CHANNELS_COUNT - 1) << ADC_SQR1_L_Pos; // 3 channels count for conversion
-    ADC1->SQR3  = (13 << ADC_SQR3_SQ1_Pos); // Conversion sequence [11][12][13]
+    ADC1->SQR1  = (ADC_CHANNELS_COUNT - 1) << ADC_SQR1_L_Pos; // 1 channels count for conversion
+    ADC1->SQR3  = (13 << ADC_SQR3_SQ1_Pos); // Conversion sequence [13]
 
     // Enable ADC
     ADC1->CR2 |= ADC_CR2_ADON;
