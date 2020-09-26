@@ -59,11 +59,11 @@ void gui_init(void) {
     oled_gl_draw_dec_number(0, 18, 99);
     oled_gl_draw_string(0, 35, "%");
     
-    // Draw system status (static)
+    // Draw system status (dynamic)
     oled_gl_draw_bitmap(2, 0, SYSTEM_BITMAP_WIDTH, SYSTEM_BITMAP_HEIGHT, system_bitmap);
     oled_gl_draw_hex16(2, 18, 0x0000);
     
-    // Draw module status (static)
+    // Draw module status (dynamic)
     oled_gl_draw_bitmap(4, 0, MODULE_BITMAP_WIDTH, MODULE_BITMAP_HEIGHT, module_bitmap);
     oled_gl_draw_hex16(4, 18, 0x0000);
 
@@ -115,12 +115,12 @@ void gui_process(void) {
             break;
         
         case STATE_UPDATE_SYSTEM_STATUS:
-            oled_gl_draw_hex16(2, 18, 0x0000);
+            oled_gl_draw_hex16(2, 18, sysmon_system_status);
             module_state = STATE_UPDATE_MODULE_STATUS;
             break;
             
         case STATE_UPDATE_MODULE_STATUS:
-            oled_gl_draw_hex16(4, 18, 0x0000);
+            oled_gl_draw_hex16(4, 18, sysmon_module_status);
             module_state = STATE_UPDATE_SYSTEM_MODE;
             break;
             

@@ -37,16 +37,24 @@ static bool config_erase(void);
 /// @return none
 //  ***************************************************************************
 void config_init(void) {
-    
     i2c1_init(I2C_SPEED_400KHZ);
+}
 
+//  ***************************************************************************
+/// @brief  Check EEPROM intergity
+/// @param  none
+/// @return true - success, false - otherwise
+//  ***************************************************************************
+bool config_check_intergity(void) {
+    
     for (uint32_t page = 0; page < CONFIG_SECTION_PAGE_COUNT; ++page) {
         if (config_check_page_integrity(page) == false) {
             sysmon_set_error(SYSMON_MEMORY_ERROR);
             sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
-            return;
+            return false;
         }
     }
+    return true;
 }
 
 //  ***************************************************************************
@@ -319,13 +327,12 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         }
     }
     else if (strcmp(cmd, "erase") == 0 && argc == 0) {
-        
         if (config_erase() == false) {
             strcpy(response, CLI_ERROR("Cannot write data to memory"));
             return false;
         }
     }
-    else if (strcmp(cmd, "verify") == 0 && argc == 1) {
+    else if (strcmp(cmd, "check") == 0 && argc == 1) {
 
         // Get page number
         uint32_t page = atoi(argv[0]);

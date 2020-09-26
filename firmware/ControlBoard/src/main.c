@@ -30,20 +30,26 @@ static void emergency_loop(void);
 //  ***************************************************************************
 void main() {
     
+    // System initialization
     system_init();
     systimer_init();
     debug_gpio_init();
     
+    // Base module initialation
     sysmon_init();
-    
-    indication_init();
-    gui_init();
-    config_init();
-    camera_init();
-    
     swlp_init();
     cli_init();
+    indication_init();
+    gui_init();
     
+    // Initialation and check EEPROM intergity
+    config_init();
+    if (config_check_intergity() == false) {
+        emergency_loop();
+    }
+    
+    // Initializaion submodules
+    camera_init();    
     sequences_engine_init();
     
     delay_ms(100);
@@ -52,6 +58,8 @@ void main() {
         sysmon_process();
         swlp_process();
         cli_process();
+        indication_process();
+        gui_process();
         
         camera_process();
         
@@ -71,9 +79,7 @@ void main() {
         motion_core_process();
         servo_driver_process();
         
-        indication_process();
-        gui_process();
-        
+        // Check system failure
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
             servo_driver_power_off();
             emergency_loop();
@@ -93,6 +99,7 @@ static void emergency_loop(void) {
         swlp_process();
         cli_process();
         indication_process();
+        gui_process();
     }
 }
 

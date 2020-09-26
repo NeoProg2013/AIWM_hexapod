@@ -137,7 +137,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_HELP("    - write32 <address> <DEC value>       - write 32-bit DEC value")
                           CLI_HELP("    - erase                               - mass erase storage")
                           CLI_HELP("    - calc_checksum <page>                - calculate page checksum")
-                          CLI_HELP("    - verify <page>                       - verify page checksum")
+                          CLI_HELP("    - check <page>                        - check page checksum")
                           CLI_HELP("")
                           CLI_HELP("\"indication\" driver commands description")
                           CLI_HELP("    - external-control <0|1>              - enable indication control")
