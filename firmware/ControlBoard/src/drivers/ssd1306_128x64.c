@@ -55,7 +55,7 @@ static bool ssd1306_send_bytes(uint8_t* data, uint32_t bytes_count);
 //  ***************************************************************************
 bool ssd1306_128x64_init(void) {
     
-    i2c2_init(I2C_SPEED_400KHZ);
+    i2c2_init(I2C_SPEED_100KHZ);
     
     // Disable display
     if (!ssd1306_128x64_set_state(false)) return false;
