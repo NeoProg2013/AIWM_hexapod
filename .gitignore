@@ -1,0 +1,14 @@
+/firmware/Debug
+/firmware/AIWM.dep
+/firmware/settings/AIWM.wsdt
+/firmware/settings/AIWM.dbgdt
+/firmware/settings/AIWM.dnx
+/blueprint/Антенна/*.bak
+/hardware/ControlBoard/__Previews
+/hardware/PowerBoard/History
+/hardware/PowerBoard/__Previews
+/blueprint/Подшипник/*.bak
+/hardware/PowerBoard/debug.log
+/blueprint/*.bak
+/hardware/ControlBoard/History
+/hardware/ControlBoard/debug.log
