@@ -11,8 +11,8 @@
 #include "systimer.h"
 
 #define SERVO_POWER_EN_PIN                      (2) // PC2
-#define SERVO_TURN_POWER_ON()                   (GPIOC->BSRR |= 0x01u << SERVO_POWER_EN_PIN)
-#define SERVO_TURN_POWER_OFF()                  (GPIOC->BRR  |= 0x01u << SERVO_POWER_EN_PIN)
+#define SERVO_TURN_POWER_ON()                   gpio_set  (GPIOC, SERVO_POWER_EN_PIN)
+#define SERVO_TURN_POWER_OFF()                  gpio_reset(GPIOC, SERVO_POWER_EN_PIN)
 
 
 #define SERVO_DS3218MG_270_ID                   (0x00)

@@ -97,8 +97,8 @@ void motion_core_start_motion(const motion_config_t* motion_config) {
     
     // Initialize motion configuration
     g_motion_config = *motion_config;
-    if (g_motion_config.is_need_init_start_position) {
-        for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        if (g_motion_config.trajectories[i] == TRAJECTORY_XYZ_LINEAR) { // Set start point for linear traertory
             g_motion_config.start_positions[i] = g_limbs_list[i].position;
         }
     }

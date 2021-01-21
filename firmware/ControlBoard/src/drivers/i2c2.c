@@ -3,7 +3,6 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "i2c2.h"
-#include "stm32f373xc.h"
 #include "project_base.h"
 #include "systimer.h"
 
@@ -33,28 +32,27 @@ void i2c2_init(i2c_speed_t speed) {
     // Setup GPIO
     //
     // Send 9 pulses on SCL
-    GPIOF->MODER   |=  (0x01u << (I2C_SCL_PIN * 2u));     // Output mode
-    GPIOF->OTYPER  |=  (0x01u << (I2C_SCL_PIN * 1u));     // Open drain
-    GPIOF->OSPEEDR |=  (0x03u << (I2C_SCL_PIN * 2u));     // High speed
-    GPIOF->PUPDR   &= ~(0x03u << (I2C_SCL_PIN * 2u));     // Disable pull
+    gpio_set_mode        (GPIOF, I2C_SCL_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (GPIOF, I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(GPIOF, I2C_SCL_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (GPIOF, I2C_SCL_PIN, GPIO_PULL_NO);
     for (uint32_t i = 0; i < 10; ++i) {
-        GPIOF->BRR = 0x01u << I2C_SCL_PIN;
+        gpio_reset(GPIOF, I2C_SCL_PIN);
         delay_ms(1);
-        GPIOF->BSRR = 0x01u << I2C_SCL_PIN;
+        gpio_set(GPIOF, I2C_SCL_PIN);
         delay_ms(1);
     }
-    GPIOF->MODER   &= ~(0x03u << (I2C_SCL_PIN * 2u));
     
-    // Setup SCL pin (PB8)
-    GPIOF->MODER   |=  (0x02u << (I2C_SCL_PIN * 2u));     // Alternate function mode
-    GPIOF->AFR[0]  |=  (0x04u << (I2C_SCL_PIN * 4u));     // AF4
+    // Setup SCL pin (PF6)
+    gpio_set_mode(GPIOF, I2C_SCL_PIN, GPIO_MODE_AF);
+    gpio_set_af  (GPIOF, I2C_SCL_PIN, 4);
     
-    // Setup SDA pin (PB9)
-    GPIOF->MODER   |=  (0x02u << (I2C_SDA_PIN * 2u));     // Alternate function mode
-    GPIOF->OTYPER  |=  (0x01u << (I2C_SDA_PIN * 1u));     // Open drain
-    GPIOF->OSPEEDR |=  (0x03u << (I2C_SDA_PIN * 2u));     // High speed
-    GPIOF->PUPDR   &= ~(0x03u << (I2C_SDA_PIN * 2u));     // Disable pull
-    GPIOF->AFR[0]  |=  (0x04u << (I2C_SDA_PIN * 4u));     // AF4
+    // Setup SDA pin (PF7)
+    gpio_set_mode        (GPIOF, I2C_SDA_PIN, GPIO_MODE_AF);
+    gpio_set_output_type (GPIOF, I2C_SDA_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(GPIOF, I2C_SDA_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (GPIOF, I2C_SDA_PIN, GPIO_PULL_NO);
+    gpio_set_af          (GPIOF, I2C_SDA_PIN, 4);
     
     
     //
@@ -90,7 +88,6 @@ void i2c2_init(i2c_speed_t speed) {
 /// @return true - operation started, false - error
 //  ***************************************************************************
 bool i2c2_async_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
-
     if (i2c2_is_async_operation_completed() == false) {
         return false;
     }
@@ -126,7 +123,6 @@ bool i2c2_async_write(uint8_t i2c_address, uint32_t internal_address, uint8_t in
 /// @return true - success, false - error
 //  ***************************************************************************
 bool i2c2_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
-    
     if (i2c2_async_write(i2c_address, internal_address, internal_address_size, data, bytes_count) == false) {
         return false;
     }

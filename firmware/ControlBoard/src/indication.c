@@ -12,10 +12,10 @@
 #define LED_B_PIN                   (7) // PB7
 #define BUZZER_PIN                  (0) // PC0
 
-#define LED_TURN_OFF(pin)           ( GPIOB->BRR  = (uint32_t)(0x01 << ((pin) * 1)) )
-#define LED_TURN_ON(pin)            ( GPIOB->BSRR = (uint32_t)(0x01 << ((pin) * 1)) )
-#define BUZZER_TURN_OFF()           ( GPIOC->BRR  = (uint32_t)(0x01 << (BUZZER_PIN * 1)) )
-#define BUZZER_TURN_ON()            ( GPIOC->BSRR = (uint32_t)(0x01 << (BUZZER_PIN * 1)) )
+#define LED_TURN_OFF(pin)           gpio_reset(GPIOB, pin)
+#define LED_TURN_ON(pin)            gpio_set  (GPIOB, pin)
+#define BUZZER_TURN_OFF()           gpio_reset(GPIOC, BUZZER_PIN)
+#define BUZZER_TURN_ON()            gpio_set  (GPIOC, BUZZER_PIN)
 
 
 static bool is_cli_control_enabled = false;
@@ -35,29 +35,30 @@ static void blink_yellow_led(uint32_t period);
 //  ***************************************************************************
 void indication_init(void) {
     
-    // Front LED red pin (PB5): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01u << (LED_R_PIN * 1u));
-    GPIOB->MODER   |=  (0x01u << (LED_R_PIN * 2u));
-    GPIOB->OSPEEDR |=  (0x03u << (LED_R_PIN * 2u));
-    GPIOB->PUPDR   &= ~(0x03u << (LED_R_PIN * 2u));
+    // Front LED red pin (PB5)
+    gpio_set_mode        (GPIOB, LED_R_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (GPIOB, LED_R_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(GPIOB, LED_R_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (GPIOB, LED_R_PIN, GPIO_PULL_NO);
     
-    // Front LED green pin (PB6): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01u << (LED_G_PIN * 1u));
-    GPIOB->MODER   |=  (0x01u << (LED_G_PIN * 2u));
-    GPIOB->OSPEEDR |=  (0x03u << (LED_G_PIN * 2u));
-    GPIOB->PUPDR   &= ~(0x03u << (LED_G_PIN * 2u));
+    // Front LED green pin (PB6)
+    gpio_set_mode        (GPIOB, LED_G_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (GPIOB, LED_G_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(GPIOB, LED_G_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (GPIOB, LED_G_PIN, GPIO_PULL_NO);
     
-    // Front LED blue pin (PB7): output mode, push-pull, high speed, no pull
-    GPIOB->BRR      =  (0x01u << (LED_B_PIN * 1u));
-    GPIOB->MODER   |=  (0x01u << (LED_B_PIN * 2u));
-    GPIOB->OSPEEDR |=  (0x03u << (LED_B_PIN * 2u));
-    GPIOB->PUPDR   &= ~(0x03u << (LED_B_PIN * 2u));
+    // Front LED blue pin (PB7)
+    gpio_set_mode        (GPIOB, LED_B_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (GPIOB, LED_B_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(GPIOB, LED_B_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (GPIOB, LED_B_PIN, GPIO_PULL_NO);
     
     // Buzzer pin (PC0): output mode, push-pull, high speed, no pull
-    GPIOC->BRR      =  (0x01u << (0 * 1u));
-    GPIOC->MODER   |=  (0x01u << (0 * 2u));
-    GPIOC->OSPEEDR |=  (0x03u << (0 * 2u));
-    GPIOC->PUPDR   &= ~(0x03u << (0 * 2u));
+    gpio_set_mode        (GPIOC, BUZZER_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (GPIOC, BUZZER_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(GPIOC, BUZZER_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (GPIOC, BUZZER_PIN, GPIO_PULL_NO);
+
     
     // Disable all
     LED_TURN_OFF(LED_R_PIN);
@@ -77,7 +78,6 @@ void indication_init(void) {
 /// @return none
 //  ***************************************************************************
 void indication_process(void) {
-    
     if (is_cli_control_enabled) {
         return;
     }
@@ -87,9 +87,7 @@ void indication_process(void) {
         LED_TURN_ON(LED_G_PIN);
         LED_TURN_OFF(LED_B_PIN);
         BUZZER_TURN_OFF();
-    }
-    else {
-        
+    } else {
         if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
              blink_red_led_with_buzzer(500);
         }

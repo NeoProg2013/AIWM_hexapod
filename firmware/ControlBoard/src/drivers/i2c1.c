@@ -3,7 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "i2c1.h"
-#include "stm32f373xc.h"
+#include "project_base.h"
 #include "systimer.h"
 
 #define I2C_SCL_PIN                     (8) // PB8
@@ -28,29 +28,29 @@ void i2c1_init(i2c_speed_t speed) {
     // Setup GPIO
     //
     // Send 9 pulses on SCL
-    GPIOB->MODER   |=  (0x01u << (I2C_SCL_PIN * 2u));         // Output mode
-    GPIOB->OTYPER  |=  (0x01u << (I2C_SCL_PIN * 1u));         // Open drain
-    GPIOB->OSPEEDR |=  (0x03u << (I2C_SCL_PIN * 2u));         // High speed
-    GPIOB->PUPDR   &= ~(0x03u << (I2C_SCL_PIN * 2u));         // Disable pull
+    gpio_set_mode        (GPIOB, I2C_SCL_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (GPIOB, I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(GPIOB, I2C_SCL_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (GPIOB, I2C_SCL_PIN, GPIO_PULL_NO);
     for (uint32_t i = 0; i < 10; ++i) {
-        GPIOB->BRR = 0x01u << I2C_SCL_PIN;
+        gpio_reset(GPIOB, I2C_SCL_PIN);
         delay_ms(1);
-        GPIOB->BSRR = 0x01u << I2C_SCL_PIN;
+        gpio_set(GPIOB, I2C_SCL_PIN);
         delay_ms(1);
     }
-    GPIOB->MODER   &= ~(0x03u << (I2C_SCL_PIN * 2u));
     
     // Setup SCL pin (PB8)
-    GPIOB->MODER   |=  (0x02u << (I2C_SCL_PIN * 2u));         // Alternate function mode
-    GPIOB->AFR[1]  |=  (0x04u << (I2C_SCL_PIN * 4u - 32u));    // AF4
+    gpio_set_mode(GPIOB, I2C_SCL_PIN, GPIO_MODE_AF);
+    gpio_set_af  (GPIOB, I2C_SCL_PIN, 4);
+    
     
     // Setup SDA pin (PB9)
-    GPIOB->MODER   |=  (0x02u << (I2C_SDA_PIN * 2u));         // Alternate function mode
-    GPIOB->OTYPER  |=  (0x01u << (I2C_SDA_PIN * 1u));         // Open drain
-    GPIOB->OSPEEDR |=  (0x03u << (I2C_SDA_PIN * 2u));         // High speed
-    GPIOB->PUPDR   &= ~(0x03u << (I2C_SDA_PIN * 2u));         // Disable pull
-    GPIOB->AFR[1]  |=  (0x04u << (I2C_SDA_PIN * 4u - 32u));    // AF4
-    
+    gpio_set_mode        (GPIOB, I2C_SDA_PIN, GPIO_MODE_AF);
+    gpio_set_output_type (GPIOB, I2C_SDA_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(GPIOB, I2C_SDA_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (GPIOB, I2C_SDA_PIN, GPIO_PULL_NO);
+    gpio_set_af          (GPIOB, I2C_SDA_PIN, 4);
+   
     
     //
     // Setup I2C1

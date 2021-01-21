@@ -10,12 +10,17 @@
 #define PWM_CHANNEL_DISABLE_VALUE       (0xFFFF)
 #define PWM_CHANNEL_PULSE_TRIM          (3)
 
-#define PWM_FREQUENCY_HZ                (270)
-#define PWM_PERIOD_US                   (1000000 / PWM_FREQUENCY_HZ)
+#define PWM_START_FREQUENCY_HZ          (270)
+#define PWM_MIN_FREQUENCY_HZ            (20)
+#define PWM_MAX_FREQUENCY_HZ            (330)
 
-#if PWM_PERIOD_US > 65535
-#error "PWM period should be less 65535, check PWM_FREQUENCY_HZ value"
-#endif // PWM_PERIOD_US
+
+#if 1000000 / PWM_MIN_FREQUENCY_HZ > 65535
+#error "PWM period should be less 65535 ticks (1 tick = 1us), check PWM_START_FREQUENCY_HZ value"
+#endif
+#if 1000000 / PWM_MAX_FREQUENCY_HZ < 3000
+#error "PWM period should be more 3000 ticks (1 tick = 1us), check PWM_START_FREQUENCY_HZ value"
+#endif
 
 
 typedef struct {
@@ -51,6 +56,10 @@ static pwm_channel_t shadow_buffer[SUPPORT_PWM_CHANNELS_COUNT] = {   // Not sort
 static bool shadow_buffer_is_lock = false;
 static bool pwm_disable_is_requested = false;
 
+// Next value load to current value each PWM period
+static uint32_t pwm_current_frequency = PWM_START_FREQUENCY_HZ;
+static uint32_t pwm_next_frequency = PWM_START_FREQUENCY_HZ;
+
 uint64_t synchro = 0;
 
 
@@ -72,10 +81,11 @@ void pwm_init(void) {
     // Setup GPIO
     //
     for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
-        active_buffer[i].gpio_port->BRR      =  (0x01 << (active_buffer[i].gpio_pin * 1));   // Reset output
-        active_buffer[i].gpio_port->MODER   |=  (0x01 << (active_buffer[i].gpio_pin * 2));   // Output mode
-        active_buffer[i].gpio_port->OSPEEDR |=  (0x03 << (active_buffer[i].gpio_pin * 2));   // High speed
-        active_buffer[i].gpio_port->PUPDR   &= ~(0x03 << (active_buffer[i].gpio_pin * 2));   // Disable pull
+        gpio_reset           (active_buffer[i].gpio_port, active_buffer[i].gpio_pin);
+        gpio_set_mode        (active_buffer[i].gpio_port, active_buffer[i].gpio_pin, GPIO_MODE_OUTPUT);
+        gpio_set_output_type (active_buffer[i].gpio_port, active_buffer[i].gpio_pin, GPIO_TYPE_PUSH_PULL);
+        gpio_set_output_speed(active_buffer[i].gpio_port, active_buffer[i].gpio_pin, GPIO_SPEED_HIGH);
+        gpio_set_pull        (active_buffer[i].gpio_port, active_buffer[i].gpio_pin, GPIO_PULL_NO);
     }
 
     
@@ -86,10 +96,10 @@ void pwm_init(void) {
     RCC->APB2RSTR &= ~RCC_APB2RSTR_TIM17RST;
 
     // Configure PWM timer: one pulse mode
-    TIM17->CR1   = TIM_CR1_OPM | TIM_CR1_URS; 
-    TIM17->DIER  = TIM_DIER_CC1IE | TIM_DIER_UIE;
-    TIM17->PSC   = APB2_CLOCK_FREQUENCY / 1000000 - 1; // 1 tick = 1 us
-    TIM17->ARR   = PWM_PERIOD_US;
+    TIM17->CR1  = TIM_CR1_OPM | TIM_CR1_URS; 
+    TIM17->DIER = TIM_DIER_CC1IE | TIM_DIER_UIE;
+    TIM17->PSC  = APB2_CLOCK_FREQUENCY / 1000000 - 1; // 1 tick = 1 us
+    TIM17->ARR  = 1000000 / pwm_current_frequency; // Period
     NVIC_EnableIRQ(TIM17_IRQn);
     NVIC_SetPriority(TIM17_IRQn, TIM17_IRQ_PRIORITY);
 }
@@ -100,13 +110,12 @@ void pwm_init(void) {
 /// @return none
 //  ***************************************************************************
 void pwm_enable(void) {
-
     pwm_disable_is_requested = false;
 
     // Reset and enable timer if it is not started
     if ((TIM17->CR1 & TIM_CR1_CEN) == 0) {
-        TIM17->CCR1  = PWM_CHANNEL_DISABLE_VALUE;
-        TIM17->CR1  |= TIM_CR1_CEN;
+        TIM17->CCR1 = PWM_CHANNEL_DISABLE_VALUE;
+        TIM17->CR1 |= TIM_CR1_CEN;
     }
 }
 
@@ -117,8 +126,22 @@ void pwm_enable(void) {
 /// @return none
 //  ***************************************************************************
 void pwm_disable(void) {
-
     pwm_disable_is_requested = true;
+}
+
+//  ***************************************************************************
+/// @brief  Set PWM frequency
+/// @param  frequency: frequency [Hz]
+/// @return none
+//  ***************************************************************************
+void pwm_set_frequency(uint32_t frequency) {
+    if (frequency < PWM_MIN_FREQUENCY_HZ) {
+        frequency = PWM_MIN_FREQUENCY_HZ;
+    }
+    if (frequency > PWM_MAX_FREQUENCY_HZ) {
+        frequency = PWM_MAX_FREQUENCY_HZ;
+    }
+    pwm_next_frequency = frequency;
 }
 
 //  ***************************************************************************
@@ -128,7 +151,6 @@ void pwm_disable(void) {
 /// @return none
 //  ***************************************************************************
 void pwm_set_shadow_buffer_lock_state(bool is_locked) {
-
     shadow_buffer_is_lock = is_locked;
 }
 
@@ -139,12 +161,10 @@ void pwm_set_shadow_buffer_lock_state(bool is_locked) {
 /// @return none
 //  ***************************************************************************
 void pwm_set_width(uint32_t channel, uint32_t width) {
-    
     int32_t ticks = (int32_t)width - PWM_CHANNEL_PULSE_TRIM;
     if (ticks < 0) {
         ticks = 0;
     }
-    
     shadow_buffer[channel].ticks = ticks;
 }
 
@@ -165,9 +185,6 @@ void TIM17_IRQHandler(void) {
     uint32_t status = TIM17->SR;
     TIM17->SR = 0;
 
-    //
-    // Process events
-    //
     if (status & TIM_SR_CC1IF) {
 
         while (ch_cursor < SUPPORT_PWM_CHANNELS_COUNT) {
@@ -179,8 +196,8 @@ void TIM17_IRQHandler(void) {
             }
 
             // Set LOW level for PWM output
-            active_buffer_ptr[ch_cursor]->gpio_port->BRR = (0x01 << active_buffer_ptr[ch_cursor]->gpio_pin);
-
+            gpio_reset(active_buffer_ptr[ch_cursor]->gpio_port, active_buffer_ptr[ch_cursor]->gpio_pin);
+            
             // Go to next PWM channel
             ++ch_cursor;
         }
@@ -199,9 +216,7 @@ void TIM17_IRQHandler(void) {
 
         // Sorting PWM channels: bubble sorting method
         for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT - 1; ++i) {
-
             for (uint32_t j = 0; j < SUPPORT_PWM_CHANNELS_COUNT - i - 1; ++j) {
-
                 if (active_buffer_ptr[j]->ticks > active_buffer_ptr[j + 1]->ticks) {
                     pwm_channel_t* temp = active_buffer_ptr[j];
                     active_buffer_ptr[j] = active_buffer_ptr[j + 1];
@@ -212,11 +227,13 @@ void TIM17_IRQHandler(void) {
 
         // Set HIGH level for PWM outputs
         for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
-            active_buffer_ptr[i]->gpio_port->BSRR = (0x01 << active_buffer_ptr[i]->gpio_pin);
+            gpio_set(active_buffer_ptr[i]->gpio_port, active_buffer_ptr[i]->gpio_pin);
         }
         
         // Reset and enable PWM timer
         ch_cursor = 0;
+        pwm_current_frequency = pwm_next_frequency;
+        TIM17->ARR  = 1000000 / pwm_current_frequency;
         TIM17->CCR1 = active_buffer_ptr[ch_cursor]->ticks;
         TIM17->CR1 |= TIM_CR1_CEN;
 
