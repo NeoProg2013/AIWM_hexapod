@@ -73,7 +73,7 @@ void servo_driver_init(void) {
         return;
     }
     
-    pwm_init();
+    pwm_init(PWM_START_FREQUENCY_HZ);
 }
 
 //  ***************************************************************************
@@ -109,6 +109,21 @@ void servo_driver_power_on(void) {
 void servo_driver_power_off(void) {
     SERVO_TURN_POWER_OFF();
     pwm_disable();
+}
+
+//  ***************************************************************************
+/// @brief  Set servo speed
+/// @param  speed: speed [0; 100]
+//  ***************************************************************************
+void servo_driver_set_speed(uint32_t speed) {
+    if (speed > 100) {
+        speed = 100;
+    }
+    
+    float factor = (float)speed / 100.0f;
+    uint32_t freq = (uint32_t)(PWM_MIN_FREQUENCY_HZ + (float)(PWM_MAX_FREQUENCY_HZ - PWM_MIN_FREQUENCY_HZ) * factor);
+    
+    pwm_set_frequency(freq);
 }
 
 //  ***************************************************************************

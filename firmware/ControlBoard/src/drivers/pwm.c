@@ -10,10 +10,6 @@
 #define PWM_CHANNEL_DISABLE_VALUE       (0xFFFF)
 #define PWM_CHANNEL_PULSE_TRIM          (3)
 
-#define PWM_START_FREQUENCY_HZ          (270)
-#define PWM_MIN_FREQUENCY_HZ            (70)
-#define PWM_MAX_FREQUENCY_HZ            (300)
-
 
 #if 1000000 / PWM_MIN_FREQUENCY_HZ > 65535
 #error "PWM period should be less 65535 ticks (1 tick = 1us), check PWM_START_FREQUENCY_HZ value"
@@ -65,10 +61,12 @@ uint64_t synchro = 0;
 
 //  ***************************************************************************
 /// @brief  PWM driver initialization
-/// @param  none
+/// @param  frequency: frequency [Hz]
 /// @return none
 //  ***************************************************************************
-void pwm_init(void) {
+void pwm_init(uint32_t frequency) {
+    pwm_current_frequency = frequency;
+    pwm_next_frequency = frequency;
     
     // Initialization active buffer
     for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {

@@ -54,17 +54,19 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        currentIndex: 1
+        currentIndex: 0
 
         Item {
-
+            id: element1
             Rectangle {
                 id: joystickItem
                 width: 270
                 height: 270
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
                 color: "#00000000"
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
                 border.color: "#AAAAAA"
 
                 ParallelAnimation {
@@ -142,9 +144,33 @@ Item {
                     sourceSize.height: dragItem.height
                 }
             }
+
+            Label {
+                height: 17
+                text: motionSpeed.value
+                anchors.top: parent.top
+                anchors.left: motionSpeed.left
+                anchors.right: motionSpeed.right
+            }
+
+            Slider {
+                id: motionSpeed
+                x: 350
+                y: 22
+                width: 30
+                height: 248
+                stepSize: 1
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                orientation: Qt.Vertical
+                to: 100
+                value: 90
+                onValueChanged: {
+                    CppCore.setMotionSpeed(value)
+                }
+            }
         }
         Item {
-            id: element
             RowLayout {
                 height: 40
                 anchors.right: parent.right
@@ -463,7 +489,8 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:3;anchors_height:290}D{i:4;anchors_width:270}
+    D{i:0;formeditorColor:"#000000"}D{i:3;anchors_height:290}D{i:13;anchors_width:30;anchors_x:350;anchors_y:5}
+D{i:4;anchors_width:270}
 }
 ##^##*/
 

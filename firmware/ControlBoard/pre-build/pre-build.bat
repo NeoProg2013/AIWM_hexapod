@@ -20,7 +20,7 @@ set /a build=%build%+1
 @echo. >> ../src/version.h
 @echo. >> ../src/version.h
 
-@echo #define FIRMWARE_VERSION				(^"1.0.%date_yyyy%%date_mm%%date_dd% %build% %1^")>> ../src/version.h
+@echo #define FIRMWARE_VERSION				(^"1.01.%date_yyyy%%date_mm%%date_dd% %build% %1^")>> ../src/version.h
 
 @echo. >> ../src/version.h
 @echo. >> ../src/version.h

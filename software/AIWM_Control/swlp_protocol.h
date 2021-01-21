@@ -42,7 +42,8 @@ struct swlp_command_payload_t {
     uint8_t command;
     uint8_t step_length;
     int16_t curvature;
-    uint8_t reserved[22];
+    uint8_t motion_speed;
+    uint8_t reserved[21];
 };
 
 struct swlp_status_payload_t {

@@ -47,7 +47,8 @@ typedef struct {
     uint8_t command;
     uint8_t distance;
     int16_t curvature;
-    uint8_t reserved[22];
+    uint8_t motion_speed;
+    uint8_t reserved[21];
 } swlp_command_payload_t;
 
 typedef struct {

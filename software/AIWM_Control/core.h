@@ -32,6 +32,8 @@ public:
     Q_INVOKABLE void sendStopMoveCommand();
     Q_INVOKABLE void sendStartMotionCommand(QVariant stepLength, QVariant curvature);
 
+    Q_INVOKABLE void setMotionSpeed(QVariant motionSpeed);
+
 signals:
     // To SWLP module
     void swlpRunCommunication();
@@ -67,6 +69,7 @@ protected:
     uint8_t m_commandForSend        {SWLP_CMD_SELECT_SEQUENCE_NONE};
     uint8_t m_stepLenght            {0};
     int16_t m_curvature             {0};
+    uint8_t m_motionSpeed           {90}; // %
 
     QString m_cameraIp              {"255.255.255.255"};
 };

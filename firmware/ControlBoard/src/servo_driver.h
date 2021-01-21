@@ -11,12 +11,14 @@
 #include "cli.h"
 
 
-#define SUPPORT_SERVO_COUNT                        (18)
+#define SUPPORT_SERVO_COUNT                         (18)
+#define SERVO_DEFAULT_SPEED                         (87)
 
 
 extern void servo_driver_init(void); 
 extern void servo_driver_power_on(void);
 extern void servo_driver_power_off(void);
+extern void servo_driver_set_speed(uint32_t speed);
 extern void servo_driver_move(uint32_t ch, float angle);
 extern void servo_driver_process(void);
 
