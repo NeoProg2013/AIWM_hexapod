@@ -12,13 +12,6 @@
 #include <math.h>
 
 
-typedef enum {
-    STATE_NOINIT,
-    STATE_SYNC,
-    STATE_CALC,
-    STATE_TIME_SHIFT,
-} core_state_t;
-
 typedef struct {
     float    angle;
     uint16_t length;
@@ -47,7 +40,6 @@ static bool process_advanced_trajectory(float motion_time);
 static bool kinematic_calculate_angles(void);
 
 
-static core_state_t g_core_state = STATE_NOINIT;
 static limb_t g_limbs_list[SUPPORT_LIMBS_COUNT] = {0};
 
 static motion_config_t g_motion_config = {0};
@@ -94,9 +86,6 @@ void motion_core_init(const point_3d_t* start_point_list) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == false) {
         servo_driver_power_on();
     }
-    
-    // Initialize driver state
-    g_core_state = STATE_SYNC;
 }
 
 //  ***************************************************************************
@@ -145,77 +134,50 @@ void motion_core_update_trajectory_config(int32_t curvature, int32_t distance) {
 
 //  ***************************************************************************
 /// @brief  Motion core process
-/// @param  none
+/// @note   Call each PWM period
 /// @return none
 //  ***************************************************************************
 void motion_core_process(void) {
-
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
 
+
+    if (g_motion_config.motion_time >= g_motion_config.time_stop) {
+        return; // We reach to end of motion - nothing do
+    }
     
-    static uint64_t prev_synchro_value = 0;    
-    float scaled_motion_time = 0;
-    switch (g_core_state) {
+    // Scale time to [0.0; 1.0] range
+    float scaled_motion_time = (float)g_motion_config.motion_time / (float)MTIME_SCALE;
+    
+    // Calculate new limbs positions
+    if (process_linear_trajectory(scaled_motion_time) == false) {
+        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        return;
+    }
+    if (process_advanced_trajectory(scaled_motion_time) == false) {
+        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        return;
+    }
+    
+    // Calculate servo logic angles
+    if (kinematic_calculate_angles() == false) {
+        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        return;
+    }
+    
+    // Load new angles to servo driver
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        servo_driver_move(i * 3 + 0, g_limbs_list[i].coxa.angle);
+        servo_driver_move(i * 3 + 1, g_limbs_list[i].femur.angle);
+        servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
+    }
 
-        case STATE_SYNC:
-            if (synchro != prev_synchro_value) {
-                if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0) {
-                    sysmon_set_error(SYSMON_SYNC_ERROR);
-                }
-                prev_synchro_value = synchro;
-                g_core_state = STATE_CALC;
-            }
-            break;
-
-        case STATE_CALC:
-            if (g_motion_config.motion_time >= g_motion_config.time_stop) {
-                g_core_state = STATE_SYNC;
-                break;
-            }
-            
-            // Calculate new limbs positions
-            scaled_motion_time = (float)g_motion_config.motion_time / (float)MTIME_SCALE; // to [0; 1]
-            if (process_linear_trajectory(scaled_motion_time) == false) {
-                sysmon_set_error(SYSMON_MATH_ERROR);
-                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-                break;
-            }
-            if (process_advanced_trajectory(scaled_motion_time) == false) {
-                sysmon_set_error(SYSMON_MATH_ERROR);
-                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-                break;
-            }
-            
-            // Calculate servo angles
-            if (kinematic_calculate_angles() == false) {
-                sysmon_set_error(SYSMON_MATH_ERROR);
-                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-                break;
-            }
-            
-            // Load new angles to servo driver
-            for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-                servo_driver_move(i * 3 + 0, g_limbs_list[i].coxa.angle);
-                servo_driver_move(i * 3 + 1, g_limbs_list[i].femur.angle);
-                servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
-            }
-
-            g_core_state = STATE_TIME_SHIFT;
-            break;
-
-        case STATE_TIME_SHIFT:
-            g_motion_config.motion_time += g_motion_config.time_step;
-            if (g_motion_config.motion_time == g_motion_config.time_update) {
-                g_current_trajectory_config = g_next_trajectory_config;
-            }
-            g_core_state = STATE_SYNC;
-            break;
-
-        case STATE_NOINIT:
-        default:
-            sysmon_set_error(SYSMON_FATAL_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-            break;
+    // Time shift
+    g_motion_config.motion_time += g_motion_config.time_step;
+    if (g_motion_config.motion_time == g_motion_config.time_update) {
+        g_current_trajectory_config = g_next_trajectory_config;
     }
 }
 

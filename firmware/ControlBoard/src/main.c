@@ -29,7 +29,7 @@ static void emergency_loop(void);
 /// @return none
 //  ***************************************************************************
 void main() {
-    
+
     // System initialization
     system_init();
     systimer_init();
@@ -75,9 +75,17 @@ void main() {
         
         // Motion process
         // This 3 functions should be call in this sequence
-        sequences_engine_process();
-        motion_core_process();
-        servo_driver_process();
+        static uint64_t prev_synchro_value = 0;
+        if (synchro != prev_synchro_value) {
+            if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0) {
+                sysmon_set_error(SYSMON_SYNC_ERROR);
+            }
+            prev_synchro_value = synchro;
+            
+            sequences_engine_process();
+            motion_core_process();
+            servo_driver_process();
+        }
         
         // Check system failure
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
