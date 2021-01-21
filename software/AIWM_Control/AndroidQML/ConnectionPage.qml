@@ -108,7 +108,7 @@ Item {
         width: 120
         height: 20
         font.family: fixedFont.name
-        text: qsTr("Версия: 1.00")
+        text: qsTr("Версия: 1.01")
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
         anchors.left: parent.left

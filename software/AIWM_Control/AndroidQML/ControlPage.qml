@@ -116,28 +116,20 @@ Item {
                             var scaled_x = Math.abs(x / factor)
                             var scaled_max_x = (drag.maximumX / 2) / factor
 
-                            var curvature = Math.exp(scaled_x) / Math.exp(
-                                        scaled_max_x) * 1999
-
+                            var curvature = Math.exp(scaled_x) / Math.exp(scaled_max_x) * 1999
                             curvature = Math.round(curvature)
                             if (x < 0) {
                                 curvature = -curvature
                             }
 
                             var deadZoneHeight = 20
-                            var minDeadZone = (joystickItem.height - dragItem.height
-                                               - deadZoneHeight) / 2
-                            var maxDeadZone = (joystickItem.height - dragItem.height
-                                               + deadZoneHeight) / 2
+                            var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2
+                            var maxDeadZone = (joystickItem.height - dragItem.height + deadZoneHeight) / 2
                             var stepLength = 0
-                            if (dragItem.y < minDeadZone
-                                    || dragItem.y > maxDeadZone) {
+                            if (dragItem.y < minDeadZone || dragItem.y > maxDeadZone) {
                                 stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+                                CppCore.sendStartMotionCommand(Math.round(stepLength), Math.round(curvature))
                             }
-
-                            CppCore.sendStartMotionCommand(
-                                        Math.round(stepLength),
-                                        Math.round(curvature))
                         }
                     }
                 }
