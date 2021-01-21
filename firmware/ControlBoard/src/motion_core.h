@@ -46,7 +46,6 @@ typedef struct {
     int32_t      time_stop;                               // Trajectory stop time
     int32_t      time_update;                             // Motion time value for motion configuration update
     int32_t      time_step;                               // Trajectory time step (speed)
-    bool         is_need_init_start_position;
 } motion_config_t;
 
 
