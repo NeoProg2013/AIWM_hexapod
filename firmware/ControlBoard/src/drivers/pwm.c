@@ -11,8 +11,8 @@
 #define PWM_CHANNEL_PULSE_TRIM          (3)
 
 #define PWM_START_FREQUENCY_HZ          (270)
-#define PWM_MIN_FREQUENCY_HZ            (20)
-#define PWM_MAX_FREQUENCY_HZ            (330)
+#define PWM_MIN_FREQUENCY_HZ            (70)
+#define PWM_MAX_FREQUENCY_HZ            (300)
 
 
 #if 1000000 / PWM_MIN_FREQUENCY_HZ > 65535

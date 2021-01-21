@@ -94,9 +94,7 @@ void sequences_engine_process(void) {
             break;
         
         case STATE_MOVE:
-            for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-                motion_core_start_motion(&current_sequence_info->motion_list[current_motion]);
-            }
+            motion_core_start_motion(&current_sequence_info->motion_list[current_motion]);
             engine_state = STATE_WAIT;
             break;
         
