@@ -56,7 +56,7 @@ void Swlp::threadRun() {
             m_isError = true;
             break;
         }
-        connect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent);
+        connect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent, Qt::ConnectionType::DirectConnection);
         if (m_socket->bind(SERVER_PORT) == false) {
             qDebug() << "[SWLP] can't bind socket to port";
             m_isError = true;
@@ -65,7 +65,7 @@ void Swlp::threadRun() {
 
         // Setup send command payload timer
         QTimer sendTimer;
-        connect(&sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent);
+        connect(&sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent, Qt::ConnectionType::DirectConnection);
         sendTimer.setSingleShot(false);
         sendTimer.setInterval(100);
         sendTimer.start();
@@ -94,7 +94,6 @@ void Swlp::threadRun() {
         m_eventLoop = nullptr;
     }
     if (m_socket) {
-        disconnect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent);
         delete m_socket;
         m_socket = nullptr;
     }
@@ -103,8 +102,7 @@ void Swlp::threadRun() {
 
 
 void Swlp::datagramReceivedEvent() {
-    qDebug() << "[SWLP] call datagramReceivedEvent()";
-
+    //qDebug() << "[SWLP] call datagramReceivedEvent()";
     // Check datagram size
     qint64 datagram_size = m_socket->pendingDatagramSize();
     if (datagram_size != sizeof(swlp_frame_t)) {
@@ -131,7 +129,7 @@ void Swlp::datagramReceivedEvent() {
     reinterpret_cast<Core*>(m_core)->swlpStatusPayloadProcess(&statusPayload);
 }
 void Swlp::sendCommandPayloadEvent() {
-    qDebug() << "[SWLP] call sendCommandPayloadEvent()";
+    //qDebug() << "[SWLP] call sendCommandPayloadEvent()";
     swlp_command_payload_t commandPayload;
     reinterpret_cast<Core*>(m_core)->swlpCommandPayloadPrepare(&commandPayload);
 
