@@ -3,43 +3,37 @@
 
 #include <QObject>
 #include <QUdpSocket>
-#include <QTimer>
 #include <QEventLoop>
-#include <QMutex>
+#include <QThread>
 #include "swlp_protocol.h"
 
+#include <atomic>
 
-class Swlp : public QObject
-{
+
+class Swlp : public QObject {
     Q_OBJECT
 public:
-    explicit Swlp(void* core, QObject* parent = nullptr);
-    virtual ~Swlp();
-
-public slots:
-    void runCommunication();
-
-signals:
-    void requestCommandPayload(swlp_command_payload_t* payload);
-    void statusPayloadReceived(const swlp_status_payload_t* payload);
-
-
-protected slots:
-    void datagramReceivedEvent();
-    void sendCommandPayloadEvent();
+    Swlp() : QObject(nullptr) {}
+    virtual ~Swlp() {}
+    bool start(void* core);
+    void stop();
 
 protected:
-    uint16_t calculateCRC16(const uint8_t *frameByteArray, int size);
+    void threadRun();
 
-private:
-    void* m_core                                {nullptr};
-    bool m_isRunning                            {false};
-    QEventLoop* m_eventLoop                     {nullptr};
-    QUdpSocket* m_socket                        {nullptr};
-    QTimer* m_sendTimer                         {nullptr};
+protected:
+    void datagramReceivedEvent();       // SLOT
+    void sendCommandPayloadEvent();     // SLOT
+    uint16_t calculateCRC16(const uint8_t* frameByteArray, int size);
 
-    swlp_command_payload_t m_commandPayload;
-    swlp_status_payload_t m_statusPayload;
+protected:
+    QThread* m_thread               {nullptr};
+    QUdpSocket* m_socket            {nullptr};
+    QEventLoop* m_eventLoop         {nullptr};
+    void* m_core                    {nullptr};
+    std::atomic<bool> m_isStarted;
+    std::atomic<bool> m_isError;
 };
+
 
 #endif // SWLP_H

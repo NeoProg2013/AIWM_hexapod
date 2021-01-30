@@ -36,7 +36,6 @@ Item {
             labelText.visible = false
             connectButton.visible = true
             progressBar.visible = false
-
             CppCore.stopCommunication()
         }
     }
@@ -44,7 +43,7 @@ Item {
     Label {
         id: labelText
         height: 30
-        text: ""
+        text: "Подключение к устройству..."
         visible: false
         anchors.bottom: progressBar.top
         anchors.bottomMargin: 5
@@ -83,13 +82,19 @@ Item {
             }
         }
         onClicked: {
-            labelText.text = "Подключение к устройству..."
-            labelText.color = "#FFFFFF"
+            errorLabel.visible = false
             labelText.visible = true
             connectButton.visible = false
             progressBar.visible = true
 
-            CppCore.runCommunication()
+            if (!CppCore.runCommunication()) {
+                errorLabel.visible = true
+                labelText.visible = false
+                connectButton.visible = true
+                progressBar.visible = false
+                CppCore.stopCommunication()
+                return
+            }
             timeoutTimer.start()
         }
     }
@@ -120,8 +125,8 @@ Item {
     Label {
         id: errorLabel
         height: 30
-        color: "#FF0000"
         text: "Ошибка при подключении к устройству"
+        color: "#FF0000"
         visible: false
         anchors.top: connectButton.bottom
         anchors.topMargin: 20

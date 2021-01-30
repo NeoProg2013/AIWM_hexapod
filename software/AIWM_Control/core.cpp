@@ -5,12 +5,6 @@
 Core::Core(StreamFrameProvider* streamFrameProvider, QObject *parent) :
     QObject(parent), m_streamService(streamFrameProvider), m_commandForSend(SWLP_CMD_NONE) {
 
-    m_swlp = new Swlp(this);
-
-    // Setup SWLP
-    connect(this, &Core::swlpRunCommunication, m_swlp, &Swlp::runCommunication, Qt::ConnectionType::QueuedConnection);
-    m_swlp->moveToThread(&m_swlpThread);
-    
     // Setup StreamService
     connect(this, &Core::streamServiceRun, &m_streamService, &StreamService::runService, Qt::ConnectionType::QueuedConnection);
     connect(&m_streamService, &StreamService::frameReceived,    this, [this](void) { emit streamServiceFrameReceived();    }, Qt::ConnectionType::QueuedConnection);
@@ -20,20 +14,19 @@ Core::Core(StreamFrameProvider* streamFrameProvider, QObject *parent) :
 }
 
 Core::~Core() {
-    m_swlpThread.exit();
+    //m_swlpThread.exit();
     m_streamServiceThread.exit();
-    m_swlpThread.wait();
+    //m_swlpThread.wait();
     m_streamServiceThread.wait();
 }
 
-void Core::runCommunication() {
-    m_commandForSend = SWLP_CMD_NONE;
-    m_swlpThread.start();
-    emit swlpRunCommunication();
+bool Core::runCommunication() {
+    m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;
+    return m_swlp.start(this);
 }
 
 void Core::stopCommunication() {
-    m_swlpThread.quit();
+    m_swlp.stop();
 }
 
 void Core::runStreamService() {
@@ -69,6 +62,7 @@ void Core::sendStartMotionCommand(QVariant stepLength, QVariant curvature) {
 void Core::setMotionSpeed(QVariant motionSpeed) {
     m_motionSpeed = motionSpeed.toInt();
 }
+
 
 
 void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {

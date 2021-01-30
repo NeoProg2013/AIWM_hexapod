@@ -54,10 +54,9 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        currentIndex: 0
+        currentIndex: 1
 
         Item {
-            id: element1
             Rectangle {
                 id: joystickItem
                 width: 270
@@ -149,6 +148,7 @@ Item {
                 height: 17
                 text: motionSpeed.value
                 anchors.top: parent.top
+                horizontalAlignment: Text.AlignHCenter
                 anchors.left: motionSpeed.left
                 anchors.right: motionSpeed.right
             }
@@ -489,8 +489,7 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:3;anchors_height:290}D{i:13;anchors_width:30;anchors_x:350;anchors_y:5}
-D{i:4;anchors_width:270}
+    D{i:0;formeditorColor:"#000000"}D{i:3}D{i:13}D{i:4}
 }
 ##^##*/
 

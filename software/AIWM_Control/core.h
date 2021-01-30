@@ -14,7 +14,7 @@ public:
     explicit Core(StreamFrameProvider* streamFrameProvider, QObject *parent = nullptr);
     virtual ~Core();
 
-    Q_INVOKABLE void runCommunication();
+    Q_INVOKABLE bool runCommunication();
     Q_INVOKABLE void stopCommunication();
 
     Q_INVOKABLE void runStreamService();
@@ -35,7 +35,7 @@ public:
     Q_INVOKABLE void setMotionSpeed(QVariant motionSpeed);
 
 
-public: // For SWLP module
+public: // Call from SWLP thread
     void swlpStatusPayloadProcess(const swlp_status_payload_t* payload);
     void swlpCommandPayloadPrepare(swlp_command_payload_t* payload);
 
@@ -60,11 +60,10 @@ signals:
     void streamServiceIpAddressUpdate(QVariant ipAddress);
 
 protected:
-    Swlp* m_swlp                    {nullptr};
+    Swlp m_swlp;
     StreamService m_streamService;
 
     QThread m_streamServiceThread;
-    QThread m_swlpThread;
 
     uint8_t m_commandForSend        {SWLP_CMD_SELECT_SEQUENCE_NONE};
     uint8_t m_stepLenght            {0};
