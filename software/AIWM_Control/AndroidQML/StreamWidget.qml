@@ -8,6 +8,8 @@ Item {
     height: 480
     clip: true
 
+    property int fpsCounter: 0
+
     FontLoader {
         id: fixedFont
         source: "qrc:/fonts/OpenSans-Regular.ttf"
@@ -16,6 +18,7 @@ Item {
     Connections {
         target: CppCore
         function onStreamServiceFrameReceived() {
+            ++fpsCounter
             streamFrame.updateSourceImage()
             noiseImage.visible = false
             streamFrame.visible = true
@@ -30,6 +33,16 @@ Item {
         }
         function onStreamServiceIpAddressUpdate(ipAddress) {
             ipAddressLabel.text = "IP: " + ipAddress
+        }
+    }
+
+    Timer {
+        running: true
+        interval: 1000
+        repeat: true
+        onTriggered: {
+            fpsLabel.text = "FPS: " + fpsCounter
+            fpsCounter = 0
         }
     }
 
@@ -85,6 +98,15 @@ Item {
         width: 120
         height: 17
         text: "IP: 255.255.255.255"
+    }
+
+    Label {
+        id: fpsLabel
+        x: 5
+        y: 27
+        width: 120
+        height: 17
+        text: "FPS: 0"
     }
 }
 

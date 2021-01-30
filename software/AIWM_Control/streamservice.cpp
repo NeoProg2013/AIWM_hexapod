@@ -2,7 +2,11 @@
 #include <QTimer>
 
 StreamService::StreamService(StreamFrameProvider* frameProvider, QObject *parent)
-    : QObject(parent), m_frameProvider(frameProvider) {}
+    : QObject(parent), m_frameProvider(frameProvider) {
+
+    file.setFileName("D:/1.txt");
+    file.open(QFile::ReadWrite);
+}
 
 StreamService::~StreamService() {}
 
@@ -12,7 +16,7 @@ void StreamService::runService(QString cameraIp) {
         qDebug() << "m_isRunning == true";
         return;
     }
-    qDebug() << "StreamService start. IP: " << cameraIp;
+    qDebug() << "StreamService start. IP:" << cameraIp;
 
     // Setup timeout timer
     m_timeoutTimer = new QTimer;
@@ -57,85 +61,59 @@ void StreamService::runService(QString cameraIp) {
 }
 
 void StreamService::httpDataReceived() {
+    static QString beginSignature("Content-Type: image/jpeg\r\n");
+    static QString endSignature("--123456789000000000000987654321\r\n");
 
-    // Refresh timeout timer
     m_timeoutTimer->stop();
     m_timeoutTimer->setInterval(1000);
     m_timeoutTimer->start();
 
-
-    //
     // Process response data
-    //
-
     if (m_requestReply->error()) {
         return;
     }
 
-    static bool isHeaderReceived = false;
-    static int processedBytesCount = 0;
-    static int jpegSize = 0;
-    static QByteArray m_imageBuffer;
-
-    // Read response
-    QByteArray response = m_requestReply->readAll();
-    QString responseStr(response);
-
-    // Get JPEG size
-    int index = responseStr.indexOf("Content-Length");
-    if (index != -1) {
-
-        // Reset state
-        isHeaderReceived = false;
-        processedBytesCount = 0;
-        jpegSize = 0;
-        m_imageBuffer.clear();
-
-        // Parse JPEG size
-        int beginIndex = responseStr.indexOf(':', index) + 2; // +2 - ": "
-        if (beginIndex == -1) {
-            qDebug() << "Separator ':' is not found. Drop packet";
-            emit badFrameReceived();
-            return;
-        }
-        int endIndex = responseStr.indexOf("\r\n", beginIndex);
-        if (endIndex == -1) {
-            qDebug() << "Separator '\\r\\n' is not found. Drop packet";
-            emit badFrameReceived();
-            return;
-        }
-
-        bool result = false;
-        jpegSize = responseStr.mid(beginIndex, endIndex - beginIndex).toInt(&result);
-        if (result == false) {
-            qDebug() << "Cannot convert JPEG size from string. Drop packet";
-            emit badFrameReceived();
-            return;
-        }
-
-        // Remove HTTP header
-        response = response.mid(endIndex + 4);
-        isHeaderReceived = true;
+    // Read response and check end of chunk signature
+    m_buffer.append(m_requestReply->readAll());
+    int endIndex = m_buffer.indexOf("--123456789000000000000987654321\r\n");
+    if (endIndex == -1) {
+        return;
     }
 
-    if (isHeaderReceived == true) {
+    // Search begin of chunk
+    int beginIndex = m_buffer.indexOf(beginSignature);
+    if (beginIndex > endIndex) {
+        qDebug() << "Something wrong";
+        m_buffer.clear();
+        return;
+    }
 
-        // Buffering image
-        processedBytesCount += response.size();
-        m_imageBuffer.append(response);
+    // Erase chunk
+    QByteArray chunkData = m_buffer.mid(beginIndex, endIndex - beginIndex);
+    m_buffer.remove(beginIndex, endIndex - beginIndex + endSignature.size());
 
-        // Transfer complete - update image
-        if (processedBytesCount >= jpegSize) {
+    // Parse chunk data
+    QString signature("\r\n\r\n");
+    int index = chunkData.indexOf(signature, beginIndex);
+    if (index == -1) {
+        qDebug() << "Something wrong";
+        m_buffer.clear();
+        return;
+    }
+    chunkData.remove(0, index + signature.size());
 
-            // Remove boundary part
-            m_imageBuffer.resize(jpegSize);
-
-            // Update image
-            m_frameProvider->setImageRawData(m_imageBuffer);
-            isHeaderReceived = false; // Wait new content header
-
-            emit frameReceived();
+    // Check JPEG signature
+    if (chunkData.size() >= 2) {
+        uint8_t b1 = chunkData.at(0);
+        uint8_t b2 = chunkData.at(1);
+        if (b1 != 0xFF || b2 != 0xD8) {
+            qDebug() << "It is not JPEG";
+            return;
         }
+
+        // Update image
+        m_frameProvider->setImageRawData(chunkData);
+        emit frameReceived();
     }
 }
 

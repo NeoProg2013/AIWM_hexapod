@@ -34,6 +34,11 @@ public:
 
     Q_INVOKABLE void setMotionSpeed(QVariant motionSpeed);
 
+
+public: // For SWLP module
+    void swlpStatusPayloadProcess(const swlp_status_payload_t* payload);
+    void swlpCommandPayloadPrepare(swlp_command_payload_t* payload);
+
 signals:
     // To SWLP module
     void swlpRunCommunication();
@@ -54,13 +59,8 @@ signals:
     void streamServiceConnectionClosed();
     void streamServiceIpAddressUpdate(QVariant ipAddress);
 
-public slots:
-    // From SWLP module
-    void swlpStatusPayloadProcess(const swlp_status_payload_t* payload);
-    void swlpCommandPayloadPrepare(swlp_command_payload_t* payload);
-
 protected:
-    Swlp m_swlp;
+    Swlp* m_swlp                    {nullptr};
     StreamService m_streamService;
 
     QThread m_streamServiceThread;

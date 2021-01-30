@@ -34,6 +34,9 @@ private:
     QTimer* m_timeoutTimer                  {nullptr};
     StreamFrameProvider* m_frameProvider    {nullptr};
     QByteArray m_imageBuffer;
+
+    QByteArray m_buffer;
+    QFile file;
 };
 
 #endif // TCPCLIENT_H

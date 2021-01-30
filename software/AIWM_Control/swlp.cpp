@@ -2,12 +2,13 @@
 #include <QHostAddress>
 #include <QNetworkDatagram>
 #include <QThread>
+#include "core.h"
 #include "swlp.h"
 #define SERVER_IP_ADDRESS                    ("111.111.111.111")
 #define SERVER_PORT                          (3333)
 
 
-Swlp::Swlp(QObject* parent) : QObject(parent) { }
+Swlp::Swlp(void* core, QObject* parent) : QObject(parent), m_core(core) { }
 
 Swlp::~Swlp() {
     if (m_socket != nullptr) {
@@ -78,7 +79,6 @@ void Swlp::runCommunication() {
 }
 
 void Swlp::datagramReceivedEvent() {
-
     swlp_frame_t swlp_frame;
 
     // Check datagram size
@@ -101,13 +101,11 @@ void Swlp::datagramReceivedEvent() {
 
     // Process status payload
     memcpy(&m_statusPayload, swlp_frame.payload, sizeof(m_statusPayload));
-    emit statusPayloadReceived(&m_statusPayload);
+    reinterpret_cast<Core*>(m_core)->swlpStatusPayloadProcess(&m_statusPayload);
 }
 
 void Swlp::sendCommandPayloadEvent() {
-
-    // Request command payload
-    emit requestCommandPayload(&m_commandPayload);
+    reinterpret_cast<Core*>(m_core)->swlpCommandPayloadPrepare(&m_commandPayload);
 
     // Make SWLP frame
     swlp_frame_t frame;
@@ -132,7 +130,6 @@ void Swlp::sendCommandPayloadEvent() {
 // PROTECTED
 //
 uint16_t Swlp::calculateCRC16(const uint8_t* frame, int size) {
-
     uint16_t crc16 = 0xFFFF;
     uint16_t data = 0;
     uint16_t k = 0;

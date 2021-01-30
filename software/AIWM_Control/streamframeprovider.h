@@ -4,6 +4,7 @@
 #include <QQuickImageProvider>
 #include <QByteArray>
 #include <QFile>
+#include <QMutex>
 
 
 class StreamFrameProvider : public QQuickImageProvider
@@ -17,6 +18,7 @@ public:
 private:
     const int m_imageWidth;
     const int m_imageHeight;
+    QMutex m_mutex;
     QPixmap m_lastPixmap;
     QFile file;
 };

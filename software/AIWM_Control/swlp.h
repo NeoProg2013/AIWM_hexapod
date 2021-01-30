@@ -5,6 +5,7 @@
 #include <QUdpSocket>
 #include <QTimer>
 #include <QEventLoop>
+#include <QMutex>
 #include "swlp_protocol.h"
 
 
@@ -12,7 +13,7 @@ class Swlp : public QObject
 {
     Q_OBJECT
 public:
-    explicit Swlp(QObject* parent = nullptr);
+    explicit Swlp(void* core, QObject* parent = nullptr);
     virtual ~Swlp();
 
 public slots:
@@ -31,10 +32,12 @@ protected:
     uint16_t calculateCRC16(const uint8_t *frameByteArray, int size);
 
 private:
+    void* m_core                                {nullptr};
     bool m_isRunning                            {false};
     QEventLoop* m_eventLoop                     {nullptr};
     QUdpSocket* m_socket                        {nullptr};
     QTimer* m_sendTimer                         {nullptr};
+
     swlp_command_payload_t m_commandPayload;
     swlp_status_payload_t m_statusPayload;
 };
