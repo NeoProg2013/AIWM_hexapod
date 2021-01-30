@@ -13,7 +13,7 @@ public:
     StreamFrameProvider();
     virtual ~StreamFrameProvider();
     QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize) override;
-    virtual void setImageRawData(const QByteArray& rawData);
+    void setImageRawData(const QByteArray& rawData);
 
 private:
     const int m_imageWidth;

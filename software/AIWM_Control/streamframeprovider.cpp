@@ -24,9 +24,8 @@ QPixmap StreamFrameProvider::requestPixmap(const QString&, QSize *size, const QS
 void StreamFrameProvider::setImageRawData(const QByteArray& rawData) {
     QPixmap pixmap(m_imageWidth, m_imageHeight);
     if (pixmap.loadFromData(rawData, "JPEG") == true) {
-        //m_lastPixmap = pixmap.copy((640 - m_imageWidth) / 2, 0, m_imageWidth, m_imageHeight);
         m_mutex.lock();
-        m_lastPixmap = pixmap.copy(80, 0, 480, 480);
+        m_lastPixmap = pixmap.copy((640 - m_imageWidth) / 2, 0, m_imageWidth, m_imageHeight);
         m_mutex.unlock();
     } else {
         qDebug() << "Can't loadFromData: " << rawData.size() << " " << (int)rawData[0] << (int)rawData[1];
