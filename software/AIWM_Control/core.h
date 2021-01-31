@@ -7,18 +7,15 @@
 #include "streamservice.h"
 #include "streamframeprovider.h"
 
-class Core : public QObject
-{
+class Core : public QObject {
     Q_OBJECT
 public:
-    explicit Core(StreamFrameProvider* streamFrameProvider, QObject *parent = nullptr);
+    explicit Core(StreamFrameProvider* streamFrameProvider);
     virtual ~Core();
 
     Q_INVOKABLE bool runCommunication();
     Q_INVOKABLE void stopCommunication();
-
-    Q_INVOKABLE void runStreamService();
-    Q_INVOKABLE void stopStreamService();
+    Q_INVOKABLE bool runStreamService();
 
     Q_INVOKABLE void sendGetUpCommand();
     Q_INVOKABLE void sendGetDownCommand();
@@ -63,9 +60,7 @@ protected:
     Swlp m_swlp;
     StreamService m_streamService;
 
-    QThread m_streamServiceThread;
-
-    uint8_t m_commandForSend        {SWLP_CMD_SELECT_SEQUENCE_NONE};
+    uint8_t m_commandForSend        {SWLP_CMD_NONE};
     uint8_t m_stepLenght            {0};
     int16_t m_curvature             {0};
     uint8_t m_motionSpeed           {90}; // %

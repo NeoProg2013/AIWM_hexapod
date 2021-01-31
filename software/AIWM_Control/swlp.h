@@ -1,13 +1,11 @@
 #ifndef SWLP_H
 #define SWLP_H
-
 #include <QObject>
 #include <QUdpSocket>
 #include <QEventLoop>
 #include <QThread>
-#include "swlp_protocol.h"
-
 #include <atomic>
+#include "swlp_protocol.h"
 
 
 class Swlp : public QObject {
@@ -20,19 +18,20 @@ public:
 
 protected:
     void threadRun();
+    uint16_t calculateCRC16(const uint8_t* frameByteArray, int size);
 
-protected:
+protected slots:
     void datagramReceivedEvent();       // SLOT
     void sendCommandPayloadEvent();     // SLOT
-    uint16_t calculateCRC16(const uint8_t* frameByteArray, int size);
 
 protected:
     QThread* m_thread               {nullptr};
+    std::atomic<bool> m_isStarted;
+    std::atomic<bool> m_isError;
+
     QUdpSocket* m_socket            {nullptr};
     QEventLoop* m_eventLoop         {nullptr};
     void* m_core                    {nullptr};
-    std::atomic<bool> m_isStarted;
-    std::atomic<bool> m_isError;
 };
 
 

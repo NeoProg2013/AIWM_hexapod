@@ -1,42 +1,44 @@
-#ifndef TCPCLIENT_H
-#define TCPCLIENT_H
-
+#ifndef STREAM_SERVICE_H
+#define STREAM_SERVICE_H
 #include <QObject>
-#include <QTcpSocket>
+#include <QThread>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QEventLoop>
 #include "streamframeprovider.h"
 
 
-class StreamService : public QObject
-{
+class StreamService : public QObject {
     Q_OBJECT
 public:
-    explicit StreamService(StreamFrameProvider* frameProvider, QObject *parent = nullptr);
-    virtual ~StreamService();
+    StreamService(StreamFrameProvider* frameProvider) : QObject(nullptr), m_frameProvider(frameProvider) {}
+    virtual ~StreamService() {}
+    bool start(QString cameraIp);
+    void stop();
 
 signals:
     void frameReceived();
     void badFrameReceived();
     void connectionClosed();
 
-public slots:
-    virtual void runService(QString cameraIp);
+protected:
+    void threadRun();
+
+protected slots:
     void httpDataReceived();
-    void httpConnectionClosed();
 
-private:
-    bool m_isRunning                        {false};
-    QEventLoop* m_eventLoop                 {nullptr};
-    QNetworkAccessManager* m_manager        {nullptr};
-    QNetworkReply* m_requestReply           {nullptr};
-    QTimer* m_timeoutTimer                  {nullptr};
-    StreamFrameProvider* m_frameProvider    {nullptr};
-    QByteArray m_imageBuffer;
+protected:
+    QThread* m_thread                           {nullptr};
+    std::atomic<bool> m_isStarted;
+    std::atomic<bool> m_isError;
 
+    QEventLoop* m_eventLoop                     {nullptr};
+    QTimer* m_timeoutTimer                      {nullptr};
+    QNetworkReply* m_requestReply               {nullptr};
+
+    QString m_cameraIp;
     QByteArray m_buffer;
-    QFile file;
+    StreamFrameProvider* const m_frameProvider  {nullptr};
 };
 
-#endif // TCPCLIENT_H
+#endif // STREAM_SERVICE_H

@@ -28,6 +28,7 @@ Item {
             streamFrame.visible = false
         }
         function onStreamServiceConnectionClosed() {
+            connectButton.visible = true
             noiseImage.visible = true
             streamFrame.visible = false
         }
@@ -46,16 +47,29 @@ Item {
         }
     }
 
+    ProgressBar {
+        id: progressBar
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        visible: !connectButton.visible
+        indeterminate: true
+        z: 1
+    }
+
     Button {
-        visible: noiseImage.visible
+        id: connectButton
+        visible: true
         z: 1
         text: "ПОДКЛЮЧИТЬСЯ К КАМЕРЕ"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
         font.family: fixedFont.name
         onClicked: {
-            CppCore.stopStreamService()
-            CppCore.runStreamService()
+            connectButton.visible = false
+            if (!CppCore.runStreamService()) {
+                connectButton.visible = true
+            }
         }
     }
 

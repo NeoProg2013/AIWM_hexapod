@@ -4,7 +4,7 @@
 #include <QHostAddress>
 #include <QNetworkDatagram>
 #include <QTimer>
-#include <chrono>
+#include <QThread>
 
 constexpr const char* SERVER_IP_ADDRESS = "111.111.111.111";
 constexpr int SERVER_PORT = 3333;
@@ -12,6 +12,7 @@ constexpr int SERVER_PORT = 3333;
 
 
 bool Swlp::start(void* core) {
+    qDebug() << "[SWLP] call start()";
     if (m_thread) {
         qDebug() << "[SWLP] Thread already created";
         return false;
@@ -35,7 +36,9 @@ bool Swlp::start(void* core) {
     return m_isStarted;
 }
 void Swlp::stop() {
+    qDebug() << "[SWLP] call stop()";
     if (m_thread) {
+        qDebug() << "[SWLP] stop thread...";
         m_eventLoop->exit();
         m_thread->wait(1000);
         m_thread->quit();
@@ -48,11 +51,12 @@ void Swlp::stop() {
 
 
 void Swlp::threadRun() {
+    qDebug() << "[SWLP] thread started";
     do {
         // Setup UDP socket
         m_socket = new (std::nothrow) QUdpSocket();
         if (!m_socket) {
-            qDebug() << "[SWLP] can't create QUdpSocket";
+            qDebug() << "[SWLP] can't create QUdpSocket object";
             m_isError = true;
             break;
         }
@@ -73,19 +77,14 @@ void Swlp::threadRun() {
         // Start event loop
         m_eventLoop = new (std::nothrow) QEventLoop;
         if (!m_eventLoop) {
-            qDebug() << "[SWLP] can't create QEventLoop";
+            qDebug() << "[SWLP] can't create QEventLoop object";
             m_isError = true;
             break;
         }
         qDebug() << "[SWLP] start event loop...";
-        if (m_eventLoop != nullptr) {
-            m_isStarted = true;
-            m_eventLoop->exec();
-        }
+        m_isStarted = true;
+        m_eventLoop->exec();
         qDebug() << "[SWLP] event loop stopped";
-
-        // Stop send command payload timer
-        sendTimer.stop();
     } while (0);
 
     // Free resources

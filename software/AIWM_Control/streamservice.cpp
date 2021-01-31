@@ -1,63 +1,96 @@
 #include "streamservice.h"
 #include <QTimer>
 
-StreamService::StreamService(StreamFrameProvider* frameProvider, QObject *parent)
-    : QObject(parent), m_frameProvider(frameProvider) {
 
-    file.setFileName("D:/1.txt");
-    file.open(QFile::ReadWrite);
+bool StreamService::start(QString cameraIp) {
+    qDebug() << "[StreamService] call start()";
+    if (m_thread) {
+        qDebug() << "[StreamService] Thread already created";
+        return false;
+    }
+
+    // Reset state
+    m_cameraIp = cameraIp;
+    m_isStarted = false;
+    m_isError = false;
+
+    // Create communication thread
+    m_thread = QThread::create([this] { this->threadRun(); });
+    if (!m_thread) {
+        qDebug() << "[StreamService] Can't create thread object";
+        return false;
+    }
+    m_thread->start();
+
+    // Wait thread
+    while (!m_isStarted && !m_isError);
+    return m_isStarted;
+}
+void StreamService::stop() {
+    qDebug() << "[StreamService] call stop()";
+    if (m_thread) {
+        qDebug() << "[StreamService] stop thread...";
+        m_eventLoop->exit();
+        m_thread->wait(1000);
+        m_thread->quit();
+        delete m_thread;
+        m_thread = nullptr;
+    }
 }
 
-StreamService::~StreamService() {}
 
-void StreamService::runService(QString cameraIp) {
 
-    if (m_isRunning == true) {
-        qDebug() << "m_isRunning == true";
-        return;
-    }
-    qDebug() << "StreamService start. IP:" << cameraIp;
+void StreamService::threadRun() {
+    qDebug() << "[StreamService] thread started";
+    do {
+        // Send GET request
+        qDebug() << "[StreamService] camera IP:" << m_cameraIp;
+        QNetworkAccessManager accessManager;
+        m_requestReply = accessManager.get(QNetworkRequest(QUrl("http://" + m_cameraIp + "/")));
+        if (!m_requestReply) {
+            qDebug() << "[StreamService] can't create QNetworkReply object";
+            m_isError = true;
+            break;
+        }
+        m_requestReply->setReadBufferSize(50 * 1024);
+        connect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived);
 
-    // Setup timeout timer
-    m_timeoutTimer = new QTimer;
-    m_timeoutTimer->setInterval(2000);
-    m_timeoutTimer->setSingleShot(true);
+        // Setup timeout timer
+        m_timeoutTimer = new (std::nothrow) QTimer;
+        connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stop);
+        m_timeoutTimer->setInterval(2000);
+        m_timeoutTimer->setSingleShot(true);
+        m_timeoutTimer->start();
 
-    // Send GET request
-    m_manager = new QNetworkAccessManager();
-    m_requestReply = m_manager->get(QNetworkRequest(QUrl("http://" + cameraIp + "/")));
-    m_requestReply->setReadBufferSize(50 * 1024);
-
-    // Setup signals
-    connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::httpConnectionClosed);
-    connect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived);
-
-    // Start timeout timer
-    m_timeoutTimer->start();
-
-    // Start event loop
-    m_eventLoop = new QEventLoop;
-    if (m_eventLoop != nullptr) {
-        m_isRunning = true;
+        // Start event loop
+        m_eventLoop = new QEventLoop;
+        if (!m_eventLoop) {
+            qDebug() << "[StreamService] can't create QEventLoop object";
+            m_isError = true;
+            break;
+        }
+        qDebug() << "[StreamService] start event loop...";
+        m_isStarted = true;
         m_eventLoop->exec();
+        qDebug() << "[StreamService] event loop stopped";
+    } while (0);
+
+    // Free resources
+    if (m_eventLoop) {
+        delete m_eventLoop;
+        m_eventLoop = nullptr;
     }
-    m_requestReply->close();
-    m_requestReply->deleteLater();
-    m_timeoutTimer->stop();
+    /*if (m_requestReply) {
+        disconnect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived);
+        m_requestReply->close();
+        m_requestReply->deleteLater();
+        m_requestReply = nullptr;
+    }*/
+    if (m_timeoutTimer) {
+        delete m_timeoutTimer;
+        m_timeoutTimer = nullptr;
+    }
     emit connectionClosed();
-
-    // Detach signals
-    disconnect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::httpConnectionClosed);
-    disconnect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived);
-
-    // Free objects 
-    delete m_manager;
-    m_manager = nullptr;
-    delete m_timeoutTimer;
-    m_timeoutTimer = nullptr;
-
-    m_isRunning = false;
-    qDebug() << "StreamService stop";
 }
 
 void StreamService::httpDataReceived() {
@@ -70,6 +103,7 @@ void StreamService::httpDataReceived() {
 
     // Process response data
     if (m_requestReply->error()) {
+        emit badFrameReceived();
         return;
     }
 
@@ -85,6 +119,7 @@ void StreamService::httpDataReceived() {
     if (beginIndex > endIndex) {
         qDebug() << "Something wrong";
         m_buffer.clear();
+        emit badFrameReceived();
         return;
     }
 
@@ -98,6 +133,7 @@ void StreamService::httpDataReceived() {
     if (index == -1) {
         qDebug() << "Something wrong";
         m_buffer.clear();
+        emit badFrameReceived();
         return;
     }
     chunkData.remove(0, index + signature.size());
@@ -108,6 +144,7 @@ void StreamService::httpDataReceived() {
         uint8_t b2 = chunkData.at(1);
         if (b1 != 0xFF || b2 != 0xD8) {
             qDebug() << "It is not JPEG";
+            emit badFrameReceived();
             return;
         }
 
@@ -115,9 +152,4 @@ void StreamService::httpDataReceived() {
         m_frameProvider->setImageRawData(chunkData);
         emit frameReceived();
     }
-}
-
-void StreamService::httpConnectionClosed() {
-    m_eventLoop->exit();
-    emit connectionClosed();
 }

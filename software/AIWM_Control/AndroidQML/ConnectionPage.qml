@@ -21,7 +21,6 @@ Item {
             labelText.text = ""
             labelText.color = "#FFFFFF"
             connectButton.visible = true
-            progressBar.visible = false
             timeoutTimer.stop()
             showControlPage()
         }
@@ -33,9 +32,7 @@ Item {
         repeat: false
         onTriggered: {
             errorLabel.visible = true
-            labelText.visible = false
             connectButton.visible = true
-            progressBar.visible = false
             CppCore.stopCommunication()
         }
     }
@@ -44,7 +41,7 @@ Item {
         id: labelText
         height: 30
         text: "Подключение к устройству..."
-        visible: false
+        visible: progressBar.visible
         anchors.bottom: progressBar.top
         anchors.bottomMargin: 5
         anchors.left: parent.left
@@ -83,15 +80,11 @@ Item {
         }
         onClicked: {
             errorLabel.visible = false
-            labelText.visible = true
             connectButton.visible = false
-            progressBar.visible = true
 
             if (!CppCore.runCommunication()) {
                 errorLabel.visible = true
-                labelText.visible = false
                 connectButton.visible = true
-                progressBar.visible = false
                 CppCore.stopCommunication()
                 return
             }
@@ -104,7 +97,7 @@ Item {
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        visible: false
+        visible: !connectButton.visible
         indeterminate: true
     }
 

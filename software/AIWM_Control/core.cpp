@@ -2,40 +2,25 @@
 #include <QGuiApplication>
 #include <QEventLoop>
 
-Core::Core(StreamFrameProvider* streamFrameProvider, QObject *parent) :
-    QObject(parent), m_streamService(streamFrameProvider), m_commandForSend(SWLP_CMD_NONE) {
-
-    // Setup StreamService
-    connect(this, &Core::streamServiceRun, &m_streamService, &StreamService::runService, Qt::ConnectionType::QueuedConnection);
+Core::Core(StreamFrameProvider* streamFrameProvider) : QObject(nullptr), m_streamService(streamFrameProvider) {
     connect(&m_streamService, &StreamService::frameReceived,    this, [this](void) { emit streamServiceFrameReceived();    }, Qt::ConnectionType::QueuedConnection);
     connect(&m_streamService, &StreamService::badFrameReceived, this, [this](void) { emit streamServiceBadFrameReceived(); }, Qt::ConnectionType::QueuedConnection);
     connect(&m_streamService, &StreamService::connectionClosed, this, [this](void) { emit streamServiceConnectionClosed(); }, Qt::ConnectionType::QueuedConnection);
-    m_streamService.moveToThread(&m_streamServiceThread);
 }
-
 Core::~Core() {
-    //m_swlpThread.exit();
-    m_streamServiceThread.exit();
-    //m_swlpThread.wait();
-    m_streamServiceThread.wait();
+    stopCommunication();
 }
 
 bool Core::runCommunication() {
-    m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;
+    m_commandForSend = SWLP_CMD_NONE;
     return m_swlp.start(this);
 }
-
 void Core::stopCommunication() {
     m_swlp.stop();
+    m_streamService.stop();
 }
-
-void Core::runStreamService() {
-    m_streamServiceThread.start();
-    emit streamServiceRun(m_cameraIp);
-}
-
-void Core::stopStreamService() {
-    m_streamServiceThread.quit();
+bool Core::runStreamService() {
+    return m_streamService.start(m_cameraIp);
 }
 
 void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP;           }
@@ -58,7 +43,6 @@ void Core::sendStartMotionCommand(QVariant stepLength, QVariant curvature) {
     m_stepLenght = abs(stepLengthInt16);
     m_curvature = curvature.toInt();
 }
-
 void Core::setMotionSpeed(QVariant motionSpeed) {
     m_motionSpeed = motionSpeed.toInt();
 }
@@ -75,13 +59,12 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
     QByteArray ipAddress(reinterpret_cast<const char*>(payload->camera_ip));
     QString newCameraIp(ipAddress);
     if (newCameraIp != m_cameraIp) {
-        this->stopStreamService();
+        m_streamService.stop();
     }
 
     m_cameraIp = QString(ipAddress);
     emit streamServiceIpAddressUpdate(m_cameraIp);
 }
-
 void Core::swlpCommandPayloadPrepare(swlp_command_payload_t* payload) {
     payload->command = m_commandForSend;
     payload->step_length = m_stepLenght;

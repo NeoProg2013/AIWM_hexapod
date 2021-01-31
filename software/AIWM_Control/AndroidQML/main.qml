@@ -12,7 +12,6 @@ ApplicationWindow {
         if (swipeView.currentIndex === 1) {
             close.accepted = false
             CppCore.stopCommunication()
-            CppCore.stopStreamService()
             controlPage.resetPage()
             swipeView.currentIndex = 0
         } else {

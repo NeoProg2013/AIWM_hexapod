@@ -5,6 +5,7 @@
 #include <QFontDatabase>
 #include "swlp.h"
 #include "core.h"
+#include "streamservice.h"
 #include "streamframeprovider.h"
 
 
