@@ -14,9 +14,10 @@ Item {
     property int systemStatus: 0xFF
     property int moduleStatus: 0xFF
 
-    function resetPage() {
+    function reset() {
         systemStatus = 0xFF
         moduleStatus = 0xFF
+        streamWidget.reset()
     }
 
     FontLoader {

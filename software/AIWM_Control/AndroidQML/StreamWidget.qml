@@ -8,39 +8,29 @@ Item {
     height: 480
     clip: true
 
-    property int fpsCounter: 0
-
-    FontLoader {
-        id: fixedFont
-        source: "qrc:/fonts/OpenSans-Regular.ttf"
+    function reset() {
+        CppStreamService.stopService()
     }
 
     Connections {
-        target: CppCore
-        function onStreamServiceFrameReceived() {
-            ++fpsCounter
+        target: CppStreamService
+        function onIpAddressUpdated(ipAddress) {
+            ipAddressLabel.text = "IP: " + ipAddress
+        }
+        function onFrameReceived() {
+            ++fpsTimer.fpsCounter
             streamFrame.updateSourceImage()
             noiseImage.visible = false
-            streamFrame.visible = true
             connectButton.visible = false
-            progressBar.visible = false
         }
-        function onStreamServiceBadFrameReceived() {
+        function onConnectionClosed() {
             noiseImage.visible = true
-            streamFrame.visible = false
-        }
-        function onStreamServiceConnectionClosed() {
             connectButton.visible = true
-            progressBar.visible = false
-            noiseImage.visible = true
-            streamFrame.visible = false
-        }
-        function onStreamServiceIpAddressUpdate(ipAddress) {
-            ipAddressLabel.text = "IP: " + ipAddress
         }
     }
 
     Timer {
+        id: fpsTimer
         running: true
         interval: 1000
         repeat: true
@@ -48,48 +38,45 @@ Item {
             fpsLabel.text = "FPS: " + fpsCounter
             fpsCounter = 0
         }
+
+        property int fpsCounter: 0
     }
 
-    ProgressBar {
-        id: progressBar
-        anchors.right: parent.right
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        visible: false
-        indeterminate: true
-        z: 1
-    }
-
-    Button {
-        id: connectButton
-        visible: true
-        z: 1
-        text: "ПОДКЛЮЧИТЬСЯ К КАМЕРЕ"
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
-        font.family: fixedFont.name
-        onClicked: {
-            connectButton.visible = false
-            progressBar.visible = true
-            if (!CppCore.runStreamService()) {
-                progressBar.visible = false
-                connectButton.visible = true
-            }
-        }
+    FontLoader {
+        id: fixedFont
+        source: "qrc:/fonts/OpenSans-Regular.ttf"
     }
 
     AnimatedImage {
         id: noiseImage
-        visible: true
         anchors.fill: parent
         source: "qrc:/images/noise.gif"
         fillMode: Image.Tile
         verticalAlignment: Qt.AlignTop
+
+        Button {
+            id: connectButton
+            text: "ПОДКЛЮЧИТЬСЯ К КАМЕРЕ"
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            font.family: fixedFont.name
+            onClicked: {
+                visible = !CppStreamService.startService();
+            }
+        }
+        ProgressBar {
+            id: progressBar
+            anchors.right: parent.right
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            visible: !connectButton.visible
+            indeterminate: true
+        }
     }
 
     Image {
         id: streamFrame
-        visible: false
+        visible: !noiseImage.visible
         anchors.fill: parent
         source: ""
         fillMode: Image.PreserveAspectFit
@@ -116,7 +103,7 @@ Item {
         y: 5
         width: 120
         height: 17
-        text: "IP: 255.255.255.255"
+        text: "IP: ---.---.---.---"
     }
 
     Label {
@@ -125,7 +112,6 @@ Item {
         y: 27
         width: 120
         height: 17
-        text: "FPS: 0"
     }
 }
 

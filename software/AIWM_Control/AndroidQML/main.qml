@@ -12,10 +12,18 @@ ApplicationWindow {
         if (swipeView.currentIndex === 1) {
             close.accepted = false
             CppCore.stopCommunication()
-            controlPage.resetPage()
-            swipeView.currentIndex = 0
         } else {
             close.accepted = true
+        }
+    }
+
+    Connections {
+        target: CppCore
+        function onSwlpFrameReceived() {
+            swipeView.currentIndex = 1
+        }
+        function onSwlpConnectionClosed() {
+            swipeView.currentIndex = 0
         }
     }
 
@@ -24,15 +32,17 @@ ApplicationWindow {
         anchors.fill: parent
         currentIndex: 0
         interactive: true
+        onCurrentIndexChanged: {
+            if (currentIndex == 0) {
+                controlPage.reset()
+            }
+            if (currentIndex == 1) {
+                connectionPage.reset()
+            }
+        }
 
         ConnectionPage {
             id: connectionPage
-            onShowControlPage: {
-                swipeView.currentIndex = 1
-            }
-            onShowConnectionPage: {
-                swipeView.currentIndex = 0
-            }
         }
         ControlPage {
             id: controlPage

@@ -2,29 +2,17 @@
 #include <QGuiApplication>
 #include <QEventLoop>
 
-#include <QThread>
 
-Core::Core(StreamFrameProvider* streamFrameProvider) : QObject(nullptr), m_streamService(streamFrameProvider) {
+Core::Core(StreamService* streamService) : QObject(nullptr), m_streamService(streamService) {
     connect(&m_swlp, &Swlp::connectionClosed, this, [this](void) { emit swlpConnectionClosed(); }, Qt::ConnectionType::QueuedConnection);
-
-    connect(&m_streamService, &StreamService::frameReceived,    this, [this](void) { emit streamServiceFrameReceived();    }, Qt::ConnectionType::QueuedConnection);
-    connect(&m_streamService, &StreamService::badFrameReceived, this, [this](void) { emit streamServiceBadFrameReceived(); }, Qt::ConnectionType::QueuedConnection);
-    connect(&m_streamService, &StreamService::connectionClosed, this, [this](void) { emit streamServiceConnectionClosed(); }, Qt::ConnectionType::QueuedConnection);
-}
-Core::~Core() {
-    stopCommunication();
 }
 
-bool Core::runCommunication() {
+bool Core::startCommunication() {
     m_commandForSend = SWLP_CMD_NONE;
     return m_swlp.startThread(this);
 }
 void Core::stopCommunication() {
     m_swlp.stopThread();
-    m_streamService.stopThread();
-}
-bool Core::runStreamService() {
-    return m_streamService.startThread(m_cameraIp);
 }
 
 void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP;           }
@@ -61,13 +49,7 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
     emit batteryChargeUpdated(payload->battery_charge);
 
     QByteArray ipAddress(reinterpret_cast<const char*>(payload->camera_ip));
-    QString newCameraIp(ipAddress);
-    if (newCameraIp != m_cameraIp) {
-        m_streamService.stopThread();
-    }
-
-    m_cameraIp = QString(ipAddress);
-    emit streamServiceIpAddressUpdate(m_cameraIp);
+    m_streamService->setIpAddress(ipAddress);
 }
 void Core::swlpCommandPayloadPrepare(swlp_command_payload_t* payload) {
     payload->command = m_commandForSend;

@@ -15,10 +15,12 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
 
     StreamFrameProvider* streamFrameProvider = new StreamFrameProvider;
-    Core core(streamFrameProvider);
+    StreamService streamService(streamFrameProvider);
+    Core core(&streamService);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("CppCore", &core);
+    engine.rootContext()->setContextProperty("CppStreamService", &streamService);
     engine.addImageProvider("streamFrameProvider", streamFrameProvider);
     engine.load(QUrl(QStringLiteral("qrc:/AndroidQML/main.qml")));
     if (engine.rootObjects().isEmpty()) {

@@ -10,12 +10,11 @@
 class Core : public QObject {
     Q_OBJECT
 public:
-    explicit Core(StreamFrameProvider* streamFrameProvider);
-    virtual ~Core();
+    explicit Core(StreamService* streamService);
+    virtual ~Core() {}
 
-    Q_INVOKABLE bool runCommunication();
+    Q_INVOKABLE bool startCommunication();
     Q_INVOKABLE void stopCommunication();
-    Q_INVOKABLE bool runStreamService();
 
     Q_INVOKABLE void sendGetUpCommand();
     Q_INVOKABLE void sendGetDownCommand();
@@ -51,22 +50,14 @@ signals:
     void voltageValuesUpdated(QVariant newBatteryVoltage);
     void batteryChargeUpdated(QVariant newBatteryCharge);
 
-    // To QML from StreamService module
-    void streamServiceFrameReceived();
-    void streamServiceBadFrameReceived();
-    void streamServiceConnectionClosed();
-    void streamServiceIpAddressUpdate(QVariant ipAddress);
-
 protected:
     Swlp m_swlp;
-    StreamService m_streamService;
+    StreamService* m_streamService;
 
     uint8_t m_commandForSend        {SWLP_CMD_NONE};
     uint8_t m_stepLenght            {0};
     int16_t m_curvature             {0};
     uint8_t m_motionSpeed           {90}; // %
-
-    QString m_cameraIp              {"255.255.255.255"};
 };
 
 #endif // CORE_H

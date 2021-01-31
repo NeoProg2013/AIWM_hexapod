@@ -4,11 +4,10 @@
 constexpr int TIMEOUT_VALUE_MS = 2000;
 
 
-bool StreamService::startThread(QString cameraIp) {
+bool StreamService::startService() {
     qDebug() << "[StreamService]" << QThread::currentThreadId() << "call start()";
 
     // Reset state
-    m_cameraIp = cameraIp;
     m_isReady = false;
     m_isError = false;
     m_buffer.clear();
@@ -16,7 +15,7 @@ bool StreamService::startThread(QString cameraIp) {
     // Init thread
     if (QThread::isRunning()) {
         qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread already started";
-        stopThread();
+        stopService();
         return false;
     }
     QThread::start();
@@ -25,7 +24,7 @@ bool StreamService::startThread(QString cameraIp) {
     while (!m_isReady && !m_isError);
     return m_isReady;
 }
-void StreamService::stopThread() {
+void StreamService::stopService() {
     qDebug() << "[StreamService]" << QThread::currentThreadId() << "call stop()";
     if (QThread::isRunning()) {
         qDebug() << "[StreamService]" << QThread::currentThreadId() << "stop thread...";
@@ -35,14 +34,20 @@ void StreamService::stopThread() {
     }
     qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread stopped";
 }
+void StreamService::setIpAddress(QString cameraIp) {
+    if (m_cameraIp != cameraIp) {
+        stopService();
+    }
+    m_cameraIp = cameraIp;
+    emit ipAddressUpdated(m_cameraIp);
+}
 
 
 
 void StreamService::run() {
-    qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread started";
+    qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread started with IP:" << m_cameraIp;
     do {
         // Send GET request
-        qDebug() << "[StreamService]" << QThread::currentThreadId() << "camera IP:" << m_cameraIp;
         QNetworkAccessManager accessManager;
         m_requestReply = accessManager.get(QNetworkRequest(QUrl("http://" + m_cameraIp + "/")));
         if (!m_requestReply) {
@@ -55,7 +60,7 @@ void StreamService::run() {
 
         // Setup timeout timer
         m_timeoutTimer = new (std::nothrow) QTimer;
-        connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stopThread, Qt::ConnectionType::QueuedConnection);
+        connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stopService, Qt::ConnectionType::QueuedConnection);
         m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
         m_timeoutTimer->setSingleShot(true);
         m_timeoutTimer->start();
@@ -90,14 +95,9 @@ void StreamService::httpDataReceived() {
     static QString beginSignature("Content-Type: image/jpeg\r\n");
     static QString endSignature("--123456789000000000000987654321\r\n");
 
-    m_timeoutTimer->stop();
-    m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
-    m_timeoutTimer->start();
-
     // Process response data
     if (m_requestReply->error()) {
         qDebug() << "m_requestReply->error() == true";
-        emit badFrameReceived();
         return;
     }
 
@@ -109,11 +109,10 @@ void StreamService::httpDataReceived() {
     }
 
     // Search begin of chunk
-    int beginIndex = m_buffer.indexOf(beginSignature);
+    int beginIndex = m_buffer.indexOf(beginSignature.toUtf8());
     if (beginIndex > endIndex) {
         qDebug() << "Something wrong";
         m_buffer.clear();
-        emit badFrameReceived();
         return;
     }
 
@@ -123,11 +122,10 @@ void StreamService::httpDataReceived() {
 
     // Parse chunk data
     QString signature("\r\n\r\n");
-    int index = chunkData.indexOf(signature, beginIndex);
+    int index = chunkData.indexOf(signature.toUtf8(), beginIndex);
     if (index == -1) {
         qDebug() << "Something wrong";
         m_buffer.clear();
-        emit badFrameReceived();
         return;
     }
     chunkData.remove(0, index + signature.size());
@@ -138,9 +136,13 @@ void StreamService::httpDataReceived() {
         uint8_t b2 = chunkData.at(1);
         if (b1 != 0xFF || b2 != 0xD8) {
             qDebug() << "It is not JPEG";
-            emit badFrameReceived();
             return;
         }
+
+        // Reset timeout timer
+        m_timeoutTimer->stop();
+        m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
+        m_timeoutTimer->start();
 
         // Update image
         m_frameProvider->setImageRawData(chunkData);
