@@ -2,53 +2,48 @@
 #include <QTimer>
 
 
-bool StreamService::start(QString cameraIp) {
-    qDebug() << "[StreamService] call start()";
-    if (m_thread) {
-        qDebug() << "[StreamService] Thread already created";
-        return false;
-    }
+bool StreamService::startThread(QString cameraIp) {
+    qDebug() << "[StreamService]" << QThread::currentThreadId() << "call start()";
 
     // Reset state
     m_cameraIp = cameraIp;
-    m_isStarted = false;
+    m_isReady = false;
     m_isError = false;
 
-    // Create communication thread
-    m_thread = QThread::create([this] { this->threadRun(); });
-    if (!m_thread) {
-        qDebug() << "[StreamService] Can't create thread object";
+    // Init thread
+    if (QThread::isRunning()) {
+        qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread already started";
+        stopThread();
         return false;
     }
-    m_thread->start();
+    QThread::start();
 
     // Wait thread
-    while (!m_isStarted && !m_isError);
-    return m_isStarted;
+    while (!m_isReady && !m_isError);
+    return m_isReady;
 }
-void StreamService::stop() {
-    qDebug() << "[StreamService] call stop()";
-    if (m_thread) {
-        qDebug() << "[StreamService] stop thread...";
+void StreamService::stopThread() {
+    qDebug() << "[StreamService]" << QThread::currentThreadId() << "call stop()";
+    if (QThread::isRunning()) {
+        qDebug() << "[StreamService]" << QThread::currentThreadId() << "stop thread...";
         m_eventLoop->exit();
-        m_thread->wait(1000);
-        m_thread->quit();
-        delete m_thread;
-        m_thread = nullptr;
+        QThread::wait(1000);
+        QThread::quit();
     }
+    qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread stopped";
 }
 
 
 
-void StreamService::threadRun() {
-    qDebug() << "[StreamService] thread started";
+void StreamService::run() {
+    qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread started";
     do {
         // Send GET request
-        qDebug() << "[StreamService] camera IP:" << m_cameraIp;
+        qDebug() << "[StreamService]" << QThread::currentThreadId() << "camera IP:" << m_cameraIp;
         QNetworkAccessManager accessManager;
         m_requestReply = accessManager.get(QNetworkRequest(QUrl("http://" + m_cameraIp + "/")));
         if (!m_requestReply) {
-            qDebug() << "[StreamService] can't create QNetworkReply object";
+            qDebug() << "[StreamService]" << QThread::currentThreadId() << "can't create QNetworkReply object";
             m_isError = true;
             break;
         }
@@ -57,7 +52,7 @@ void StreamService::threadRun() {
 
         // Setup timeout timer
         m_timeoutTimer = new (std::nothrow) QTimer;
-        connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stop);
+        connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stopThread);
         m_timeoutTimer->setInterval(2000);
         m_timeoutTimer->setSingleShot(true);
         m_timeoutTimer->start();
@@ -65,14 +60,14 @@ void StreamService::threadRun() {
         // Start event loop
         m_eventLoop = new QEventLoop;
         if (!m_eventLoop) {
-            qDebug() << "[StreamService] can't create QEventLoop object";
+            qDebug() << "[StreamService]" << QThread::currentThreadId() << "can't create QEventLoop object";
             m_isError = true;
             break;
         }
-        qDebug() << "[StreamService] start event loop...";
-        m_isStarted = true;
+        qDebug() << "[StreamService]" << QThread::currentThreadId() << "start event loop...";
+        m_isReady = true;
         m_eventLoop->exec();
-        qDebug() << "[StreamService] event loop stopped";
+        qDebug() << "[StreamService]" << QThread::currentThreadId() << "event loop stopped";
     } while (0);
 
     // Free resources
@@ -80,12 +75,6 @@ void StreamService::threadRun() {
         delete m_eventLoop;
         m_eventLoop = nullptr;
     }
-    /*if (m_requestReply) {
-        disconnect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived);
-        m_requestReply->close();
-        m_requestReply->deleteLater();
-        m_requestReply = nullptr;
-    }*/
     if (m_timeoutTimer) {
         delete m_timeoutTimer;
         m_timeoutTimer = nullptr;

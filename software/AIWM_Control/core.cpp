@@ -2,6 +2,8 @@
 #include <QGuiApplication>
 #include <QEventLoop>
 
+#include <QThread>
+
 Core::Core(StreamFrameProvider* streamFrameProvider) : QObject(nullptr), m_streamService(streamFrameProvider) {
     connect(&m_streamService, &StreamService::frameReceived,    this, [this](void) { emit streamServiceFrameReceived();    }, Qt::ConnectionType::QueuedConnection);
     connect(&m_streamService, &StreamService::badFrameReceived, this, [this](void) { emit streamServiceBadFrameReceived(); }, Qt::ConnectionType::QueuedConnection);
@@ -13,14 +15,14 @@ Core::~Core() {
 
 bool Core::runCommunication() {
     m_commandForSend = SWLP_CMD_NONE;
-    return m_swlp.start(this);
+    return m_swlp.startThread(this);
 }
 void Core::stopCommunication() {
-    m_swlp.stop();
-    m_streamService.stop();
+    m_swlp.stopThread();
+    m_streamService.stopThread();
 }
 bool Core::runStreamService() {
-    return m_streamService.start(m_cameraIp);
+    return m_streamService.startThread(m_cameraIp);
 }
 
 void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP;           }
@@ -59,7 +61,7 @@ void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
     QByteArray ipAddress(reinterpret_cast<const char*>(payload->camera_ip));
     QString newCameraIp(ipAddress);
     if (newCameraIp != m_cameraIp) {
-        m_streamService.stop();
+        m_streamService.stopThread();
     }
 
     m_cameraIp = QString(ipAddress);

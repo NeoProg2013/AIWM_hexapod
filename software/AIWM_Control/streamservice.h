@@ -8,13 +8,13 @@
 #include "streamframeprovider.h"
 
 
-class StreamService : public QObject {
+class StreamService : public QThread {
     Q_OBJECT
 public:
-    StreamService(StreamFrameProvider* frameProvider) : QObject(nullptr), m_frameProvider(frameProvider) {}
+    StreamService(StreamFrameProvider* frameProvider) : QThread(nullptr), m_frameProvider(frameProvider) {}
     virtual ~StreamService() {}
-    bool start(QString cameraIp);
-    void stop();
+    virtual bool startThread(QString cameraIp); // Call from core thread
+    virtual void stopThread();                  // Call from core thread
 
 signals:
     void frameReceived();
@@ -22,14 +22,13 @@ signals:
     void connectionClosed();
 
 protected:
-    void threadRun();
+    virtual void run() override;
 
 protected slots:
-    void httpDataReceived();
+    virtual void httpDataReceived();
 
 protected:
-    QThread* m_thread                           {nullptr};
-    std::atomic<bool> m_isStarted;
+    std::atomic<bool> m_isReady;
     std::atomic<bool> m_isError;
 
     QEventLoop* m_eventLoop                     {nullptr};

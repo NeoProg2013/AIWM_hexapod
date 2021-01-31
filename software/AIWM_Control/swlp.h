@@ -8,25 +8,24 @@
 #include "swlp_protocol.h"
 
 
-class Swlp : public QObject {
+class Swlp : public QThread {
     Q_OBJECT
 public:
-    Swlp() : QObject(nullptr) {}
+    Swlp() : QThread(nullptr) {}
     virtual ~Swlp() {}
-    bool start(void* core);
-    void stop();
+    virtual bool startThread(void* core);
+    virtual void stopThread();
 
 protected:
-    void threadRun();
-    uint16_t calculateCRC16(const uint8_t* frameByteArray, int size);
+    virtual void run() override;
+    virtual uint16_t calculateCRC16(const uint8_t* frameByteArray, int size);
 
 protected slots:
-    void datagramReceivedEvent();       // SLOT
-    void sendCommandPayloadEvent();     // SLOT
+    virtual void datagramReceivedEvent();
+    virtual void sendCommandPayloadEvent();
 
 protected:
-    QThread* m_thread               {nullptr};
-    std::atomic<bool> m_isStarted;
+    std::atomic<bool> m_isReady;
     std::atomic<bool> m_isError;
 
     QUdpSocket* m_socket            {nullptr};

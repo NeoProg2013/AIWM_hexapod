@@ -11,58 +11,52 @@ constexpr int SERVER_PORT = 3333;
 
 
 
-bool Swlp::start(void* core) {
-    qDebug() << "[SWLP] call start()";
-    if (m_thread) {
-        qDebug() << "[SWLP] Thread already created";
-        return false;
-    }
+bool Swlp::startThread(void* core) {
+    qDebug() << "[Swlp]" << QThread::currentThreadId() << "call start()";
 
     // Reset state
     m_core = core;
-    m_isStarted = false;
+    m_isReady = false;
     m_isError = false;
 
-    // Create communication thread
-    m_thread = QThread::create([this] { this->threadRun(); });
-    if (!m_thread) {
-        qDebug() << "[SWLP] Can't create thread object";
+    // Init thread
+    if (QThread::isRunning()) {
+        qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread already started";
+        stopThread();
         return false;
     }
-    m_thread->start();
+    QThread::start();
 
     // Wait thread
-    while (!m_isStarted && !m_isError);
-    return m_isStarted;
+    while (!m_isReady && !m_isError);
+    return m_isReady;
 }
-void Swlp::stop() {
-    qDebug() << "[SWLP] call stop()";
-    if (m_thread) {
-        qDebug() << "[SWLP] stop thread...";
+void Swlp::stopThread() {
+    qDebug() << "[Swlp]" << QThread::currentThreadId() << "call stop()";
+    if (QThread::isRunning()) {
+        qDebug() << "[Swlp]" << QThread::currentThreadId() << "stop thread...";
         m_eventLoop->exit();
-        m_thread->wait(1000);
-        m_thread->quit();
-        delete m_thread;
-        m_thread = nullptr;
+        QThread::wait(1000);
+        QThread::quit();
     }
+    qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread stopped";
 }
 
 
 
-
-void Swlp::threadRun() {
-    qDebug() << "[SWLP] thread started";
+void Swlp::run() {
+    qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread started";
     do {
         // Setup UDP socket
         m_socket = new (std::nothrow) QUdpSocket();
         if (!m_socket) {
-            qDebug() << "[SWLP] can't create QUdpSocket object";
+            qDebug() << "[Swlp]" << QThread::currentThreadId() << "can't create QUdpSocket object";
             m_isError = true;
             break;
         }
         connect(m_socket, &QUdpSocket::readyRead, this, &Swlp::datagramReceivedEvent, Qt::ConnectionType::DirectConnection);
         if (m_socket->bind(SERVER_PORT) == false) {
-            qDebug() << "[SWLP] can't bind socket to port";
+            qDebug() << "[Swlp]" << QThread::currentThreadId() << "can't bind socket to port";
             m_isError = true;
             break;
         }
@@ -77,14 +71,14 @@ void Swlp::threadRun() {
         // Start event loop
         m_eventLoop = new (std::nothrow) QEventLoop;
         if (!m_eventLoop) {
-            qDebug() << "[SWLP] can't create QEventLoop object";
+            qDebug() << "[Swlp]" << QThread::currentThreadId() << "can't create QEventLoop object";
             m_isError = true;
             break;
         }
-        qDebug() << "[SWLP] start event loop...";
-        m_isStarted = true;
+        qDebug() << "[Swlp]" << QThread::currentThreadId() << "start event loop...";
+        m_isReady = true;
         m_eventLoop->exec();
-        qDebug() << "[SWLP] event loop stopped";
+        qDebug() << "[Swlp]" << QThread::currentThreadId() << "event loop stopped";
     } while (0);
 
     // Free resources
@@ -101,7 +95,7 @@ void Swlp::threadRun() {
 
 
 void Swlp::datagramReceivedEvent() {
-    //qDebug() << "[SWLP] call datagramReceivedEvent()";
+    qDebug() << "[SWLP]" << QThread::currentThreadId() << "call datagramReceivedEvent()";
     // Check datagram size
     qint64 datagram_size = m_socket->pendingDatagramSize();
     if (datagram_size != sizeof(swlp_frame_t)) {
@@ -128,7 +122,7 @@ void Swlp::datagramReceivedEvent() {
     reinterpret_cast<Core*>(m_core)->swlpStatusPayloadProcess(&statusPayload);
 }
 void Swlp::sendCommandPayloadEvent() {
-    //qDebug() << "[SWLP] call sendCommandPayloadEvent()";
+    qDebug() << "[SWLP]" << QThread::currentThreadId() << "call sendCommandPayloadEvent()";
     swlp_command_payload_t commandPayload;
     reinterpret_cast<Core*>(m_core)->swlpCommandPayloadPrepare(&commandPayload);
 
