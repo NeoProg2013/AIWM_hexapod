@@ -22,6 +22,8 @@ Item {
             streamFrame.updateSourceImage()
             noiseImage.visible = false
             streamFrame.visible = true
+            connectButton.visible = false
+            progressBar.visible = false
         }
         function onStreamServiceBadFrameReceived() {
             noiseImage.visible = true
@@ -29,6 +31,7 @@ Item {
         }
         function onStreamServiceConnectionClosed() {
             connectButton.visible = true
+            progressBar.visible = false
             noiseImage.visible = true
             streamFrame.visible = false
         }
@@ -52,7 +55,7 @@ Item {
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        visible: !connectButton.visible
+        visible: false
         indeterminate: true
         z: 1
     }
@@ -67,7 +70,9 @@ Item {
         font.family: fixedFont.name
         onClicked: {
             connectButton.visible = false
+            progressBar.visible = true
             if (!CppCore.runStreamService()) {
+                progressBar.visible = false
                 connectButton.visible = true
             }
         }
@@ -91,7 +96,7 @@ Item {
         verticalAlignment: Qt.AlignTop
         smooth: true
         cache: false
-        asynchronous: true
+        asynchronous: false
         rotation: 90
 
         property bool flag: false

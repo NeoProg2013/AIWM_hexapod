@@ -17,23 +17,14 @@ Item {
 
     Connections {
         target: CppCore
-        function onFrameReceived() {
+        function onSwlpFrameReceived() {
             labelText.text = ""
             labelText.color = "#FFFFFF"
             connectButton.visible = true
-            timeoutTimer.stop()
             showControlPage()
         }
-    }
-
-    Timer {
-        id: timeoutTimer
-        interval: 5000
-        repeat: false
-        onTriggered: {
-            errorLabel.visible = true
+        function onSwlpConnectionClosed() {
             connectButton.visible = true
-            CppCore.stopCommunication()
         }
     }
 
@@ -79,16 +70,10 @@ Item {
             }
         }
         onClicked: {
-            errorLabel.visible = false
             connectButton.visible = false
-
             if (!CppCore.runCommunication()) {
-                errorLabel.visible = true
                 connectButton.visible = true
-                CppCore.stopCommunication()
-                return
             }
-            timeoutTimer.start()
         }
     }
 
@@ -113,24 +98,6 @@ Item {
         anchors.leftMargin: 5
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignLeft
-    }
-
-    Label {
-        id: errorLabel
-        height: 30
-        text: "Ошибка при подключении к устройству"
-        color: "#FF0000"
-        visible: false
-        anchors.top: connectButton.bottom
-        anchors.topMargin: 20
-        anchors.right: parent.right
-        anchors.rightMargin: 10
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        font.family: fixedFont.name
-        font.pointSize: 14
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
     }
 
     Text {

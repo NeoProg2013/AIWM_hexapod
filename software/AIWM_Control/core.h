@@ -43,8 +43,9 @@ signals:
     // To StreamService module
     void streamServiceRun(QString cameraIp);
 
-    // To QML
-    void frameReceived();
+    // To QML from SWLP
+    void swlpFrameReceived();
+    void swlpConnectionClosed();
     void systemStatusUpdated(QVariant newSystemStatus);
     void moduleStatusUpdated(QVariant newModuleStatus);
     void voltageValuesUpdated(QVariant newBatteryVoltage);

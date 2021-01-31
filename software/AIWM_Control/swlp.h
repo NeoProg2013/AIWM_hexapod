@@ -4,6 +4,7 @@
 #include <QUdpSocket>
 #include <QEventLoop>
 #include <QThread>
+#include <QTimer>
 #include <atomic>
 #include "swlp_protocol.h"
 
@@ -15,6 +16,9 @@ public:
     virtual ~Swlp() {}
     virtual bool startThread(void* core);
     virtual void stopThread();
+
+signals:
+    void connectionClosed();
 
 protected:
     virtual void run() override;
@@ -29,6 +33,7 @@ protected:
     std::atomic<bool> m_isError;
 
     QUdpSocket* m_socket            {nullptr};
+    QTimer* m_timeoutTimer          {nullptr};
     QEventLoop* m_eventLoop         {nullptr};
     void* m_core                    {nullptr};
 };

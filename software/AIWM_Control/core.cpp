@@ -5,6 +5,8 @@
 #include <QThread>
 
 Core::Core(StreamFrameProvider* streamFrameProvider) : QObject(nullptr), m_streamService(streamFrameProvider) {
+    connect(&m_swlp, &Swlp::connectionClosed, this, [this](void) { emit swlpConnectionClosed(); }, Qt::ConnectionType::QueuedConnection);
+
     connect(&m_streamService, &StreamService::frameReceived,    this, [this](void) { emit streamServiceFrameReceived();    }, Qt::ConnectionType::QueuedConnection);
     connect(&m_streamService, &StreamService::badFrameReceived, this, [this](void) { emit streamServiceBadFrameReceived(); }, Qt::ConnectionType::QueuedConnection);
     connect(&m_streamService, &StreamService::connectionClosed, this, [this](void) { emit streamServiceConnectionClosed(); }, Qt::ConnectionType::QueuedConnection);
@@ -52,7 +54,7 @@ void Core::setMotionSpeed(QVariant motionSpeed) {
 
 
 void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
-    emit frameReceived();
+    emit swlpFrameReceived();
     emit systemStatusUpdated(payload->system_status);
     emit moduleStatusUpdated(payload->module_status);
     emit voltageValuesUpdated(payload->battery_voltage);

@@ -8,6 +8,7 @@
 
 constexpr const char* SERVER_IP_ADDRESS = "111.111.111.111";
 constexpr int SERVER_PORT = 3333;
+constexpr int TIMEOUT_VALUE_MS = 2000;
 
 
 
@@ -68,6 +69,13 @@ void Swlp::run() {
         sendTimer.setInterval(100);
         sendTimer.start();
 
+        // Setup timeout timer
+        m_timeoutTimer = new (std::nothrow) QTimer;
+        connect(m_timeoutTimer, &QTimer::timeout, this, &Swlp::stopThread, Qt::ConnectionType::QueuedConnection);
+        m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
+        m_timeoutTimer->setSingleShot(true);
+        m_timeoutTimer->start();
+
         // Start event loop
         m_eventLoop = new (std::nothrow) QEventLoop;
         if (!m_eventLoop) {
@@ -90,12 +98,17 @@ void Swlp::run() {
         delete m_socket;
         m_socket = nullptr;
     }
+    emit connectionClosed();
 }
 
 
 
 void Swlp::datagramReceivedEvent() {
-    qDebug() << "[SWLP]" << QThread::currentThreadId() << "call datagramReceivedEvent()";
+    //qDebug() << "[SWLP]" << QThread::currentThreadId() << "call datagramReceivedEvent()";
+    m_timeoutTimer->stop();
+    m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
+    m_timeoutTimer->start();
+
     // Check datagram size
     qint64 datagram_size = m_socket->pendingDatagramSize();
     if (datagram_size != sizeof(swlp_frame_t)) {
@@ -122,7 +135,7 @@ void Swlp::datagramReceivedEvent() {
     reinterpret_cast<Core*>(m_core)->swlpStatusPayloadProcess(&statusPayload);
 }
 void Swlp::sendCommandPayloadEvent() {
-    qDebug() << "[SWLP]" << QThread::currentThreadId() << "call sendCommandPayloadEvent()";
+    //qDebug() << "[SWLP]" << QThread::currentThreadId() << "call sendCommandPayloadEvent()";
     swlp_command_payload_t commandPayload;
     reinterpret_cast<Core*>(m_core)->swlpCommandPayloadPrepare(&commandPayload);
 

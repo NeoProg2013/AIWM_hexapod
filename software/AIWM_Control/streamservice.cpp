@@ -1,6 +1,8 @@
 #include "streamservice.h"
 #include <QTimer>
 
+constexpr int TIMEOUT_VALUE_MS = 2000;
+
 
 bool StreamService::startThread(QString cameraIp) {
     qDebug() << "[StreamService]" << QThread::currentThreadId() << "call start()";
@@ -9,6 +11,7 @@ bool StreamService::startThread(QString cameraIp) {
     m_cameraIp = cameraIp;
     m_isReady = false;
     m_isError = false;
+    m_buffer.clear();
 
     // Init thread
     if (QThread::isRunning()) {
@@ -47,13 +50,13 @@ void StreamService::run() {
             m_isError = true;
             break;
         }
-        m_requestReply->setReadBufferSize(50 * 1024);
-        connect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived);
+        m_requestReply->setReadBufferSize(60 * 1024);
+        connect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived, Qt::ConnectionType::DirectConnection);
 
         // Setup timeout timer
         m_timeoutTimer = new (std::nothrow) QTimer;
-        connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stopThread);
-        m_timeoutTimer->setInterval(2000);
+        connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stopThread, Qt::ConnectionType::QueuedConnection);
+        m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
         m_timeoutTimer->setSingleShot(true);
         m_timeoutTimer->start();
 
@@ -83,15 +86,17 @@ void StreamService::run() {
 }
 
 void StreamService::httpDataReceived() {
+    //qDebug() << "[StreamService]" << QThread::currentThreadId() << "call httpDataReceived()";
     static QString beginSignature("Content-Type: image/jpeg\r\n");
     static QString endSignature("--123456789000000000000987654321\r\n");
 
     m_timeoutTimer->stop();
-    m_timeoutTimer->setInterval(1000);
+    m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
     m_timeoutTimer->start();
 
     // Process response data
     if (m_requestReply->error()) {
+        qDebug() << "m_requestReply->error() == true";
         emit badFrameReceived();
         return;
     }
