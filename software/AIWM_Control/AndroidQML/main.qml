@@ -21,9 +21,11 @@ ApplicationWindow {
         target: CppCore
         function onSwlpFrameReceived() {
             swipeView.currentIndex = 1
+            controlPage.reset()
         }
         function onSwlpConnectionClosed() {
             swipeView.currentIndex = 0
+            connectionPage.reset()
         }
     }
 
@@ -32,14 +34,6 @@ ApplicationWindow {
         anchors.fill: parent
         currentIndex: 0
         interactive: true
-        onCurrentIndexChanged: {
-            if (currentIndex == 0) {
-                controlPage.reset()
-            }
-            if (currentIndex == 1) {
-                connectionPage.reset()
-            }
-        }
 
         ConnectionPage {
             id: connectionPage
