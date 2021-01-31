@@ -9,6 +9,7 @@ Item {
     clip: true
 
     signal showControlPage
+    signal showConnectionPage
 
     FontLoader {
         id: fixedFont
@@ -25,6 +26,7 @@ Item {
         }
         function onSwlpConnectionClosed() {
             connectButton.visible = true
+            showConnectionPage()
         }
     }
 

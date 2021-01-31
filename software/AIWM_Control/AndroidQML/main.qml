@@ -30,6 +30,9 @@ ApplicationWindow {
             onShowControlPage: {
                 swipeView.currentIndex = 1
             }
+            onShowConnectionPage: {
+                swipeView.currentIndex = 0
+            }
         }
         ControlPage {
             id: controlPage
