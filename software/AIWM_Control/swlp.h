@@ -29,8 +29,8 @@ protected slots:
     virtual void sendCommandPayloadEvent();
 
 protected:
-    std::atomic<bool> m_isReady;
-    std::atomic<bool> m_isError;
+    std::atomic<bool> m_isReady     {false};
+    std::atomic<bool> m_isError     {false};
 
     QUdpSocket* m_socket            {nullptr};
     QTimer* m_timeoutTimer          {nullptr};
