@@ -129,7 +129,6 @@ void gui_process(void) {
             oled_gl_clear_row_fragment(2, 67, 0, 67, 8);
             oled_gl_clear_row_fragment(4, 67, 0, 67, 8);
             if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
-                
                 if (is_system_active_indicator_visible == true) {
                     oled_gl_draw_string(0, 67, "SYSTEM");
                     oled_gl_draw_string(2, 67, "EMERGENCY");
@@ -137,14 +136,12 @@ void gui_process(void) {
                 }
             }
             else if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
-                
                 if (is_system_active_indicator_visible == true) {
                     oled_gl_draw_string(0, 67, "BATTERY");
                     oled_gl_draw_string(2, 67, "LOW");
                     oled_gl_draw_string(4, 67, "VOLTAGE");
                 }
-            }
-            else {
+            } else {
                 oled_gl_draw_string(0, 67, "SYSTEM");
                 oled_gl_draw_string(2, 67, "STANDART");
                 oled_gl_draw_string(4, 67, "MODE");
@@ -158,8 +155,7 @@ void gui_process(void) {
                 // Blink system active indicator
                 if (is_system_active_indicator_visible == true) {
                     oled_gl_clear_row_fragment(0, 120, 0, 8, 8);
-                }
-                else {
+                } else {
                     oled_gl_draw_rect(0, 120, 0, 8, 8);
                 }
                 is_system_active_indicator_visible = !is_system_active_indicator_visible;

@@ -10,7 +10,7 @@
 
 #define IP_ADDRESS_DUMMY                    ("255.255.255.255")
 #define COMMUNICATION_BAUD_RATE             (9600)
-#define COMMUNICATION_TIMEOUT               (2000) // ms
+#define COMMUNICATION_TIMEOUT               (5000) // ms
 
 
 typedef enum {

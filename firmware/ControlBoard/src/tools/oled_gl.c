@@ -29,7 +29,6 @@ static driver_state_t driver_state = STATE_NOINIT;
 /// @return none
 //  ***************************************************************************
 void oled_gl_init(void) {
-    
     if (!ssd1306_128x64_init())             { sysmon_set_error(SYSMON_I2C_ERROR); sysmon_disable_module(SYSMON_MODULE_OLED_GL); return; }
     if (!ssd1306_128x64_set_inverse(false)) { sysmon_set_error(SYSMON_I2C_ERROR); sysmon_disable_module(SYSMON_MODULE_OLED_GL); return; }
     if (!ssd1306_128x64_set_contrast(0xFF)) { sysmon_set_error(SYSMON_I2C_ERROR); sysmon_disable_module(SYSMON_MODULE_OLED_GL); return; }
@@ -43,7 +42,6 @@ void oled_gl_init(void) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_process(void) {
-    
     if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
     
     
@@ -119,7 +117,6 @@ void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t w
 /// @return none
 //  ***************************************************************************
 void oled_gl_clear_display(void) {
-    
     for (uint32_t i = 0; i < 8; ++i) {
         uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(i, 0);
         memset(frame_buffer, 0x00, 128);
@@ -134,7 +131,6 @@ void oled_gl_clear_display(void) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_float_number(uint32_t row, uint32_t x, float number) {
-    
     char buffer[12] = {0};
     sprintf(buffer, "%04.1f", number);
     oled_gl_draw_string(row, x, buffer);
@@ -148,7 +144,6 @@ void oled_gl_draw_float_number(uint32_t row, uint32_t x, float number) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_dec_number(uint32_t row, uint32_t x, int32_t number) {
-    
     char buffer[12] = {0};
     sprintf(buffer, "%d", (int)number);
     oled_gl_draw_string(row, x, buffer);
@@ -162,7 +157,6 @@ void oled_gl_draw_dec_number(uint32_t row, uint32_t x, int32_t number) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_hex16(uint32_t row, uint32_t x, uint32_t number) {
-    
     char buffer[32] = {0};
     sprintf(buffer, "0x%04X", (int)number);
     oled_gl_draw_string(row, x, buffer);
@@ -176,7 +170,6 @@ void oled_gl_draw_hex16(uint32_t row, uint32_t x, uint32_t number) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_hex32(uint32_t row, uint32_t x, uint32_t number) {
-    
     char buffer[32] = {0};
     sprintf(buffer, "0x%08X", (int)number);
     oled_gl_draw_string(row, x, buffer);
@@ -190,7 +183,6 @@ void oled_gl_draw_hex32(uint32_t row, uint32_t x, uint32_t number) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
-    
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
     for (uint32_t i = 0; *str != '\0'; ++str, i += 6) {
         memcpy(&frame_buffer[i], &font_6x8[(*str - ' ') * 6], 6);
@@ -205,7 +197,6 @@ void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t width) {
-    
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
     uint8_t mask = (1 << y);
     
@@ -251,7 +242,6 @@ void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uin
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap) {
-    
     if ((bitmap_height % 8) != 0) {
         sysmon_set_error(SYSMON_FATAL_ERROR);
         sysmon_disable_module(SYSMON_MODULE_OLED_GL);
@@ -270,9 +260,7 @@ void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32
 /// @return none
 //  ***************************************************************************
 void oled_gl_sync_display_update(void) {
-    
     if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
     
     if (ssd1306_128x64_full_update() == false) {
         sysmon_set_error(SYSMON_I2C_ERROR);
@@ -286,7 +274,6 @@ void oled_gl_sync_display_update(void) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_start_async_display_update(void) {
-
     if (driver_state != STATE_IDLE) {
         return;
     }   

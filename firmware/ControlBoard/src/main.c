@@ -54,14 +54,9 @@ void main() {
     
     delay_ms(100);
     while (true) {
-        
         sysmon_process();
         swlp_process();
         cli_process();
-        indication_process();
-        gui_process();
-        
-        camera_process();
         
         // Override select sequence if need
         if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
@@ -85,6 +80,11 @@ void main() {
             sequences_engine_process();
             motion_core_process();
             servo_driver_process();
+        } 
+        else { // Here is high load operations
+            indication_process();
+            gui_process();
+            camera_process();
         }
         
         // Check system failure
