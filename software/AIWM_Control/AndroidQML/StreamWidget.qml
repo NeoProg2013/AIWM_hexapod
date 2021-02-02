@@ -104,6 +104,7 @@ Item {
         width: 120
         height: 17
         text: "IP: ---.---.---.---"
+        font.family: fixedFont.name
     }
 
     Label {
@@ -112,6 +113,8 @@ Item {
         y: 27
         width: 120
         height: 17
+        text: "FPS: --"
+        font.family: fixedFont.name
     }
 }
 

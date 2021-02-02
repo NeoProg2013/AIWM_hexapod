@@ -12,6 +12,8 @@ Item {
 
     property int systemStatus: 0xFF
     property int moduleStatus: 0xFF
+    property int batteryCharge: 100
+    property int batteryVoltage: 12600
 
     function reset() {
         systemStatus = 0xFF
@@ -30,6 +32,10 @@ Item {
             systemStatus = newSystemStatus
             moduleStatus = newModuleStatus
         }
+        function onSwlpBatteryStatusUpdated(newBatteryCharge, newBatteryVoltage) {
+            batteryCharge = newBatteryCharge
+            batteryVoltage = newBatteryVoltage
+        }
     }
 
     StreamWidget {
@@ -39,6 +45,21 @@ Item {
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.top: parent.top
+        Label {
+            width: 90
+            height: 17
+            font.bold: true
+            font.family: fixedFont.name
+            text: batteryCharge + "% (" + batteryVoltage / 1000.0 + "V)"
+            color: (batteryCharge < 20) ? "#DD0000" : ((batteryCharge < 60) ? "#DDDD00" : "#00DD00")
+            anchors.right: parent.right
+            anchors.top: parent.top
+            horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
+            anchors.topMargin: 5
+            anchors.rightMargin: 5
+
+        }
     }
 
     SwipeView {
@@ -145,6 +166,7 @@ Item {
             Label {
                 height: 17
                 text: motionSpeed.value
+                font.family: fixedFont.name
                 anchors.top: parent.top
                 horizontalAlignment: Text.AlignHCenter
                 anchors.left: motionSpeed.left
@@ -477,10 +499,3 @@ Item {
         }
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:3}D{i:13}D{i:4}
-}
-##^##*/
-
