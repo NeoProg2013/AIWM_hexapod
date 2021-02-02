@@ -8,17 +8,8 @@ Item {
     height: 600
     clip: true
 
-    function reset() {
+    function reset() { // Call when SWLP connection closed
         connectButton.visible = true
-    }
-
-    Connections {
-        target: CppCore
-        function onSwlpFrameReceived() {
-            labelText.text = ""
-            labelText.color = "#FFFFFF"
-            connectButton.visible = true
-        }
     }
 
     FontLoader {
@@ -32,7 +23,6 @@ Item {
             id: connectButton
             width: 140
             height: 150
-            text: qsTr("")
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             background: Item {

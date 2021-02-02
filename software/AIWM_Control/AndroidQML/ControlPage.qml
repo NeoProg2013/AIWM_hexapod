@@ -5,7 +5,6 @@ import QtGraphicalEffects 1.0
 import QtQuick.Extras 1.4
 
 Item {
-
     id: root
     width: 400
     height: 600
@@ -27,10 +26,8 @@ Item {
 
     Connections {
         target: CppCore
-        function onSystemStatusUpdated(newSystemStatus) {
+        function onSwlpSystemStatusUpdated(newSystemStatus, newModuleStatus) {
             systemStatus = newSystemStatus
-        }
-        function onModuleStatusUpdated(newModuleStatus) {
             moduleStatus = newModuleStatus
         }
     }

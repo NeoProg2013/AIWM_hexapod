@@ -15,16 +15,16 @@ void Core::stopCommunication() {
     m_swlp.stopThread();
 }
 
-void Core::sendGetUpCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP;           }
-void Core::sendGetDownCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DOWN;         }
-void Core::sendUpDownCommand()          { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP_DOWN;      }
-void Core::sendPushPullCommand()        { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL;    }
-void Core::sendAttackLeftCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT;  }
-void Core::sendAttackRightCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT; }
-void Core::sendDanceCommand()           { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DANCE;        }
-void Core::sendRotateXCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_X;     }
-void Core::sendRotateZCommand()         { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z;     }
-void Core::sendStopMoveCommand()        { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;         }
+void Core::sendGetUpCommand()       { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP;           }
+void Core::sendGetDownCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DOWN;         }
+void Core::sendUpDownCommand()      { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_UP_DOWN;      }
+void Core::sendPushPullCommand()    { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL;    }
+void Core::sendAttackLeftCommand()  { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT;  }
+void Core::sendAttackRightCommand() { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT; }
+void Core::sendDanceCommand()       { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DANCE;        }
+void Core::sendRotateXCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_X;     }
+void Core::sendRotateZCommand()     { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z;     }
+void Core::sendStopMoveCommand()    { m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_NONE;         }
 void Core::sendStartMotionCommand(QVariant stepLength, QVariant curvature) {
     int16_t stepLengthInt16 = stepLength.toInt();
     m_commandForSend = SWLP_CMD_SELECT_SEQUENCE_DIRECT;
@@ -43,10 +43,8 @@ void Core::setMotionSpeed(QVariant motionSpeed) {
 
 void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
     emit swlpFrameReceived();
-    emit systemStatusUpdated(payload->system_status);
-    emit moduleStatusUpdated(payload->module_status);
-    emit voltageValuesUpdated(payload->battery_voltage);
-    emit batteryChargeUpdated(payload->battery_charge);
+    emit swlpStatusUpdated(payload->system_status, payload->module_status);
+    emit swlpVoltageValuesUpdated(payload->battery_charge, payload->battery_voltage);
 
     QByteArray ipAddress(reinterpret_cast<const char*>(payload->camera_ip));
     m_streamService->setIpAddress(ipAddress);

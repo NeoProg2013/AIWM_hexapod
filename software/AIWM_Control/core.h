@@ -45,10 +45,8 @@ signals:
     // To QML from SWLP
     void swlpFrameReceived();
     void swlpConnectionClosed();
-    void systemStatusUpdated(QVariant newSystemStatus);
-    void moduleStatusUpdated(QVariant newModuleStatus);
-    void voltageValuesUpdated(QVariant newBatteryVoltage);
-    void batteryChargeUpdated(QVariant newBatteryCharge);
+    void swlpSystemStatusUpdated(QVariant newSystemStatus, QVariant newModuleStatus);
+    void swlpBatteryStatusUpdated(QVariant newBatteryCharge, QVariant newBatteryVoltage);
 
 protected:
     Swlp m_swlp;
