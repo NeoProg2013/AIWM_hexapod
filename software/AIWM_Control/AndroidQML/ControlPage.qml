@@ -300,6 +300,7 @@ Item {
                 }
             }
             GridLayout {
+                property bool disable: false
                 id: errorStatus
                 y: 95
                 width: 188
@@ -321,7 +322,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x80
+                    color: (systemStatus & 0x80) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -330,7 +331,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x40
+                    color: (systemStatus & 0x40) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -339,7 +340,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x20
+                    color: (systemStatus & 0x20) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -348,7 +349,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x10
+                    color: (systemStatus & 0x10) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -357,7 +358,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x08
+                    color: (systemStatus & 0x08) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -366,7 +367,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x04
+                    color: (systemStatus & 0x04) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -375,7 +376,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x02
+                    color: (systemStatus & 0x02) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -384,7 +385,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x01
+                    color: (systemStatus & 0x01) ? "#DD0000" : "#888888"
                 }
             }
             GridLayout {
@@ -407,8 +408,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x80
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x80) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -417,8 +417,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x40
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x40) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -427,8 +426,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x20
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x20) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -437,8 +435,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x10
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x10) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -447,8 +444,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x08
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x08) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -457,8 +453,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x04
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x04) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -467,8 +462,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x02
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x02) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -477,8 +471,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x01
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x01) ? "#DD0000" : "#00DD00"
                 }
             }
         }

@@ -43,8 +43,8 @@ void Core::setMotionSpeed(QVariant motionSpeed) {
 
 void Core::swlpStatusPayloadProcess(const swlp_status_payload_t* payload) {
     emit swlpFrameReceived();
-    emit swlpStatusUpdated(payload->system_status, payload->module_status);
-    emit swlpVoltageValuesUpdated(payload->battery_charge, payload->battery_voltage);
+    emit swlpSystemStatusUpdated(payload->system_status, payload->module_status);
+    emit swlpBatteryStatusUpdated(payload->battery_charge, payload->battery_voltage);
 
     QByteArray ipAddress(reinterpret_cast<const char*>(payload->camera_ip));
     m_streamService->setIpAddress(ipAddress);
