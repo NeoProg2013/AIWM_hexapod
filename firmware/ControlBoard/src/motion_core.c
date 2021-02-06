@@ -52,10 +52,8 @@ static bool is_trajectory_config_init = false;
 //  ***************************************************************************
 /// @brief  Motion core initialization
 /// @param  start_point_list: limbs start points list
-/// @return none
 //  ***************************************************************************
 void motion_core_init(const point_3d_t* start_point_list) {
-
     if (read_configuration() == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
@@ -91,10 +89,8 @@ void motion_core_init(const point_3d_t* start_point_list) {
 //  ***************************************************************************
 /// @brief  Start motion
 /// @param  motion_config: motion configuration. @ref motion_config_t
-/// @return none
 //  ***************************************************************************
 void motion_core_start_motion(const motion_config_t* motion_config) {
-    
     // Initialize motion configuration
     g_motion_config = *motion_config;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
@@ -112,8 +108,6 @@ void motion_core_start_motion(const motion_config_t* motion_config) {
 
 //  ***************************************************************************
 /// @brief  Reset trajectory configuration
-/// @param  none
-/// @return none
 //  ***************************************************************************
 void motion_core_reset_trajectory_config(void) {
     g_current_trajectory_config.curvature = 1;
@@ -125,7 +119,6 @@ void motion_core_reset_trajectory_config(void) {
 /// @brief  Update trajectory configuration
 /// @param  curvature: curvature (parameter of trajectory)
 /// @param  distance: distance (parameter of trajectory)
-/// @return none
 //  ***************************************************************************
 void motion_core_update_trajectory_config(int32_t curvature, int32_t distance) {
     g_next_trajectory_config.curvature = curvature;
@@ -133,9 +126,16 @@ void motion_core_update_trajectory_config(int32_t curvature, int32_t distance) {
 }
 
 //  ***************************************************************************
+/// @brief  Set motion speed
+/// @param  speed: motion speed
+//  ***************************************************************************
+void motion_core_set_motion_speed(int32_t speed) {
+    servo_driver_set_speed(speed);
+}
+
+//  ***************************************************************************
 /// @brief  Motion core process
 /// @note   Call each PWM period
-/// @return none
 //  ***************************************************************************
 void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
@@ -183,7 +183,6 @@ void motion_core_process(void) {
 
 //  ***************************************************************************
 /// @brief  Check motion status
-/// @param  none
 /// @return true - motion completed, false - motion in progress
 //  ***************************************************************************
 bool motion_core_is_motion_complete(void) {
@@ -196,7 +195,6 @@ bool motion_core_is_motion_complete(void) {
 
 //  ***************************************************************************
 /// @brief  Read configuration
-/// @param  none
 /// @return true - read success, false - fail
 //  ***************************************************************************
 static bool read_configuration(void) {

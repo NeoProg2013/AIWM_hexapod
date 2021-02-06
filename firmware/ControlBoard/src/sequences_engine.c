@@ -88,7 +88,7 @@ void sequences_engine_process(void) {
             else {
                 // Auto select down sequence timer
                 if (get_time_ms() - prev_active_time > AUTO_SELECT_DOWN_SEQUENCE_TIME) {
-                    sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
+                    sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
                 }
             }
             break;
@@ -125,7 +125,7 @@ void sequences_engine_process(void) {
                     }
                     else {
                         // Not looped sequence completed and new sequence not selected
-                        sequences_engine_select_sequence(SEQUENCE_NONE, 0, 0);
+                        sequences_engine_select_sequence(SEQUENCE_NONE, 0, 0, 0);
                         engine_state = STATE_CHANGE_SEQUENCE;
                     }
                 }              
@@ -166,13 +166,15 @@ void sequences_engine_process(void) {
 /// @param  step_length: step length value for DIRECT\REVERSE sequences
 /// @return none
 //  ***************************************************************************
-void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature, int32_t step_length) {
+void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int32_t curvature, int32_t step_length) {
     
     switch (sequence) {
-        
         case SEQUENCE_NONE:
             next_sequence = SEQUENCE_NONE;
             next_sequence_info = NULL;
+            if (engine_state == STATE_IDLE) {
+                motion_core_set_motion_speed(speed);
+            }
             break;
         
         case SEQUENCE_UP:
@@ -180,11 +182,15 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 next_sequence = SEQUENCE_UP;
                 next_sequence_info = &sequence_up;
             }
+            motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             break;
 
         case SEQUENCE_DOWN:
-            next_sequence = SEQUENCE_DOWN;
-            next_sequence_info = &sequence_down;
+            if (hexapod_state == HEXAPOD_STATE_UP) {
+                next_sequence = SEQUENCE_DOWN;
+                next_sequence_info = &sequence_down;
+            }
+            motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             break;
 
         case SEQUENCE_DIRECT:
@@ -192,6 +198,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 next_sequence = SEQUENCE_DIRECT;
                 next_sequence_info = &sequence_direct;
                 motion_core_update_trajectory_config(curvature, step_length);
+                motion_core_set_motion_speed(speed);
             }
             break;
 
@@ -200,6 +207,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 next_sequence = SEQUENCE_REVERSE;
                 next_sequence_info = &sequence_reverse;
                 motion_core_update_trajectory_config(curvature, step_length);
+                motion_core_set_motion_speed(speed);
             }
             break;
     
@@ -207,6 +215,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_UP_DOWN;
                 next_sequence_info = &sequence_up_down;
+                motion_core_set_motion_speed(speed);
             }
             break;
 
@@ -215,6 +224,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
                 next_sequence = SEQUENCE_PUSH_PULL;
                 next_sequence_info = &sequence_push_pull;
                 motion_core_update_trajectory_config(1, 110);
+                motion_core_set_motion_speed(speed);
             }
             break;
             
@@ -222,6 +232,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ATTACK_LEFT;
                 next_sequence_info = &sequence_attack_left;
+                motion_core_set_motion_speed(speed);
             }
             break;
             
@@ -229,6 +240,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ATTACK_RIGHT;
                 next_sequence_info = &sequence_attack_right;
+                motion_core_set_motion_speed(speed);
             }
             break;
             
@@ -236,6 +248,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DANCE;
                 next_sequence_info = &sequence_dance;
+                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             }
             break;
             
@@ -243,6 +256,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_X;
                 next_sequence_info = &sequence_rotate_x;
+                motion_core_set_motion_speed(speed);
             }
             break;
        
@@ -250,6 +264,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t curvature,
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_Z;
                 next_sequence_info = &sequence_rotate_z;
+                motion_core_set_motion_speed(speed);
             }
             break;
             

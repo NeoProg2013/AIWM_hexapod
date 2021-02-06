@@ -63,11 +63,11 @@ void main() {
         
         // Override select sequence if need
         if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
-            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
+            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
         }
         // Disable servo power if low supply voltage
         if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
-            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
+            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
             servo_driver_power_off();
         }
         

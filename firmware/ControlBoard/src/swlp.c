@@ -91,52 +91,40 @@ void swlp_process(void) {
             case SWLP_CMD_NONE:
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP:
-                servo_driver_set_speed(SERVO_DEFAULT_SPEED);
-                sequences_engine_select_sequence(SEQUENCE_UP, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
-                servo_driver_set_speed(SERVO_DEFAULT_SPEED);
-                sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DIRECT:
-                servo_driver_set_speed(request->motion_speed);
-                sequences_engine_select_sequence(SEQUENCE_DIRECT, request->curvature, request->distance);
+                sequences_engine_select_sequence(SEQUENCE_DIRECT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_REVERSE:
-                servo_driver_set_speed(request->motion_speed);
-                sequences_engine_select_sequence(SEQUENCE_REVERSE, request->curvature, request->distance);
+                sequences_engine_select_sequence(SEQUENCE_REVERSE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
-                servo_driver_set_speed(request->motion_speed);
-                sequences_engine_select_sequence(SEQUENCE_UP_DOWN, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL:
-                servo_driver_set_speed(request->motion_speed);
-                sequences_engine_select_sequence(SEQUENCE_PUSH_PULL, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_PUSH_PULL, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
-                servo_driver_set_speed(SERVO_DEFAULT_SPEED);
-                sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
-                servo_driver_set_speed(SERVO_DEFAULT_SPEED);
-                sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DANCE:
-                servo_driver_set_speed(SERVO_DEFAULT_SPEED);
-                sequences_engine_select_sequence(SEQUENCE_DANCE, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_DANCE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:
-                servo_driver_set_speed(SERVO_DEFAULT_SPEED);
-                sequences_engine_select_sequence(SEQUENCE_ROTATE_X, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_ROTATE_X, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:
-                servo_driver_set_speed(SERVO_DEFAULT_SPEED);
-                sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_NONE:
-                servo_driver_set_speed(request->motion_speed);
-                sequences_engine_select_sequence(SEQUENCE_NONE, 0, 0);
+                sequences_engine_select_sequence(SEQUENCE_NONE, request->motion_speed, request->curvature, request->distance);
                 break;
                 
             default:
