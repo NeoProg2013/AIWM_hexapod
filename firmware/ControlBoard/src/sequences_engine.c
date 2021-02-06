@@ -212,7 +212,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_UP_DOWN;
                 next_sequence_info = &sequence_up_down;
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             }
             break;
 
@@ -221,7 +221,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
                 next_sequence = SEQUENCE_PUSH_PULL;
                 next_sequence_info = &sequence_push_pull;
                 motion_core_update_trajectory_config(1, 110);
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             }
             break;
             
@@ -229,7 +229,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ATTACK_LEFT;
                 next_sequence_info = &sequence_attack_left;
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             }
             break;
             
@@ -237,7 +237,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ATTACK_RIGHT;
                 next_sequence_info = &sequence_attack_right;
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             }
             break;
             
@@ -253,7 +253,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_X;
                 next_sequence_info = &sequence_rotate_x;
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             }
             break;
        
@@ -261,7 +261,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_Z;
                 next_sequence_info = &sequence_rotate_z;
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             }
             break;
             
