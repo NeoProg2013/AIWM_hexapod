@@ -11,21 +11,20 @@ ApplicationWindow {
     onClosing: {
         if (swipeView.currentIndex === 1) {
             close.accepted = false
-            CppCore.stopCommunication()
+            CppSwlpService.stopService()
+            CppStreamService.stopService()
         } else {
             close.accepted = true
         }
     }
 
     Connections {
-        target: CppCore
-        function onSwlpFrameReceived() {
-            swipeView.currentIndex = 1
-            controlPage.reset()
+        target: CppSwlpService
+        function onFrameReceived() {
+            swipeView.currentIndex = 1  // Goto control page
         }
-        function onSwlpConnectionClosed() {
-            swipeView.currentIndex = 0
-            connectionPage.reset()
+        function onConnectionClosed() {
+            swipeView.currentIndex = 0  // Goto connection page
         }
     }
 
@@ -34,7 +33,6 @@ ApplicationWindow {
         anchors.fill: parent
         currentIndex: 0
         interactive: true
-
         ConnectionPage {
             id: connectionPage
         }

@@ -8,8 +8,11 @@ Item {
     height: 600
     clip: true
 
-    function reset() { // Call when SWLP connection closed
-        connectButton.visible = true
+    Connections {
+        target: CppSwlpService
+        function onConnectionClosed() {
+            connectButton.visible = true
+        }
     }
 
     FontLoader {
@@ -43,7 +46,7 @@ Item {
                 }
             }
             onClicked: {
-                connectButton.visible = !CppCore.startCommunication();
+                connectButton.visible = !CppSwlpService.startService();
             }
         }
         Label {

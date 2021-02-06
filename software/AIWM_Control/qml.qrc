@@ -5,8 +5,6 @@
         <file>AndroidQML/ImageButton.qml</file>
         <file>AndroidQML/main.qml</file>
         <file>AndroidQML/StatusLabel.qml</file>
-        <file>core.cpp</file>
-        <file>core.h</file>
         <file>main.cpp</file>
         <file>images/dance.svg</file>
         <file>images/swordLeft.svg</file>

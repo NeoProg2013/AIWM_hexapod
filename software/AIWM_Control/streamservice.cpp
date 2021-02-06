@@ -1,6 +1,7 @@
 #include "streamservice.h"
-#include <QTimer>
+#include <QNetworkAccessManager>
 
+constexpr const char* CAMERA_IP_ADDRESS = "111.111.111.5";
 constexpr int TIMEOUT_VALUE_MS = 2000;
 
 
@@ -13,11 +14,7 @@ bool StreamService::startService() {
     m_buffer.clear();
 
     // Init thread
-    if (QThread::isRunning()) {
-        qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread already started";
-        stopService();
-        return false;
-    }
+    stopService();
     QThread::start();
 
     // Wait thread
@@ -34,22 +31,14 @@ void StreamService::stopService() {
     }
     qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread stopped";
 }
-void StreamService::setIpAddress(QString cameraIp) {
-    if (m_cameraIp != cameraIp) {
-        stopService();
-    }
-    m_cameraIp = cameraIp;
-    emit ipAddressUpdated(m_cameraIp);
-}
-
 
 
 void StreamService::run() {
-    qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread started with IP:" << m_cameraIp;
+    qDebug() << "[StreamService]" << QThread::currentThreadId() << "thread started";
     do {
-        // Send GET request
+        // Send GET request (callbacks call from this thread)
         QNetworkAccessManager accessManager;
-        m_requestReply = accessManager.get(QNetworkRequest(QUrl("http://" + m_cameraIp + "/")));
+        m_requestReply = accessManager.get(QNetworkRequest(QUrl("http://" + QString(CAMERA_IP_ADDRESS) + "/")));
         if (!m_requestReply) {
             qDebug() << "[StreamService]" << QThread::currentThreadId() << "can't create QNetworkReply object";
             m_isError = true;
@@ -58,7 +47,7 @@ void StreamService::run() {
         m_requestReply->setReadBufferSize(60 * 1024);
         connect(m_requestReply, &QNetworkReply::readyRead, this, &StreamService::httpDataReceived, Qt::ConnectionType::DirectConnection);
 
-        // Setup timeout timer
+        // Setup timeout timer (callbacks call from GUI thread)
         m_timeoutTimer = new (std::nothrow) QTimer;
         connect(m_timeoutTimer, &QTimer::timeout, this, &StreamService::stopService, Qt::ConnectionType::QueuedConnection);
         m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);

@@ -2,7 +2,7 @@
 #define STREAM_SERVICE_H
 #include <QObject>
 #include <QThread>
-#include <QNetworkAccessManager>
+#include <QTimer>
 #include <QNetworkReply>
 #include <QEventLoop>
 #include "streamframeprovider.h"
@@ -14,13 +14,13 @@ public:
     StreamService(StreamFrameProvider* frameProvider) : QThread(nullptr), m_frameProvider(frameProvider) {}
     virtual ~StreamService() {}
 
+    //
+    // Q_INVOKABLE methods call from GUI thread
+    //
     Q_INVOKABLE bool startService();
     Q_INVOKABLE void stopService();
 
-    virtual void setIpAddress(QString cameraIp);
-
 signals:
-    void ipAddressUpdated(QVariant ipAddress);
     void frameReceived();
     void connectionClosed();
 
@@ -38,7 +38,6 @@ protected:
     QTimer* m_timeoutTimer                      {nullptr};
     QNetworkReply* m_requestReply               {nullptr};
 
-    QString m_cameraIp                          {"255.255.255.255"};
     QByteArray m_buffer;
     StreamFrameProvider* const m_frameProvider  {nullptr};
 };

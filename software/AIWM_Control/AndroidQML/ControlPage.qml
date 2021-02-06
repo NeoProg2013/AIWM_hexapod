@@ -15,26 +15,24 @@ Item {
     property int batteryCharge: 100
     property int batteryVoltage: 12600
 
-    function reset() {
-        systemStatus = 0xFF
-        moduleStatus = 0xFF
-        streamWidget.reset()
-    }
-
     FontLoader {
         id: fixedFont
         source: "qrc:/fonts/OpenSans-Regular.ttf"
     }
 
     Connections {
-        target: CppCore
-        function onSwlpSystemStatusUpdated(newSystemStatus, newModuleStatus) {
+        target: CppSwlpService
+        function onSystemStatusUpdated(newSystemStatus, newModuleStatus) {
             systemStatus = newSystemStatus
             moduleStatus = newModuleStatus
         }
-        function onSwlpBatteryStatusUpdated(newBatteryCharge, newBatteryVoltage) {
+        function onBatteryStatusUpdated(newBatteryCharge, newBatteryVoltage) {
             batteryCharge = newBatteryCharge
             batteryVoltage = newBatteryVoltage
+        }
+        function onConnectionClosed() {
+            systemStatus = 0xFF
+            moduleStatus = 0xFF
         }
     }
 
@@ -126,7 +124,7 @@ Item {
 
                         onReleased: {
                             animationReturn.start()
-                            CppCore.sendStopMoveCommand()
+                            CppSwlpService.sendStopMoveCommand()
                         }
                         onPositionChanged: {
 
@@ -148,7 +146,7 @@ Item {
                             var stepLength = 0
                             if (dragItem.y < minDeadZone || dragItem.y > maxDeadZone) {
                                 stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
-                                CppCore.sendStartMotionCommand(Math.round(stepLength), Math.round(curvature))
+                                CppSwlpService.sendStartMotionCommand(motionSpeed.value, Math.round(stepLength), Math.round(curvature))
                             }
                         }
                     }
@@ -185,9 +183,6 @@ Item {
                 orientation: Qt.Vertical
                 to: 100
                 value: 90
-                onValueChanged: {
-                    CppCore.setMotionSpeed(value)
-                }
             }
         }
         Item {
@@ -203,10 +198,10 @@ Item {
                     Layout.fillWidth: true
                     imageSrc: "qrc:/images/getUp.svg"
                     onButtonPressed: {
-                        CppCore.sendGetUpCommand()
+                        CppSwlpService.sendGetUpCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -215,10 +210,10 @@ Item {
                     imageSrc: "qrc:/images/getDown.svg"
                     Layout.fillHeight: true
                     onButtonPressed: {
-                        CppCore.sendGetDownCommand()
+                        CppSwlpService.sendGetDownCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -227,10 +222,10 @@ Item {
                     Layout.fillWidth: true
                     imageSrc: "qrc:/images/swordLeft.svg"
                     onButtonPressed: {
-                        CppCore.sendAttackLeftCommand()
+                        CppSwlpService.sendAttackLeftCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -239,10 +234,10 @@ Item {
                     imageSrc: "qrc:/images/swordRight.svg"
                     Layout.fillHeight: true
                     onButtonPressed: {
-                        CppCore.sendAttackRightCommand()
+                        CppSwlpService.sendAttackRightCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
             }
@@ -261,10 +256,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendPushPullCommand()
+                        CppSwlpService.sendPushPullCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -274,10 +269,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendDanceCommand()
+                        CppSwlpService.sendDanceCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -288,10 +283,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendUpDownCommand()
+                        CppSwlpService.sendUpDownCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -301,10 +296,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendRotateXCommand()
+                        CppSwlpService.sendRotateXCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -314,10 +309,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendRotateZCommand()
+                        CppSwlpService.sendRotateZCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
             }

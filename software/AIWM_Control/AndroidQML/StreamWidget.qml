@@ -8,15 +8,8 @@ Item {
     height: 480
     clip: true
 
-    function reset() {
-        CppStreamService.stopService()
-    }
-
     Connections {
         target: CppStreamService
-        function onIpAddressUpdated(ipAddress) {
-            ipAddressLabel.text = "IP: " + ipAddress
-        }
         function onFrameReceived() {
             ++fpsTimer.fpsCounter
             streamFrame.updateSourceImage()
@@ -98,19 +91,9 @@ Item {
     }
 
     Label {
-        id: ipAddressLabel
-        x: 5
-        y: 5
-        width: 120
-        height: 17
-        text: "IP: ---.---.---.---"
-        font.family: fixedFont.name
-    }
-
-    Label {
         id: fpsLabel
         x: 5
-        y: 27
+        y: 5
         width: 120
         height: 17
         text: "FPS: --"

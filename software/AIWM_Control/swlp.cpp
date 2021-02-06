@@ -1,46 +1,65 @@
 #include "swlp.h"
-#include "core.h"
-#include <QGuiApplication>
 #include <QHostAddress>
 #include <QNetworkDatagram>
-#include <QTimer>
-#include <QThread>
 
 constexpr const char* SERVER_IP_ADDRESS = "111.111.111.111";
 constexpr int SERVER_PORT = 3333;
 constexpr int TIMEOUT_VALUE_MS = 2000;
 
 
-
-bool Swlp::startThread(void* core) {
+bool Swlp::startService() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "call start()";
 
     // Reset state
-    m_core = core;
     m_isReady = false;
     m_isError = false;
 
+    // Clear payload
+    m_payloadMutex.lock();
+    memset(&m_commandPayload, 0, sizeof(m_commandPayload));
+    m_commandPayload.command = SWLP_CMD_NONE;
+    m_payloadMutex.unlock();
+
     // Init thread
-    if (QThread::isRunning()) {
-        qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread already started";
-        stopThread();
-        return false;
-    }
+    stopService();
     QThread::start();
 
     // Wait thread
     while (!m_isReady && !m_isError);
     return m_isReady;
 }
-void Swlp::stopThread() {
+void Swlp::stopService() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "call stop()";
     if (QThread::isRunning()) {
         qDebug() << "[Swlp]" << QThread::currentThreadId() << "stop thread...";
-        m_eventLoop->exit();
+        m_eventLoopMutex.lock();
+        if (m_eventLoop) {
+            m_eventLoop->exit();
+        }
+        m_eventLoopMutex.unlock();
         QThread::wait(1000);
         QThread::quit();
     }
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread stopped";
+}
+void Swlp::sendGetUpCommand()       { setCommand(SWLP_CMD_SELECT_SEQUENCE_UP);           }
+void Swlp::sendGetDownCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_DOWN);         }
+void Swlp::sendUpDownCommand()      { setCommand(SWLP_CMD_SELECT_SEQUENCE_UP_DOWN);      }
+void Swlp::sendPushPullCommand()    { setCommand(SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL);    }
+void Swlp::sendAttackLeftCommand()  { setCommand(SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT);  }
+void Swlp::sendAttackRightCommand() { setCommand(SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT); }
+void Swlp::sendDanceCommand()       { setCommand(SWLP_CMD_SELECT_SEQUENCE_DANCE);        }
+void Swlp::sendRotateXCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_X);     }
+void Swlp::sendRotateZCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z);     }
+void Swlp::sendStopMoveCommand()    { setCommand(SWLP_CMD_SELECT_SEQUENCE_NONE);         }
+void Swlp::sendStartMotionCommand(QVariant speed, QVariant stepLength, QVariant curvature) {
+    int16_t stepLengthInt16 = stepLength.toInt();
+    m_payloadMutex.lock();
+    m_commandPayload.command = (stepLengthInt16 < 0) ? SWLP_CMD_SELECT_SEQUENCE_REVERSE : SWLP_CMD_SELECT_SEQUENCE_DIRECT;
+    m_commandPayload.step_length = abs(stepLengthInt16);
+    m_commandPayload.curvature = curvature.toInt();
+    m_commandPayload.motion_speed = speed.toInt();
+    m_payloadMutex.unlock();
 }
 
 
@@ -48,7 +67,7 @@ void Swlp::stopThread() {
 void Swlp::run() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread started";
     do {
-        // Setup UDP socket
+        // Setup UDP socket (callbacks call from this thread)
         m_socket = new (std::nothrow) QUdpSocket();
         if (!m_socket) {
             qDebug() << "[Swlp]" << QThread::currentThreadId() << "can't create QUdpSocket object";
@@ -62,16 +81,16 @@ void Swlp::run() {
             break;
         }
 
-        // Setup send command payload timer
+        // Setup send command payload timer (callbacks call from this thread)
         QTimer sendTimer;
         connect(&sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent, Qt::ConnectionType::DirectConnection);
         sendTimer.setSingleShot(false);
         sendTimer.setInterval(100);
         sendTimer.start();
 
-        // Setup timeout timer
+        // Setup timeout timer (callback call from GUI thread)
         m_timeoutTimer = new (std::nothrow) QTimer;
-        connect(m_timeoutTimer, &QTimer::timeout, this, &Swlp::stopThread, Qt::ConnectionType::QueuedConnection);
+        connect(m_timeoutTimer, &QTimer::timeout, this, &Swlp::stopService, Qt::ConnectionType::QueuedConnection);
         m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
         m_timeoutTimer->setSingleShot(true);
         m_timeoutTimer->start();
@@ -90,10 +109,13 @@ void Swlp::run() {
     } while (0);
 
     // Free resources
+    m_eventLoopMutex.lock();
     if (m_eventLoop) {
         delete m_eventLoop;
         m_eventLoop = nullptr;
     }
+    m_eventLoopMutex.unlock();
+
     if (m_socket) {
         delete m_socket;
         m_socket = nullptr;
@@ -104,7 +126,8 @@ void Swlp::run() {
 
 
 void Swlp::datagramReceivedEvent() {
-    //qDebug() << "[SWLP]" << QThread::currentThreadId() << "call datagramReceivedEvent()";
+    //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call datagramReceivedEvent()";
+    // Reset timeout timer
     m_timeoutTimer->stop();
     m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
     m_timeoutTimer->start();
@@ -132,18 +155,21 @@ void Swlp::datagramReceivedEvent() {
     // Process status payload
     swlp_status_payload_t statusPayload;
     memcpy(&statusPayload, swlp_frame.payload, sizeof(statusPayload));
-    reinterpret_cast<Core*>(m_core)->swlpStatusPayloadProcess(&statusPayload);
+    emit frameReceived();
+    emit systemStatusUpdated(statusPayload.system_status, statusPayload.module_status);
+    emit batteryStatusUpdated(statusPayload.battery_charge, statusPayload.battery_voltage);
 }
 void Swlp::sendCommandPayloadEvent() {
-    //qDebug() << "[SWLP]" << QThread::currentThreadId() << "call sendCommandPayloadEvent()";
-    swlp_command_payload_t commandPayload;
-    reinterpret_cast<Core*>(m_core)->swlpCommandPayloadPrepare(&commandPayload);
-
-    // Make SWLP frame
+    //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call sendCommandPayloadEvent()";
+    // Prepare SWLP frame
     swlp_frame_t frame;
     memset(&frame, 0, sizeof(frame));
     frame.start_mark = SWLP_START_MARK_VALUE;
-    memcpy(frame.payload, &commandPayload, sizeof(commandPayload));
+
+    // Copy payload to frame
+    m_payloadMutex.lock();
+    memcpy(frame.payload, &m_commandPayload, sizeof(m_commandPayload));
+    m_payloadMutex.unlock();
 
     // Calculate CRC16
     uint16_t crc = this->calculateCRC16(reinterpret_cast<const uint8_t*>(&frame), sizeof(frame) - 2);
@@ -154,6 +180,11 @@ void Swlp::sendCommandPayloadEvent() {
     datagram.setDestination(QHostAddress(SERVER_IP_ADDRESS), SERVER_PORT);
     datagram.setData(QByteArray(reinterpret_cast<const char*>(&frame), sizeof(frame)));
     m_socket->writeDatagram(datagram);
+}
+void Swlp::setCommand(uint8_t command) {
+    m_payloadMutex.lock();
+    m_commandPayload.command = command;
+    m_payloadMutex.unlock();
 }
 uint16_t Swlp::calculateCRC16(const uint8_t* frame, int size) {
     uint16_t crc16 = 0xFFFF;

@@ -4,22 +4,20 @@
 #include <QQmlContext>
 #include <QFontDatabase>
 #include "swlp.h"
-#include "core.h"
 #include "streamservice.h"
 #include "streamframeprovider.h"
 
 
 int main(int argc, char *argv[]) {
-
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
     StreamFrameProvider* streamFrameProvider = new StreamFrameProvider;
     StreamService streamService(streamFrameProvider);
-    Core core(&streamService);
+    Swlp swlpService;
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("CppCore", &core);
+    engine.rootContext()->setContextProperty("CppSwlpService", &swlpService);
     engine.rootContext()->setContextProperty("CppStreamService", &streamService);
     engine.addImageProvider("streamFrameProvider", streamFrameProvider);
     engine.load(QUrl(QStringLiteral("qrc:/AndroidQML/main.qml")));
