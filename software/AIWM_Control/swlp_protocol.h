@@ -53,8 +53,7 @@ struct swlp_status_payload_t {
     uint8_t  system_status;
     uint16_t battery_voltage;
     uint8_t  battery_charge;
-    uint8_t  camera_ip[16]; // xxx.xxx.xxx.xxx\0
-    uint8_t  reserved[3];
+    uint8_t  reserved[19];
 };
 #pragma pack(pop)
 

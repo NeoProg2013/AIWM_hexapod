@@ -67,11 +67,8 @@ void sequences_engine_init(void) {
 
 //  ***************************************************************************
 /// @brief  Sequences engine process
-/// @param  none
-/// @return none
 //  ***************************************************************************
 void sequences_engine_process(void) {
-    
     if (sysmon_is_module_disable(SYSMON_MODULE_SEQUENCES_ENGINE) == true) return; // Module disabled
     
 

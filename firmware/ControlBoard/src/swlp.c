@@ -137,7 +137,6 @@ void swlp_process(void) {
         response->system_status = sysmon_system_status;
         response->battery_voltage = sysmon_battery_voltage;
         response->battery_charge = sysmon_battery_charge;
-        camera_get_ip_address(response->camera_ip);
 
         // Prepare response
         swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
