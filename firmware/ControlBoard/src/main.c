@@ -83,7 +83,8 @@ void main() {
             sequences_engine_process();
             motion_core_process();
             servo_driver_process();
-        }  else { // Here is other operations
+        } 
+        else { // Here is other operations
             sysmon_process();
             swlp_process();
             cli_process();

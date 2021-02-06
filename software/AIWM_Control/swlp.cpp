@@ -18,6 +18,7 @@ bool Swlp::startService() {
     m_payloadMutex.lock();
     memset(&m_commandPayload, 0, sizeof(m_commandPayload));
     m_commandPayload.command = SWLP_CMD_NONE;
+    m_commandPayload.motion_speed = 90;
     m_payloadMutex.unlock();
 
     // Init thread
