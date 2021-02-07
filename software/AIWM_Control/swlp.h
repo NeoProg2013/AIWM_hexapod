@@ -32,7 +32,7 @@ public:
     Q_INVOKABLE void sendRotateXCommand();
     Q_INVOKABLE void sendRotateZCommand();
     Q_INVOKABLE void sendStopMoveCommand();
-    Q_INVOKABLE void sendStartMotionCommand(QVariant speed, QVariant stepLength, QVariant curvature);
+    Q_INVOKABLE void sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature);
 
 signals:
     void frameReceived();

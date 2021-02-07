@@ -142,10 +142,10 @@ Item {
                             var deadZoneHeight = 20
                             var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2
                             var maxDeadZone = (joystickItem.height - dragItem.height + deadZoneHeight) / 2
-                            var stepLength = 0
+                            var distance = 0
                             if (dragItem.y < minDeadZone || dragItem.y > maxDeadZone) {
-                                stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
-                                CppSwlpService.sendStartMotionCommand(motionSpeed.value, Math.round(stepLength), Math.round(curvature))
+                                distance = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+                                CppSwlpService.sendStartMotionCommand(motionSpeed.value, Math.round(distance), Math.round(curvature))
                             }
                         }
                     }
