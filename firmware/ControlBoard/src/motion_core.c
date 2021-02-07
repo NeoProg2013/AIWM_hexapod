@@ -29,6 +29,7 @@ typedef struct {
 } limb_t;
 
 typedef struct {
+    int32_t speed;
     int32_t curvature;
     int32_t distance;
 } traejctory_config_t;
@@ -107,20 +108,21 @@ void motion_core_start_motion(const motion_config_t* motion_config) {
 }
 
 //  ***************************************************************************
-/// @brief  Reset trajectory configuration
+/// @brief  Reset motion configuration
+/// @note   Call before select new sequence
 //  ***************************************************************************
-void motion_core_reset_trajectory_config(void) {
-    g_current_trajectory_config.curvature = 1;
-    g_current_trajectory_config.distance = 0;
+void motion_core_reset_motion_config(void) {
     is_trajectory_config_init = false;
 }
 
 //  ***************************************************************************
-/// @brief  Update trajectory configuration
+/// @brief  Set new motion configuration
+/// @param  speed: motion speed
 /// @param  curvature: curvature (parameter of trajectory)
 /// @param  distance: distance (parameter of trajectory)
 //  ***************************************************************************
-void motion_core_update_trajectory_config(int32_t curvature, int32_t distance) {
+void motion_core_set_motion_config(int32_t speed, int32_t curvature, int32_t distance) {
+    g_next_trajectory_config.speed = speed;
     g_next_trajectory_config.curvature = curvature;
     g_next_trajectory_config.distance = distance;
 }
@@ -178,6 +180,7 @@ void motion_core_process(void) {
     g_motion_config.motion_time += g_motion_config.time_step;
     if (g_motion_config.motion_time == g_motion_config.time_update) {
         g_current_trajectory_config = g_next_trajectory_config;
+        servo_driver_set_speed(g_current_trajectory_config.speed);
     }
 }
 

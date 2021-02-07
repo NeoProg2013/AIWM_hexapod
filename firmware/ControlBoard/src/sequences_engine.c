@@ -140,7 +140,7 @@ void sequences_engine_process(void) {
             sequence_stage        = STAGE_PREPARE;
             engine_state          = STATE_MOVE;
             
-            motion_core_reset_trajectory_config();
+            motion_core_reset_motion_config();
             
             if (current_sequence == SEQUENCE_NONE) {
                 engine_state = STATE_IDLE;
@@ -169,33 +169,29 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
         case SEQUENCE_NONE:
             next_sequence = SEQUENCE_NONE;
             next_sequence_info = NULL;
-            if (engine_state == STATE_IDLE) {
-                motion_core_set_motion_speed(speed);
-            }
             break;
         
         case SEQUENCE_UP:
             if (hexapod_state == HEXAPOD_STATE_DOWN) {
                 next_sequence = SEQUENCE_UP;
                 next_sequence_info = &sequence_up;
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
-            motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             break;
 
         case SEQUENCE_DOWN:
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DOWN;
                 next_sequence_info = &sequence_down;
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
-            motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
             break;
 
         case SEQUENCE_DIRECT:
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DIRECT;
                 next_sequence_info = &sequence_move;
-                motion_core_update_trajectory_config(curvature, +step_length);
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_config(speed, curvature, +step_length);
             }
             break;
 
@@ -203,8 +199,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_REVERSE;
                 next_sequence_info = &sequence_move;
-                motion_core_update_trajectory_config(curvature, -step_length);
-                motion_core_set_motion_speed(speed);
+                motion_core_set_motion_config(speed, curvature, -step_length);
             }
             break;
     
@@ -212,7 +207,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_UP_DOWN;
                 next_sequence_info = &sequence_up_down;
-                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
             break;
 
@@ -220,8 +215,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_PUSH_PULL;
                 next_sequence_info = &sequence_push_pull;
-                motion_core_update_trajectory_config(1, 110);
-                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 1, 100);
             }
             break;
             
@@ -229,7 +223,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ATTACK_LEFT;
                 next_sequence_info = &sequence_attack_left;
-                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
             break;
             
@@ -237,7 +231,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ATTACK_RIGHT;
                 next_sequence_info = &sequence_attack_right;
-                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
             break;
             
@@ -245,7 +239,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DANCE;
                 next_sequence_info = &sequence_dance;
-                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
             break;
             
@@ -253,7 +247,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_X;
                 next_sequence_info = &sequence_rotate_x;
-                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
             break;
        
@@ -261,7 +255,7 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_ROTATE_Z;
                 next_sequence_info = &sequence_rotate_z;
-                motion_core_set_motion_speed(MOTION_DEFAULT_SPEED);
+                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
             }
             break;
             

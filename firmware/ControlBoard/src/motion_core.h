@@ -11,7 +11,7 @@
 
 #define SUPPORT_LIMBS_COUNT                 (6)
 
-#define MOTION_DEFAULT_SPEED                (90)
+#define MOTION_DEFAULT_SPEED                (87)
 #define LIMB_STEP_HEIGHT                    (30)
 
 #define MTIME_SCALE                         (1000)
@@ -52,9 +52,8 @@ typedef struct {
 
 extern void motion_core_init(const point_3d_t* start_point_list);
 extern void motion_core_start_motion(const motion_config_t* motion_config);
-extern void motion_core_reset_trajectory_config(void);
-extern void motion_core_update_trajectory_config(int32_t curvature, int32_t distance);
-extern void motion_core_set_motion_speed(int32_t speed);
+extern void motion_core_reset_motion_config(void);
+extern void motion_core_set_motion_config(int32_t speed, int32_t curvature, int32_t distance);
 extern void motion_core_process(void);
 extern bool motion_core_is_motion_complete(void);
 
