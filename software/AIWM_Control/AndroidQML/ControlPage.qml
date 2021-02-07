@@ -46,7 +46,6 @@ Item {
         Label {
             width: 90
             height: 17
-            font.bold: true
             font.family: fixedFont.name
             text: batteryCharge + "% (" + batteryVoltage / 1000.0 + "V)"
             color: (batteryCharge < 20) ? "#DD0000" : ((batteryCharge < 60) ? "#DDDD00" : "#00DD00")
@@ -334,12 +333,12 @@ Item {
                 columns: 2
 
                 StatusLabel {
-                    text: "Connection\nlost"
+                    text: "-"
                     Layout.minimumHeight: 40
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    color: (systemStatus & 0x80) ? "#DD0000" : "#888888"
+                    color: "#888888"
                 }
 
                 StatusLabel {
