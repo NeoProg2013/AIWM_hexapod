@@ -35,6 +35,7 @@ typedef enum {
 
 static engine_state_t engine_state = STATE_NOINIT;
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
+static motion_config_t sequence_motion_config;
 
 static sequence_id_t current_sequence = SEQUENCE_NONE;
 static const sequence_info_t* current_sequence_info = NULL;
@@ -140,7 +141,7 @@ void sequences_engine_process(void) {
             sequence_stage        = STAGE_PREPARE;
             engine_state          = STATE_MOVE;
             
-            motion_core_reset_motion_config();
+            motion_core_init_motion_config(&sequence_motion_config);
             
             if (current_sequence == SEQUENCE_NONE) {
                 engine_state = STATE_IDLE;
@@ -160,100 +161,108 @@ void sequences_engine_process(void) {
 /// @brief  Select sequence
 /// @param  sequence: new sequence
 /// @param  curvature: curvature value for DIRECT\REVERSE sequences
-/// @param  step_length: step length value for DIRECT\REVERSE sequences
+/// @param  distance: step length
 /// @return none
 //  ***************************************************************************
-void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int32_t curvature, int32_t step_length) {
+void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int32_t curvature, int32_t distance) {
+    if (sequence >= SUPPORT_SEQUENCE_COUNT) {
+        sysmon_set_error(SYSMON_FATAL_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_SEQUENCES_ENGINE);
+        return;
+    }
     
-    switch (sequence) {
-        case SEQUENCE_NONE:
-            next_sequence = SEQUENCE_NONE;
-            next_sequence_info = NULL;
-            break;
-        
-        case SEQUENCE_UP:
-            if (hexapod_state == HEXAPOD_STATE_DOWN) {
+    
+    if (sequence == SEQUENCE_NONE) {
+        next_sequence = SEQUENCE_NONE;
+        next_sequence_info = NULL;
+        return;
+    } else if (hexapod_state == HEXAPOD_STATE_DOWN) {
+        switch (sequence) {
+            case SEQUENCE_UP:
                 next_sequence = SEQUENCE_UP;
                 next_sequence_info = &sequence_up;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
-
-        case SEQUENCE_DOWN:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
+        }
+    } else {
+        switch (sequence) {
+            case SEQUENCE_DOWN:
                 next_sequence = SEQUENCE_DOWN;
                 next_sequence_info = &sequence_down;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
 
-        case SEQUENCE_MOVE:
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+            case SEQUENCE_MOVE:
                 next_sequence = SEQUENCE_MOVE;
                 next_sequence_info = &sequence_move;
-                motion_core_set_motion_config(speed, curvature, +step_length);
-            }
-            break;
-    
-        case SEQUENCE_UP_DOWN: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+                sequence_motion_config.curvature = curvature;
+                sequence_motion_config.distance = distance;
+                sequence_motion_config.speed = speed;
+                break;
+        
+            case SEQUENCE_UP_DOWN: 
                 next_sequence = SEQUENCE_UP_DOWN;
                 next_sequence_info = &sequence_up_down;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
 
-        case SEQUENCE_PUSH_PULL: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+            case SEQUENCE_PUSH_PULL: 
                 next_sequence = SEQUENCE_PUSH_PULL;
                 next_sequence_info = &sequence_push_pull;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 1, 100);
-            }
-            break;
-            
-        case SEQUENCE_ATTACK_LEFT: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+                sequence_motion_config.curvature = 10;
+                sequence_motion_config.distance = 100;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
+                
+            case SEQUENCE_ATTACK_LEFT: 
                 next_sequence = SEQUENCE_ATTACK_LEFT;
                 next_sequence_info = &sequence_attack_left;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
-            
-        case SEQUENCE_ATTACK_RIGHT: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
+                
+            case SEQUENCE_ATTACK_RIGHT: 
                 next_sequence = SEQUENCE_ATTACK_RIGHT;
                 next_sequence_info = &sequence_attack_right;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
-            
-        case SEQUENCE_DANCE: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
+                
+            case SEQUENCE_DANCE: 
                 next_sequence = SEQUENCE_DANCE;
                 next_sequence_info = &sequence_dance;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
-            
-        case SEQUENCE_ROTATE_X: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
+                
+            case SEQUENCE_ROTATE_X: 
                 next_sequence = SEQUENCE_ROTATE_X;
                 next_sequence_info = &sequence_rotate_x;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
-       
-        case SEQUENCE_ROTATE_Z: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
+           
+            case SEQUENCE_ROTATE_Z: 
                 next_sequence = SEQUENCE_ROTATE_Z;
                 next_sequence_info = &sequence_rotate_z;
-                motion_core_set_motion_config(MOTION_DEFAULT_SPEED, 0, 0);
-            }
-            break;
-            
-        default:
-            sysmon_set_error(SYSMON_FATAL_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_SEQUENCES_ENGINE);
-            return;
+                sequence_motion_config.curvature = 0;
+                sequence_motion_config.distance = 0;
+                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                break;
+        }
+    }
+    
+    if (current_sequence == next_sequence) {
+        motion_core_update_motion_config(&sequence_motion_config);
     }
 }

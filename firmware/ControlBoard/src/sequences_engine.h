@@ -30,8 +30,7 @@ typedef enum {
 
 extern void sequences_engine_init(void);
 extern void sequences_engine_process(void);
-extern void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, 
-                                             int32_t curvature, int32_t step_length);
+extern void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int32_t curvature, int32_t distance);
 
 
 #endif /* _SEQUENCES_ENGINE_H_ */
