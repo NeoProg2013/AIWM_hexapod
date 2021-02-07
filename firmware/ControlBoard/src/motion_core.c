@@ -103,6 +103,7 @@ void motion_core_start_motion(const motion_config_t* motion_config) {
     // Initialize trajectory configuration
     if (is_trajectory_config_init == false) {
         g_current_trajectory_config = g_next_trajectory_config;
+        servo_driver_set_speed(g_current_trajectory_config.speed);
         is_trajectory_config_init = true;
     }
 }
@@ -313,7 +314,7 @@ static bool process_advanced_trajectory(float motion_time) {
     
     // Calculation radius of curvature
     float distance = (float)g_current_trajectory_config.distance;
-    float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * distance;
+    float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * fabs(distance);
 
     // Common calculations
     float trajectory_radius[SUPPORT_LIMBS_COUNT] = {0};
@@ -360,24 +361,30 @@ static bool process_advanced_trajectory(float motion_time) {
         }
         
         // Inversion motion time if need
-        if (g_current_trajectory_config.distance < 0) { 
+        float relative_motion_time = motion_time;
+        if (g_motion_config.time_directions[i] == TIME_DIR_REVERSE) {
+            relative_motion_time = 1.0f - relative_motion_time;
+        }
+        
+        
+        /*if (g_current_trajectory_config.distance < 0) { 
             // Need go to back - inverse time direction
             // TIME_DIR_REVERSE handle as TIME_DIR_DIRECT
             // TIME_DIR_DIRECT handle as TIME_DIR_REVERSE
             if (g_motion_config.time_directions[i] == TIME_DIR_DIRECT) {
-                motion_time = 1.0f - motion_time;
+                relative_motion_time = 1.0f - relative_motion_time;
             }
         } else {
             // Need go to front - not inverse time direction
             // TIME_DIR_REVERSE handle as TIME_DIR_REVERSE
             // TIME_DIR_DIRECT handle as TIME_DIR_DIRECT
             if (g_motion_config.time_directions[i] == TIME_DIR_REVERSE) {
-                motion_time = 1.0f - motion_time;
+                relative_motion_time = 1.0f - relative_motion_time;
             }
-        }
+        }*/
         
         // Calculation arc angle for current time
-        float arc_angle_rad = (motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
+        float arc_angle_rad = (relative_motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
 
         // Calculation XZ points by time
         g_limbs_list[i].position.x = curvature_radius + trajectory_radius[i] * cosf(arc_angle_rad);
@@ -387,7 +394,7 @@ static bool process_advanced_trajectory(float motion_time) {
         if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_CONST) {
             g_limbs_list[i].position.y = g_motion_config.start_positions[i].y + 0;
         } else if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_SINUS) {
-            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y + LIMB_STEP_HEIGHT * sinf(motion_time * M_PI);  
+            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y + LIMB_STEP_HEIGHT * sinf(relative_motion_time * M_PI);  
         }
     }
     

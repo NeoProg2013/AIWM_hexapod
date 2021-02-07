@@ -187,19 +187,11 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             }
             break;
 
-        case SEQUENCE_DIRECT:
+        case SEQUENCE_MOVE:
             if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_DIRECT;
+                next_sequence = SEQUENCE_MOVE;
                 next_sequence_info = &sequence_move;
                 motion_core_set_motion_config(speed, curvature, +step_length);
-            }
-            break;
-
-        case SEQUENCE_REVERSE: 
-            if (hexapod_state == HEXAPOD_STATE_UP) {
-                next_sequence = SEQUENCE_REVERSE;
-                next_sequence_info = &sequence_move;
-                motion_core_set_motion_config(speed, curvature, -step_length);
             }
             break;
     

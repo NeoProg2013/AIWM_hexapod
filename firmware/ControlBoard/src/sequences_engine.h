@@ -13,9 +13,8 @@ typedef enum {
     SEQUENCE_NONE,
     SEQUENCE_UP,
     SEQUENCE_DOWN,
-    SEQUENCE_DIRECT,
-    SEQUENCE_REVERSE,
-    
+    SEQUENCE_MOVE,
+
     // Useless sequences
     SEQUENCE_UP_DOWN,
     SEQUENCE_PUSH_PULL,
