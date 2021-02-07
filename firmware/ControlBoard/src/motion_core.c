@@ -174,7 +174,7 @@ void motion_core_process(void) {
         servo_driver_move(i * 3 + 2, g_limbs_list[i].tibia.angle);
     }
 
-    // Time shift
+    // Time shift and load new trajectory configuration if need
     g_motion_config.motion_time += g_motion_config.time_step;
     if (g_motion_config.motion_time == g_motion_config.time_update) {
         g_current_trajectory_config = g_next_trajectory_config;
@@ -288,6 +288,7 @@ static bool process_linear_trajectory(float motion_time) {
 static bool process_advanced_trajectory(float motion_time) {
     
     // Check need process advanced trajectory
+    // TODO: need remote it!
     bool is_need_process = false;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_CONST || 
@@ -301,18 +302,14 @@ static bool process_advanced_trajectory(float motion_time) {
     }
     
     // Check curvature value
-    float curvature = 0;
-    if (g_current_trajectory_config.curvature == 0)         curvature = +0.001f;
-    else if (g_current_trajectory_config.curvature > 1999)  curvature = +1.999f;
-    else if (g_current_trajectory_config.curvature < -1999) curvature = -1.999f;
-    else                                                    curvature = (float)g_current_trajectory_config.curvature / 1000.0f;
+    float curvature = g_current_trajectory_config.curvature;
+    if ((int32_t)curvature == 0)         curvature = +0.001f;
+    else if ((int32_t)curvature > 1999)  curvature = +1.999f;
+    else if ((int32_t)curvature < -1999) curvature = -1.999f;
+    else                                 curvature = curvature / 1000.0f;
     
-    //
-    // Calculate XZ
-    //
-    float distance = (float)g_current_trajectory_config.distance;
-
     // Calculation radius of curvature
+    float distance = (float)g_current_trajectory_config.distance;
     float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * distance;
 
     // Common calculations
@@ -360,27 +357,34 @@ static bool process_advanced_trajectory(float motion_time) {
         }
         
         // Inversion motion time if need
-        float relative_motion_time = motion_time;
-        if (g_motion_config.time_directions[i] == TIME_DIR_REVERSE) {
-            relative_motion_time = 1.0f - relative_motion_time;
+        if (g_current_trajectory_config.distance < 0) { 
+            // Need go to back - inverse time direction
+            // TIME_DIR_REVERSE handle as TIME_DIR_DIRECT
+            // TIME_DIR_DIRECT handle as TIME_DIR_REVERSE
+            if (g_motion_config.time_directions[i] == TIME_DIR_DIRECT) {
+                motion_time = 1.0f - motion_time;
+            }
+        } else {
+            // Need go to front - not inverse time direction
+            // TIME_DIR_REVERSE handle as TIME_DIR_REVERSE
+            // TIME_DIR_DIRECT handle as TIME_DIR_DIRECT
+            if (g_motion_config.time_directions[i] == TIME_DIR_REVERSE) {
+                motion_time = 1.0f - motion_time;
+            }
         }
-
+        
         // Calculation arc angle for current time
-        float arc_angle_rad = (relative_motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
+        float arc_angle_rad = (motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
 
         // Calculation XZ points by time
         g_limbs_list[i].position.x = curvature_radius + trajectory_radius[i] * cosf(arc_angle_rad);
         g_limbs_list[i].position.z =                    trajectory_radius[i] * sinf(arc_angle_rad);
         
-        
-        
         // Calculation Y points by time
         if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_CONST) {
-            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y;
-        }
-        else if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_SINUS) {
-            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y;
-            g_limbs_list[i].position.y += LIMB_STEP_HEIGHT * sinf(relative_motion_time * M_PI);  
+            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y + 0;
+        } else if (g_motion_config.trajectories[i] == TRAJECTORY_XZ_ADV_Y_SINUS) {
+            g_limbs_list[i].position.y = g_motion_config.start_positions[i].y + LIMB_STEP_HEIGHT * sinf(motion_time * M_PI);  
         }
     }
     

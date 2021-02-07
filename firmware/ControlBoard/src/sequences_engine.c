@@ -193,8 +193,8 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
         case SEQUENCE_DIRECT:
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_DIRECT;
-                next_sequence_info = &sequence_direct;
-                motion_core_update_trajectory_config(curvature, step_length);
+                next_sequence_info = &sequence_move;
+                motion_core_update_trajectory_config(curvature, +step_length);
                 motion_core_set_motion_speed(speed);
             }
             break;
@@ -202,8 +202,8 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
         case SEQUENCE_REVERSE: 
             if (hexapod_state == HEXAPOD_STATE_UP) {
                 next_sequence = SEQUENCE_REVERSE;
-                next_sequence_info = &sequence_reverse;
-                motion_core_update_trajectory_config(curvature, step_length);
+                next_sequence_info = &sequence_move;
+                motion_core_update_trajectory_config(curvature, -step_length);
                 motion_core_set_motion_speed(speed);
             }
             break;
