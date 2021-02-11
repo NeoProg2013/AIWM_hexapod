@@ -99,8 +99,8 @@ void motion_core_start_motion(const motion_t* motion) {
 /// @param  motion_config: motion configuration
 //  ***************************************************************************
 void motion_core_init_motion_config(const motion_config_t* motion_config) {
-    motion_core_update_motion_config(motion_config);
-    g_current_motion_config = g_next_motion_config;
+    g_next_motion_config = *motion_config;
+    g_current_motion_config = *motion_config;
 }
 
 //  ***************************************************************************
@@ -109,14 +109,6 @@ void motion_core_init_motion_config(const motion_config_t* motion_config) {
 //  ***************************************************************************
 void motion_core_update_motion_config(const motion_config_t* motion_config) {
     g_next_motion_config = *motion_config;
-}
-
-//  ***************************************************************************
-/// @brief  Set motion speed
-/// @param  speed: motion speed
-//  ***************************************************************************
-void motion_core_set_motion_speed(int32_t speed) {
-    servo_driver_set_speed(speed);
 }
 
 //  ***************************************************************************

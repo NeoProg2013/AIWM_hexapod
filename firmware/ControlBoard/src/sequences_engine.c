@@ -60,7 +60,7 @@ void sequences_engine_init(void) {
     
     // Initialize motion driver
     uint32_t last_motion_index = sequence_down.total_motions_count - 1;
-    motion_core_init(sequence_down.motion_list[last_motion_index].dest_positions);
+    motion_core_init(sequence_down.motions[last_motion_index].dest_positions);
     
     // Initialization engine state
     engine_state = STATE_IDLE;
@@ -92,7 +92,7 @@ void sequences_engine_process(void) {
             break;
         
         case STATE_MOVE:
-            motion_core_start_motion(&current_sequence_info->motion_list[current_motion]);
+            motion_core_start_motion(&current_sequence_info->motions[current_motion]);
             engine_state = STATE_WAIT;
             break;
         
@@ -116,8 +116,7 @@ void sequences_engine_process(void) {
                     current_motion = current_sequence_info->finalize_motions_begin;
                     sequence_stage = STAGE_FINALIZE;
                 }
-                else {
-                    
+                else {   
                     if (current_sequence_info->is_sequence_looped == true) {
                         current_motion = current_sequence_info->main_motions_begin;
                     }
@@ -141,12 +140,12 @@ void sequences_engine_process(void) {
             sequence_stage        = STAGE_PREPARE;
             engine_state          = STATE_MOVE;
             
-            motion_core_init_motion_config(&sequence_motion_config);
-            
             if (current_sequence == SEQUENCE_NONE) {
                 engine_state = STATE_IDLE;
                 prev_active_time = get_time_ms();
-            }        
+            } else {
+                motion_core_init_motion_config(&sequence_motion_config);
+            }
             break;
             
         case STATE_NOINIT:
@@ -176,7 +175,8 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
         next_sequence = SEQUENCE_NONE;
         next_sequence_info = NULL;
         return;
-    } else if (hexapod_state == HEXAPOD_STATE_DOWN) {
+    } 
+    else if (hexapod_state == HEXAPOD_STATE_DOWN) {
         switch (sequence) {
             case SEQUENCE_UP:
                 next_sequence = SEQUENCE_UP;
@@ -186,7 +186,8 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
                 sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
                 break;
         }
-    } else {
+    } 
+    else { // HEXAPOD_STATE_UP
         switch (sequence) {
             case SEQUENCE_DOWN:
                 next_sequence = SEQUENCE_DOWN;

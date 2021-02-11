@@ -18,7 +18,7 @@ typedef struct {
     uint32_t main_motions_begin;
     uint32_t finalize_motions_begin;
     uint32_t total_motions_count;
-    motion_t motion_list[15]; // Sequence motion list
+    motion_t motions[15];
 } sequence_info_t;
 
 
