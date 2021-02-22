@@ -96,11 +96,8 @@ void swlp_process(void) {
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
                 sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
-            case SWLP_CMD_SELECT_SEQUENCE_DIRECT:
-                sequences_engine_select_sequence(SEQUENCE_DIRECT, request->motion_speed, request->curvature, request->distance);
-                break;
-            case SWLP_CMD_SELECT_SEQUENCE_REVERSE:
-                sequences_engine_select_sequence(SEQUENCE_REVERSE, request->motion_speed, request->curvature, request->distance);
+            case SWLP_CMD_SELECT_SEQUENCE_MOVE:
+                sequences_engine_select_sequence(SEQUENCE_MOVE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
                 sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
@@ -140,6 +137,7 @@ void swlp_process(void) {
 
         // Prepare response
         swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
+        swlp_tx_frame->version = SWLP_CURRENT_VERSION;
         swlp_tx_frame->crc16 = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - 2);
         
         // Transmit response
@@ -182,9 +180,9 @@ static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size) {
         return false;
     }
 
-    // Check start mark
+    // Check start mark and vesrion
     const swlp_frame_t* swlp_frame = (const swlp_frame_t*)rx_buffer;
-    if (swlp_frame->start_mark != SWLP_START_MARK_VALUE) {
+    if (swlp_frame->start_mark != SWLP_START_MARK_VALUE || swlp_frame->version != SWLP_CURRENT_VERSION) {
         return false;
     }
 

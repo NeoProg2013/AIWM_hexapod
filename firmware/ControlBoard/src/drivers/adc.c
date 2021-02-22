@@ -101,7 +101,7 @@ bool adc_is_conversion_complete(void) {
 //  ***************************************************************************
 uint16_t adc_get_conversion_result(uint32_t channel) {
     
-    if (channel > ADC_CHANNELS_COUNT) {
+    if (channel >= ADC_CHANNELS_COUNT) {
         return 0;
     }
     return adc_data[channel];
