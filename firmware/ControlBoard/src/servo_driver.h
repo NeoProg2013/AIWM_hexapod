@@ -12,7 +12,6 @@
 
 
 #define SUPPORT_SERVO_COUNT                         (18)
-#define SERVO_DEFAULT_SPEED                         (87)
 
 
 extern void servo_driver_init(void); 

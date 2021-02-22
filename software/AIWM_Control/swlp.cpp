@@ -53,11 +53,18 @@ void Swlp::sendDanceCommand()       { setCommand(SWLP_CMD_SELECT_SEQUENCE_DANCE)
 void Swlp::sendRotateXCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_X);     }
 void Swlp::sendRotateZCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z);     }
 void Swlp::sendStopMoveCommand()    { setCommand(SWLP_CMD_SELECT_SEQUENCE_NONE);         }
-void Swlp::sendStartMotionCommand(QVariant speed, QVariant stepLength, QVariant curvature) {
-    int16_t stepLengthInt16 = stepLength.toInt();
+void Swlp::sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature) {
+    int distanceInt = distance.toInt();
+    if (distanceInt > INT8_MAX) {
+        distanceInt = INT8_MAX;
+    }
+    if (distanceInt < INT8_MIN) {
+        distanceInt = INT8_MIN;
+    }
+
     m_payloadMutex.lock();
-    m_commandPayload.command = (stepLengthInt16 < 0) ? SWLP_CMD_SELECT_SEQUENCE_REVERSE : SWLP_CMD_SELECT_SEQUENCE_DIRECT;
-    m_commandPayload.step_length = abs(stepLengthInt16);
+    m_commandPayload.command = SWLP_CMD_SELECT_SEQUENCE_MOVE;
+    m_commandPayload.distance = distanceInt;
     m_commandPayload.curvature = curvature.toInt();
     m_commandPayload.motion_speed = speed.toInt();
     m_payloadMutex.unlock();
@@ -94,7 +101,7 @@ void Swlp::run() {
         connect(m_timeoutTimer, &QTimer::timeout, this, &Swlp::stopService, Qt::ConnectionType::QueuedConnection);
         m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
         m_timeoutTimer->setSingleShot(true);
-        m_timeoutTimer->start();
+        //m_timeoutTimer->start();
 
         // Start event loop
         m_eventLoop = new (std::nothrow) QEventLoop;
@@ -131,7 +138,7 @@ void Swlp::datagramReceivedEvent() {
     // Reset timeout timer
     m_timeoutTimer->stop();
     m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
-    m_timeoutTimer->start();
+    //m_timeoutTimer->start();
 
     // Check datagram size
     qint64 datagram_size = m_socket->pendingDatagramSize();
@@ -146,10 +153,12 @@ void Swlp::datagramReceivedEvent() {
     m_socket->readDatagram(reinterpret_cast<char*>(&swlp_frame), sizeof(swlp_frame));
 
     // Verify SWLP frame
-    if (swlp_frame.start_mark != SWLP_START_MARK_VALUE) {
+    if (swlp_frame.start_mark != SWLP_START_MARK_VALUE || swlp_frame.version != SWLP_CURRENT_VERSION) {
+        qDebug() << "[Swlp]" << QThread::currentThreadId() << "wrong start mark or version";
         return;
     }
     if (this->calculateCRC16(reinterpret_cast<const uint8_t*>(&swlp_frame), sizeof(swlp_frame)) != 0) {
+        qDebug() << "[Swlp]" << QThread::currentThreadId() << "wrong CRC value";
         return;
     }
 
@@ -166,6 +175,7 @@ void Swlp::sendCommandPayloadEvent() {
     swlp_frame_t frame;
     memset(&frame, 0, sizeof(frame));
     frame.start_mark = SWLP_START_MARK_VALUE;
+    frame.version = SWLP_CURRENT_VERSION;
 
     // Copy payload to frame
     m_payloadMutex.lock();
