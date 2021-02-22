@@ -101,7 +101,7 @@ void Swlp::run() {
         connect(m_timeoutTimer, &QTimer::timeout, this, &Swlp::stopService, Qt::ConnectionType::QueuedConnection);
         m_timeoutTimer->setInterval(TIMEOUT_VALUE_MS);
         m_timeoutTimer->setSingleShot(true);
-        //m_timeoutTimer->start();
+        m_timeoutTimer->start();
 
         // Start event loop
         m_eventLoop = new (std::nothrow) QEventLoop;
