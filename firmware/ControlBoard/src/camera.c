@@ -69,6 +69,7 @@ void camera_process(void) {
     } 
     
     // Check communication timeout
+    sysmon_enable_module(SYSMON_MODULE_CAMERA);
     if (get_time_ms() - frame_receive_time > COMMUNICATION_TIMEOUT) {
         sysmon_disable_module(SYSMON_MODULE_CAMERA);
     }

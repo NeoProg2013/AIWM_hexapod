@@ -12,6 +12,7 @@
 
 #define SYSMON_NO_ERROR                 (0x00)
 #define SYSMON_ANY_ERROR                (0xFF)                          // Not resettable (enter to emergency loop)
+
 #define SYSMON_FATAL_ERROR              (0x01)                          // Not resettable (enter to emergency loop)
 #define SYSMON_CONFIG_ERROR             (0x02 | SYSMON_FATAL_ERROR)     // Not resettable (enter to emergency loop)
 #define SYSMON_MEMORY_ERROR             (0x04 | SYSMON_FATAL_ERROR)     // Not resettable (enter to emergency loop)
@@ -21,8 +22,11 @@
 #define SYSMON_I2C_ERROR                (0x40)                          // Not resettable
 #define SYSMON_CONN_LOST_ERROR          (0x80)                          // Resettable
 
+
+
 #define SYSMON_MODULE_ALL               (0xFF)
 #define SYSMON_MODULE_NO                (0x00)
+
 #define SYSMON_MODULE_CONFIGURATOR      (0x01)
 #define SYSMON_MODULE_SERVO_DRIVER      (0x02)
 #define SYSMON_MODULE_MOTION_DRIVER     (0x04)
