@@ -488,16 +488,16 @@ VariationCount=0
 ParamVariationCount=0
 
 [Parameter1]
-Name=ProjectStatus
-Value=D
+Name=ProjectAuthor
+Value=NeoProg
 
 [Parameter2]
 Name=ProjectRevision
 Value=1.00
 
 [Parameter3]
-Name=ProjectAuthor
-Value=NeoProg
+Name=ProjectStatus
+Value=D
 
 [Configuration1]
 Name=Sources
@@ -558,11 +558,6 @@ OutputName1=PCAD Netlist
 OutputDocumentPath1=
 OutputVariantName1=
 OutputDefault1=0
-OutputType2=PADSNetlist
-OutputName2=PADS ASCII Netlist
-OutputDocumentPath2=
-OutputVariantName2=
-OutputDefault2=0
 
 [OutputGroup2]
 Name=Simulator Outputs
