@@ -504,18 +504,6 @@ ParameterCount=0
 VariationCount=0
 ParamVariationCount=0
 
-[Parameter1]
-Name=ProjectAuthor
-Value=NeoProg
-
-[Parameter2]
-Name=ProjectRevision
-Value=1.00
-
-[Parameter3]
-Name=ProjectStatus
-Value=D
-
 [Configuration1]
 Name=Sources
 ParameterCount=0
