@@ -19,8 +19,8 @@
 #define APB2_CLOCK_FREQUENCY                (72000000)
 
 
-#define DEBUG_TP1_PIN                       (9)     // PC9
-#define DEBUG_TP3_PIN                       (11)    // PA11
+#define DEBUG_TP1_PIN                       (6)     // PC6
+#define DEBUG_TP3_PIN                       (12)    // PA12
 
 #define DEBUG_TP1_PIN_SET                   (GPIOC->BSRR = 0x01 << DEBUG_TP1_PIN)
 #define DEBUG_TP1_PIN_CLR                   (GPIOC->BRR  = 0x01 << DEBUG_TP1_PIN)
