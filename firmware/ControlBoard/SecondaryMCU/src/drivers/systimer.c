@@ -8,7 +8,6 @@
 
 
 static volatile uint64_t systime_ms = 0;
-static uint64_t step = 1;
 
 
 //  ***************************************************************************
@@ -17,9 +16,7 @@ static uint64_t step = 1;
 /// @return none
 //  ***************************************************************************
 void systimer_init(void) {
-    
     systime_ms = 0;
-    step = 1;
     
     // Systimer setup 
     SysTick->VAL = 0;
@@ -38,8 +35,7 @@ void systimer_init(void) {
 //  ***************************************************************************
 void systimer_change_step(uint32_t step_ms) {
     SysTick->CTRL &= ~(1 << SysTick_CTRL_ENABLE_Pos);
-    SysTick->LOAD = SYSTEM_CLOCK_FREQUENCY / (1000 / step_ms);
-    step = step_ms;
+    SysTick->LOAD = SYSTEM_CLOCK_FREQUENCY / 1000;
     SysTick->CTRL |= (1 << SysTick_CTRL_ENABLE_Pos);
 }
 
@@ -71,5 +67,5 @@ void delay_ms(uint32_t ms) {
 /// @return none
 //  ***************************************************************************
 void SysTick_Handler(void) {
-    systime_ms += step;
+    ++systime_ms;
 }

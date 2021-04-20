@@ -2108,6 +2108,12 @@
         <group>
             <name>drivers</name>
             <file>
+                <name>$PROJ_DIR$\src\drivers\hx711.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\hx711.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\drivers\systimer.c</name>
             </file>
             <file>
