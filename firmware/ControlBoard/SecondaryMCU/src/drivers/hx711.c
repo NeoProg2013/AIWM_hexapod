@@ -18,7 +18,7 @@
 #define HX711_DI5_PIN           GPIOA, 6
 #define HX711_DI6_PIN           GPIOA, 5
 
-static uint32_t hx711_read_values[6] = {0};
+static int32_t hx711_read_values[6] = {0};
 
 
 
@@ -35,17 +35,17 @@ void hx711_init(void) {
     gpio_set_pull        (HX711_CLK_PIN, GPIO_PULL_NO);
     
     gpio_set_mode        (HX711_DI1_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull        (HX711_DI1_PIN, GPIO_PULL_UP);
+    gpio_set_pull        (HX711_DI1_PIN, GPIO_PULL_NO);
     gpio_set_mode        (HX711_DI2_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull        (HX711_DI2_PIN, GPIO_PULL_UP);
+    gpio_set_pull        (HX711_DI2_PIN, GPIO_PULL_NO);
     gpio_set_mode        (HX711_DI3_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull        (HX711_DI3_PIN, GPIO_PULL_UP);
+    gpio_set_pull        (HX711_DI3_PIN, GPIO_PULL_NO);
     gpio_set_mode        (HX711_DI4_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull        (HX711_DI4_PIN, GPIO_PULL_UP);
+    gpio_set_pull        (HX711_DI4_PIN, GPIO_PULL_NO);
     gpio_set_mode        (HX711_DI5_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull        (HX711_DI5_PIN, GPIO_PULL_UP);
+    gpio_set_pull        (HX711_DI5_PIN, GPIO_PULL_NO);
     gpio_set_mode        (HX711_DI6_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull        (HX711_DI6_PIN, GPIO_PULL_UP);
+    gpio_set_pull        (HX711_DI6_PIN, GPIO_PULL_NO);
 }
 
 //  ***************************************************************************
@@ -93,11 +93,11 @@ bool hx711_process(int32_t* values) {
     bool is_ready = false;
     do {
         bool d1 = gpio_read(HX711_DI1_PIN) == false;
-        bool d2 = gpio_read(HX711_DI2_PIN) == false;
-        bool d3 = gpio_read(HX711_DI3_PIN) == false;
-        bool d4 = gpio_read(HX711_DI4_PIN) == false;
-        bool d5 = gpio_read(HX711_DI5_PIN) == false;
-        bool d6 = gpio_read(HX711_DI6_PIN) == false;
+        bool d2 = false;//gpio_read(HX711_DI2_PIN) == false;
+        bool d3 = false;//gpio_read(HX711_DI3_PIN) == false;
+        bool d4 = false;//gpio_read(HX711_DI4_PIN) == false;
+        bool d5 = false;//gpio_read(HX711_DI5_PIN) == false;
+        bool d6 = false;//gpio_read(HX711_DI6_PIN) == false;
         if (!(d1 || d2 || d3 || d4 || d5 || d6)) {
             break; // If no one device is not ready -- do not wait
         }
@@ -143,6 +143,7 @@ bool hx711_process(int32_t* values) {
     // Change sign if need
     for (uint32_t i = 0; i < 6; ++i) {
         hx711_read_values[i] ^= 0x00800000;
+        hx711_read_values[i] -= 0x007FFFFF;
     }
     
     // Send pulse for 128 gain & channel A
@@ -164,7 +165,7 @@ bool hx711_process(int32_t* values) {
 /// @param  values: pointer to buffer for data
 /// @return none
 //  ***************************************************************************
-void hx711_read(uint32_t* buffer) {
+void hx711_read(int32_t* buffer) {
     for (uint32_t i = 0; i < 6; ++i) {
         buffer[i] = hx711_read_values[i];
     }

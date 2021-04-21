@@ -13,7 +13,7 @@ extern void hx711_init(void);
 extern void hx711_power_up(void);
 extern void hx711_power_down(void);
 extern void hx711_process(void);
-extern void hx711_read(uint32_t* data);
+extern void hx711_read(int32_t* data);
 
 
 #endif // _HX711_H_

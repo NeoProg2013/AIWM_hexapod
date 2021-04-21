@@ -22,7 +22,7 @@ int main() {
     systimer_init();
     hx711_init();
     
-    uint32_t data[6] = {0};
+    int32_t data[6] = {0};
     while (true) {
         hx711_process();
         hx711_read(data);
