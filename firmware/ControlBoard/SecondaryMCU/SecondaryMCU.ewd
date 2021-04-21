@@ -896,7 +896,7 @@
                 </option>
                 <option>
                     <name>CCCpuClockEdit</name>
-                    <state></state>
+                    <state>8</state>
                 </option>
                 <option>
                     <name>CCSwoClockAuto</name>
