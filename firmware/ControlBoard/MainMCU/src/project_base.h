@@ -19,16 +19,17 @@
 #define APB2_CLOCK_FREQUENCY                (72000000)
 
 
-#define DEBUG_TP1_PIN                       (6)     // PC6
-#define DEBUG_TP3_PIN                       (12)    // PA12
+#define DEBUG_TP1_PIN                       GPIOC, 6    // PC6
+#define DEBUG_TP2_PIN                       GPIOA, 8    // PA8
+#define DEBUG_TP3_PIN                       GPIOA, 12   // PA12
 
-#define DEBUG_TP1_PIN_SET                   (GPIOC->BSRR = 0x01 << DEBUG_TP1_PIN)
-#define DEBUG_TP1_PIN_CLR                   (GPIOC->BRR  = 0x01 << DEBUG_TP1_PIN)
-#define DEBUG_TP1_PIN_TOGGLE                (GPIOC->ODR ^= 0x01 << DEBUG_TP1_PIN)
+#define DEBUG_TP1_PIN_SET                   gpio_set(DEBUG_TP1_PIN)
+#define DEBUG_TP1_PIN_CLR                   gpio_reset(DEBUG_TP1_PIN)
+#define DEBUG_TP1_PIN_TOGGLE                gpio_toggle(DEBUG_TP1_PIN)
                                                                                                                           
-#define DEBUG_TP3_PIN_SET                   (GPIOA->BSRR = 0x01 << DEBUG_TP3_PIN)                                         
-#define DEBUG_TP3_PIN_CLR                   (GPIOA->BRR  = 0x01 << DEBUG_TP3_PIN)                                         
-#define DEBUG_TP3_PIN_TOGGLE                (GPIOA->ODR ^= 0x01 << DEBUG_TP3_PIN)
+#define DEBUG_TP3_PIN_SET                   gpio_set(DEBUG_TP3_PIN)
+#define DEBUG_TP3_PIN_CLR                   gpio_reset(DEBUG_TP3_PIN)
+#define DEBUG_TP3_PIN_TOGGLE                gpio_toggle(DEBUG_TP3_PIN)
 
 
 #define TIM17_IRQ_PRIORITY                  (0)        // 18-channels PWM driver
@@ -86,6 +87,9 @@ static inline void gpio_set(GPIO_TypeDef* port, uint32_t pin) {
 }
 static inline void gpio_reset(GPIO_TypeDef* port, uint32_t pin) {
     port->BRR |= 0x01u << pin;
+}
+static inline void gpio_toggle(GPIO_TypeDef* port, uint32_t pin) {
+    port->ODR ^= 0x01u << pin;
 }
 
 

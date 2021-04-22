@@ -15,10 +15,10 @@
 #include <stdio.h>
 
 
-#define SYSTEM_CLOCK_FREQUENCY              (8000000)
-#define AHB_CLOCK_FREQUENCY                 (8000000)
-#define APB1_CLOCK_FREQUENCY                (8000000)
-#define APB2_CLOCK_FREQUENCY                (8000000)
+#define SYSTEM_CLOCK_FREQUENCY              (48000000)
+#define AHB_CLOCK_FREQUENCY                 (48000000)
+#define APB1_CLOCK_FREQUENCY                (48000000)
+#define APB2_CLOCK_FREQUENCY                (48000000)
 
 
 

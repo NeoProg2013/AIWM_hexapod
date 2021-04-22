@@ -138,7 +138,7 @@ static void system_init(void) {
     while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
     
     // Enable MCO
-    RCC->CFGR |= RCC_CFGR_MCOSEL_SYSCLK;
+    RCC->CFGR |= RCC_CFGR_MCOSEL_HSI;
     
     // Switch USARTx clock source to system clock
     RCC->CFGR3 |= RCC_CFGR3_USART3SW_SYSCLK | RCC_CFGR3_USART2SW_SYSCLK | RCC_CFGR3_USART1SW_SYSCLK;
@@ -185,17 +185,25 @@ static void system_init(void) {
 
 static void debug_gpio_init(void) {
     
-    // TP1 pin (PC9): output mode, push-pull, high speed, no pull
-    GPIOC->BRR      =  (0x01u << (DEBUG_TP1_PIN * 1u));
-    GPIOC->MODER   |=  (0x01u << (DEBUG_TP1_PIN * 2u));
-    GPIOC->OSPEEDR |=  (0x03u << (DEBUG_TP1_PIN * 2u));
-    GPIOC->PUPDR   &= ~(0x03u << (DEBUG_TP1_PIN * 2u));
+    // TP1 pin: output mode, push-pull, low speed, no pull
+    gpio_reset           (DEBUG_TP1_PIN);
+    gpio_set_mode        (DEBUG_TP1_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (DEBUG_TP1_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(DEBUG_TP1_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (DEBUG_TP1_PIN, GPIO_PULL_NO);
     
-    // TP3 pin (PA11): output mode, push-pull, high speed, no pull
-    GPIOA->BRR      =  (0x01u << (DEBUG_TP3_PIN * 1));
-    GPIOA->MODER   |=  (0x01u << (DEBUG_TP3_PIN * 2));
-    GPIOA->OSPEEDR |=  (0x03u << (DEBUG_TP3_PIN * 2));
-    GPIOA->PUPDR   &= ~(0x03u << (DEBUG_TP3_PIN * 2));
+    // TP2 pin: MCO
+    gpio_set_mode        (DEBUG_TP2_PIN, GPIO_MODE_AF);
+    gpio_set_output_speed(DEBUG_TP2_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (DEBUG_TP2_PIN, GPIO_PULL_NO);
+    gpio_set_af          (DEBUG_TP2_PIN, 0);
+    
+    // TP3 pin: output mode, push-pull, low speed, no pull
+    gpio_reset           (DEBUG_TP3_PIN);
+    gpio_set_mode        (DEBUG_TP3_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (DEBUG_TP3_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(DEBUG_TP3_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (DEBUG_TP3_PIN, GPIO_PULL_NO);
 }
 
 void HardFault_Handler(void) {
