@@ -137,33 +137,31 @@ bool hx711_process(void) {
         return false;
     }
     
-    //hx711_power_up();
-    
     // Wait LOW level on data pins
     uint64_t start_wait = get_time_ms();
     bool is_ready = false;
     do {
-        bool d1 = gpio_read(HX711_DI1_PIN);
-        bool d2 = gpio_read(HX711_DI2_PIN);
-        bool d3 = gpio_read(HX711_DI3_PIN);
-        bool d4 = gpio_read(HX711_DI4_PIN);
-        bool d5 = gpio_read(HX711_DI5_PIN);
-        bool d6 = gpio_read(HX711_DI6_PIN);
-        /*if (!(d1 || d2 || d3 || d4 || d5 || d6)) {
+        bool d1 = gpio_read(HX711_DI1_PIN) == false;
+        bool d2 = gpio_read(HX711_DI2_PIN) == false;
+        bool d3 = gpio_read(HX711_DI3_PIN) == false;
+        bool d4 = gpio_read(HX711_DI4_PIN) == false;
+        bool d5 = gpio_read(HX711_DI5_PIN) == false;
+        bool d6 = gpio_read(HX711_DI6_PIN) == false;
+        if (!d1 && !d2 && !d3 && !d4 && !d5 && !d6) {
             asm("NOP");
             break; // If no one device is not ready -- do not wait
-        }*/
-        is_ready = !d1 && !d2 && !d3 && !d4 && !d5 && !d6; 
+        }
+        is_ready = d1 && d2 && d3 && d4 && d5 && d6; 
     }
     while (!is_ready && get_time_ms() - start_wait < HX711_WAIT_TIMEOUT);
     
-    /*// Check read timeout
+    // Check read timeout
     if (get_time_ms() - last_read_time > HX711_READ_TIMEOUT) {
         ++errors_count;
         hx711_power_down();
         hx711_power_up();
         return true; // After power UP select 128 gain & channel A
-    }*/
+    }
     
     // Read data
     if (is_ready) {
@@ -171,19 +169,13 @@ bool hx711_process(void) {
             hx711_read_data[i] = 0;
         }
         
-        for (uint32_t a = 0; a < 15; ++a) {
-            asm("NOP");
-        }
+        for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us
         
         for (int32_t i = 23; i >= 0; --i) {
             gpio_set(HX711_CLK_PIN);
-            for (uint32_t a = 0; a < 30; ++a) { // Delay 25us
-                asm("NOP");
-            }
+            for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us
             gpio_reset(HX711_CLK_PIN);
-            for (uint32_t a = 0; a < 10; ++a) { // Delay 25us
-                asm("NOP");
-            }
+            // No here delay -- read operation go on 5us
             
             hx711_read_data[0] |= (int)gpio_read(HX711_DI1_PIN) << i;
             hx711_read_data[1] |= (int)gpio_read(HX711_DI2_PIN) << i;
@@ -193,6 +185,10 @@ bool hx711_process(void) {
             hx711_read_data[5] |= (int)gpio_read(HX711_DI6_PIN) << i;
         }
         
+        // Rising pulse for 128 gain & channel A
+        gpio_set(HX711_CLK_PIN);
+        // No here delay -- change sign operation go on 5us
+        
         // Change sign if need
         for (uint32_t i = 0; i < 6; ++i) {
             if (hx711_read_data[i] & 0x00800000) {
@@ -201,20 +197,14 @@ bool hx711_process(void) {
             hx711_read_data[i] >>= 6; // Cut x LSB for reduce noise
         }
         
-        // Send pulse for 128 gain & channel A
-        /*gpio_set(HX711_CLK_PIN);
-        for (uint32_t a = 0; a < 30; ++a) {
-            asm("NOP");
-        }
+        // Falling pulse for 128 gain & channel A
         gpio_reset(HX711_CLK_PIN);
-        for (uint32_t a = 0; a < 30; ++a) {
-            asm("NOP");
-        }*/
+        for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us
         
         is_data_updated = true;
+        errors_count = 0;
         last_read_time = get_time_ms();
     }
-    //hx711_power_down();
     return true;
 }
 
