@@ -9,6 +9,19 @@
 static void system_init(void);
 
 
+void EXTI_IRQHandler(void) {
+    uint32_t pr = EXTI->PR;
+    EXTI->PR = 0xFFFFFFFF;
+    hx711_process_irq(pr);
+}
+
+/*
+
+
+EXTI0_1_IRQn
+EXTI2_3_IRQn
+EXTI4_15_IRQn
+*/
 
 
 //  ***************************************************************************
@@ -19,20 +32,8 @@ static void system_init(void);
 int main() {
     system_init();
     systimer_init();
-    
     delay_ms(1000);
-    gpio_reset(GPIOA, 4);
-    gpio_set_mode(GPIOA, 4, GPIO_MODE_AF);
-    gpio_set_output_speed(GPIOA, 4, GPIO_SPEED_HIGH);
-    gpio_set_af(GPIOA, 4, 4);
-    
-    TIM14->PSC = 0x0000;
-    TIM14->CCR1 = 1;
-    TIM14->ARR  = TIM14->CCR1 * 2;
-    TIM14->CCMR1 |= (0x06 << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1FE;
-    TIM14->CCER |= TIM_CCER_CC1E;
-    TIM14->CR1 |= TIM_CR1_CEN;
-    
+
     hx711_init();
     hx711_power_up();
     hx711_calibration();
@@ -42,7 +43,7 @@ int main() {
     hx711_read(data);
         
     for (int i = 0; i < 8; ++i) {
-        prev_data[i] = data[i];  
+        prev_data[i] = data[i];
     }
     
     while (true) {
@@ -94,4 +95,7 @@ static void system_init(void) {
     
     // Enable timers
     RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
+    
+    // Enable SYSCFG
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN;
 }

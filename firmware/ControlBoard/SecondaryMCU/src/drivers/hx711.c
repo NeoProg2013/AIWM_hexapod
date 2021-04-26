@@ -7,11 +7,12 @@
 #include "stm32f0xx.h"
 #include "project_base.h"
 
-#define HX711_CALIB_SAMPLES     (20)
-#define HX711_WAIT_TIMEOUT      (1000)    // ms
-#define HX711_READ_TIMEOUT      (500)  // ms
+#define HX711_CALIB_SAMPLES     (100)
+#define HX711_WAIT_TIMEOUT      (50)   // ms
+#define HX711_READ_TIMEOUT      (200)  // ms
 #define HX711_MAX_ERRORS_COUNT  (10)
 
+#define HX711_SYNC_PIN          GPIOA, 4
 #define HX711_CLK_PIN           GPIOA, 0
 #define HX711_DI1_PIN           GPIOB, 1
 #define HX711_DI2_PIN           GPIOF, 1
@@ -23,6 +24,7 @@
 static int32_t hx711_read_data[6] = {0};
 static int32_t hx711_offset[6] = {0};
 static bool is_data_updated = false;
+static bool is_any_data_ready = false;
 
 
 //  ***************************************************************************
@@ -38,19 +40,44 @@ void hx711_init(void) {
     gpio_set_pull        (HX711_CLK_PIN, GPIO_PULL_NO);
     
     gpio_set_mode(HX711_DI1_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull(HX711_DI1_PIN, GPIO_PULL_NO);
+    gpio_set_pull(HX711_DI1_PIN, GPIO_PULL_UP);
     gpio_set_mode(HX711_DI2_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull(HX711_DI2_PIN, GPIO_PULL_NO);
+    gpio_set_pull(HX711_DI2_PIN, GPIO_PULL_UP);
     gpio_set_mode(HX711_DI3_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull(HX711_DI3_PIN, GPIO_PULL_NO);
+    gpio_set_pull(HX711_DI3_PIN, GPIO_PULL_UP);
     gpio_set_mode(HX711_DI4_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull(HX711_DI4_PIN, GPIO_PULL_NO);
+    gpio_set_pull(HX711_DI4_PIN, GPIO_PULL_UP);
     gpio_set_mode(HX711_DI5_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull(HX711_DI5_PIN, GPIO_PULL_NO);
+    gpio_set_pull(HX711_DI5_PIN, GPIO_PULL_UP);
     gpio_set_mode(HX711_DI6_PIN, GPIO_MODE_INPUT);
-    gpio_set_pull(HX711_DI6_PIN, GPIO_PULL_NO);
+    gpio_set_pull(HX711_DI6_PIN, GPIO_PULL_UP);
     
     hx711_power_down();
+    
+    // Setup GPIO interrupt
+    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI0_PF;
+    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PF;
+    SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI5_PF;
+    SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI6_PF;
+    SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI7_PF;
+    EXTI->IMR |= EXTI_IMR_MR0 | EXTI_IMR_MR1 | EXTI_IMR_MR5 | EXTI_IMR_MR6 | EXTI_IMR_MR7;
+    EXTI->FTSR |= EXTI_FTSR_TR0 | EXTI_FTSR_TR1 | EXTI_FTSR_TR5 | EXTI_FTSR_TR6 | EXTI_FTSR_TR7;
+    NVIC_EnableIRQ(EXTI0_1_IRQn);
+    NVIC_EnableIRQ(EXTI2_3_IRQn);
+    NVIC_EnableIRQ(EXTI4_15_IRQn);
+    
+    // Setup synchronize clock source
+    gpio_reset           (HX711_SYNC_PIN);
+    gpio_set_mode        (HX711_SYNC_PIN, GPIO_MODE_AF);
+    gpio_set_output_speed(HX711_SYNC_PIN, GPIO_SPEED_HIGH);
+    gpio_set_af          (HX711_SYNC_PIN, 4);
+    
+    TIM14->PSC    = 0x0000;
+    TIM14->CCR1   = 1;
+    TIM14->ARR    = TIM14->CCR1 * 2;
+    TIM14->CCMR1 |= (0x06 << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1FE;
+    TIM14->CCER  |= TIM_CCER_CC1E;
+    TIM14->CR1   |= TIM_CR1_CEN;
 }
 
 //  ***************************************************************************
@@ -138,42 +165,33 @@ bool hx711_process(void) {
     }
     
     // Wait LOW level on data pins
-    uint64_t start_wait = get_time_ms();
-    bool is_ready = false;
-    do {
-        bool d1 = gpio_read(HX711_DI1_PIN) == false;
-        bool d2 = gpio_read(HX711_DI2_PIN) == false;
-        bool d3 = gpio_read(HX711_DI3_PIN) == false;
-        bool d4 = gpio_read(HX711_DI4_PIN) == false;
-        bool d5 = gpio_read(HX711_DI5_PIN) == false;
-        bool d6 = gpio_read(HX711_DI6_PIN) == false;
-        if (!d1 && !d2 && !d3 && !d4 && !d5 && !d6) {
-            asm("NOP");
-            break; // If no one device is not ready -- do not wait
+    bool is_all_data_ready = false;
+    if (is_any_data_ready) {
+        uint64_t start_wait = get_time_ms();
+        do {
+            bool d1 = gpio_read(HX711_DI1_PIN) == false;
+            bool d2 = gpio_read(HX711_DI2_PIN) == false;
+            bool d3 = gpio_read(HX711_DI3_PIN) == false;
+            bool d4 = gpio_read(HX711_DI4_PIN) == false;
+            bool d5 = gpio_read(HX711_DI5_PIN) == false;
+            bool d6 = gpio_read(HX711_DI6_PIN) == false;
+            is_all_data_ready = d1 && d2 && d3 && d4 && d5 && d6; 
         }
-        is_ready = d1 && d2 && d3 && d4 && d5 && d6; 
+        while (!is_all_data_ready && get_time_ms() - start_wait < HX711_WAIT_TIMEOUT);
     }
-    while (!is_ready && get_time_ms() - start_wait < HX711_WAIT_TIMEOUT);
-    
-    // Check read timeout
-    if (get_time_ms() - last_read_time > HX711_READ_TIMEOUT) {
-        ++errors_count;
-        hx711_power_down();
-        hx711_power_up();
-        return true; // After power UP select 128 gain & channel A
-    }
+    is_any_data_ready = false;
     
     // Read data
-    if (is_ready) {
+    if (is_all_data_ready) {
         for (uint32_t i = 0; i < 6; ++i) {
             hx711_read_data[i] = 0;
         }
         
-        for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us
+        for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us (for 48MHz clocks)
         
         for (int32_t i = 23; i >= 0; --i) {
             gpio_set(HX711_CLK_PIN);
-            for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us
+            for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us (for 48MHz clocks)
             gpio_reset(HX711_CLK_PIN);
             // No here delay -- read operation go on 5us
             
@@ -187,7 +205,7 @@ bool hx711_process(void) {
         
         // Rising pulse for 128 gain & channel A
         gpio_set(HX711_CLK_PIN);
-        // No here delay -- change sign operation go on 5us
+        // No here delay -- change sign operation go on 5us (for 48MHz clocks)
         
         // Change sign if need
         for (uint32_t i = 0; i < 6; ++i) {
@@ -199,13 +217,32 @@ bool hx711_process(void) {
         
         // Falling pulse for 128 gain & channel A
         gpio_reset(HX711_CLK_PIN);
-        for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us
+        for (uint32_t a = 0; a < 15; ++a) asm("NOP"); // Delay 2.5us (for 48MHz clocks)
         
         is_data_updated = true;
         errors_count = 0;
         last_read_time = get_time_ms();
     }
+    
+    // Check read timeout
+    if (get_time_ms() - last_read_time > HX711_READ_TIMEOUT) {
+        ++errors_count;
+        hx711_power_down();
+        hx711_power_up();
+        // After power UP select 128 gain & channel A
+    }
     return true;
+}
+
+//  ***************************************************************************
+/// @brief  Process DI GPIO interrupt
+/// @param  pr: EXTI->PR register value
+/// @return none
+//  ***************************************************************************
+void hx711_process_irq(uint32_t pr) {
+    if (pr & 0x00000073) {
+        is_any_data_ready = true;
+    }
 }
 
 //  ***************************************************************************

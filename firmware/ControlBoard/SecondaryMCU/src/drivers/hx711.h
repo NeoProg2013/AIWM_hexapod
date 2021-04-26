@@ -15,6 +15,7 @@ extern void hx711_power_up(void);
 extern void hx711_power_down(void);
 extern bool hx711_calibration(void);
 extern bool hx711_process(void);
+extern void hx711_process_irq(uint32_t pr);
 extern bool hx711_read(int32_t* data);
 
 

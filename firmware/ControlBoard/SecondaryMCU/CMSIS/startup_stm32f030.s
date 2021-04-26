@@ -83,9 +83,9 @@ __vector_table
         DCD     RTC_IRQHandler                 ; RTC through EXTI Line
         DCD     FLASH_IRQHandler               ; FLASH
         DCD     RCC_IRQHandler                 ; RCC
-        DCD     EXTI0_1_IRQHandler             ; EXTI Line 0 and 1
-        DCD     EXTI2_3_IRQHandler             ; EXTI Line 2 and 3
-        DCD     EXTI4_15_IRQHandler            ; EXTI Line 4 to 15
+        DCD     EXTI_IRQHandler                ; EXTI Line 0 and 1
+        DCD     EXTI_IRQHandler                ; EXTI Line 2 and 3
+        DCD     EXTI_IRQHandler                ; EXTI Line 4 to 15
         DCD     0                              ; Reserved
         DCD     DMA1_Channel1_IRQHandler       ; DMA1 Channel 1
         DCD     DMA1_Channel2_3_IRQHandler     ; DMA1 Channel 2 and Channel 3
@@ -197,24 +197,12 @@ RCC_IRQHandler
         B RCC_IRQHandler
         
                 
-        PUBWEAK EXTI0_1_IRQHandler
+        PUBWEAK EXTI_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
-EXTI0_1_IRQHandler
-        B EXTI0_1_IRQHandler
-        
-                
-        PUBWEAK EXTI2_3_IRQHandler
-        SECTION .text:CODE:NOROOT:REORDER(1)
-EXTI2_3_IRQHandler
-        B EXTI2_3_IRQHandler
-        
-                
-        PUBWEAK EXTI4_15_IRQHandler
-        SECTION .text:CODE:NOROOT:REORDER(1)
-EXTI4_15_IRQHandler
-        B EXTI4_15_IRQHandler                      
-        
-                
+EXTI_IRQHandler
+        B EXTI_IRQHandler                
+
+
         PUBWEAK DMA1_Channel1_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1)
 DMA1_Channel1_IRQHandler
