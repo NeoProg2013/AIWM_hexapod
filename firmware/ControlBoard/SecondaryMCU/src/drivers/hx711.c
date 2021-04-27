@@ -74,7 +74,7 @@ void hx711_init(void) {
     
     TIM14->PSC    = 0x0000;
     TIM14->CCR1   = 1;
-    TIM14->ARR    = TIM14->CCR1 * 2;
+    TIM14->ARR    = TIM14->CCR1 * 2 + 1;
     TIM14->CCMR1 |= (0x06 << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1FE;
     TIM14->CCER  |= TIM_CCER_CC1E;
     TIM14->CR1   |= TIM_CR1_CEN;
