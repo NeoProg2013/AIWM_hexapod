@@ -5,6 +5,7 @@
 #include "project_base.h"
 #include "systimer.h"
 #include "hx711.h"
+#include "i2c1.h"
 
 static void system_init(void);
 
@@ -34,7 +35,7 @@ int main() {
     systimer_init();
     delay_ms(1000);
 
-    hx711_init();
+    /*hx711_init();
     hx711_power_up();
     hx711_calibration();
     
@@ -59,7 +60,14 @@ int main() {
             }
             
         }
-    }
+    }*/
+    
+    i2c1_init(I2C_SPEED_400KHZ);
+    uint8_t buffer[10] = {0};
+    static bool result = false;
+    result = i2c1_read(0x68 << 1, 0x00, 1, buffer, 1);
+    
+    while (true) {}
 }
 
 //  ***************************************************************************
@@ -86,16 +94,27 @@ static void system_init(void) {
     
     // Switch USARTx clock source to system clock
     RCC->CFGR3 |= RCC_CFGR3_USART1SW_0;
+    while ((RCC->CFGR3 & RCC_CFGR3_USART1SW_0) == 0);
 
     // Enable GPIO clocks
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+    while ((RCC->AHBENR & RCC_AHBENR_GPIOAEN) == 0);
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+    while ((RCC->AHBENR & RCC_AHBENR_GPIOBEN) == 0);
     RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
+    while ((RCC->AHBENR & RCC_AHBENR_GPIOCEN) == 0);
     RCC->AHBENR |= RCC_AHBENR_GPIOFEN;
+    while ((RCC->AHBENR & RCC_AHBENR_GPIOFEN) == 0);
     
     // Enable timers
     RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
+    while ((RCC->APB1ENR & RCC_APB1ENR_TIM14EN) == 0);
     
     // Enable SYSCFG
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN;
+    while ((RCC->APB2ENR & RCC_APB2ENR_SYSCFGCOMPEN) == 0);
+    
+    // Enable clocks for I2C1
+    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
+    while ((RCC->APB1ENR & RCC_APB1ENR_I2C1EN) == 0);
 }
