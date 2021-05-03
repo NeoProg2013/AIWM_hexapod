@@ -11,9 +11,9 @@
 #include "servo_driver.h"
 #include "motion_core.h"
 #include "indication.h"
+#include "smcu.h"
 #include "version.h"
-
-#define COMMUNICATION_BAUD_RATE                     (115200)
+#define COMMUNICATION_BAUD_RATE                     (250000)
 
 
 typedef enum {
@@ -39,7 +39,6 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
 /// @return none
 //  ***************************************************************************
 void cli_init(void) {
-    
     usart1_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
     callbacks.frame_transmitted_callback = frame_transmitted_or_error_callback;
@@ -56,7 +55,6 @@ void cli_init(void) {
 /// @return none
 //  ***************************************************************************
 void cli_process(void) {
-    
     if (state == STATE_FRAME_RECEIVED) {
         char module[CLI_ARG_MAX_SIZE] = {0};
         char cmd[CLI_ARG_MAX_SIZE] = {0};
@@ -89,7 +87,16 @@ void cli_process(void) {
     }
 }
 
-
+//  ***************************************************************************
+/// @brief  CLI send data for logging
+/// @param  data: data for send
+//  ***************************************************************************
+void cli_send_data(const char* data) {
+    char* tx_buffer = (char*)usart1_get_tx_buffer();
+    strcpy(tx_buffer, data);
+    usart1_start_tx(strlen(tx_buffer));
+    state = STATE_TRANSMIT;
+}
 
 
 
@@ -104,7 +111,6 @@ void cli_process(void) {
 /// @return true - success, false - error
 //  ***************************************************************************
 static bool process_command(const char* module, const char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t argc, char* response) {
-
     if (strcmp(module, "help") == 0 || strcmp(module, "?") == 0) {
         sprintf(response, CLI_HELP("+------------------------------------------------------------------------+")
                           CLI_HELP("| Artificial intelligence walking machine - CLI help subsystem           |")
@@ -147,7 +153,6 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_HELP("I hope now you can work with me :)"));
     }
     else if (strcmp(module, "system") == 0) {
-
         if (strcmp(cmd, "version") == 0) {
             sprintf(response, CLI_OK("Firmware version: %s"), FIRMWARE_VERSION);
         }
@@ -178,6 +183,9 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     }
     else if (strcmp(module, "indication") == 0) {
         return indication_cli_command_process(cmd, argv, argc, response);
+    }
+    else if (strcmp(module, "smcu") == 0) {
+        return smcu_cli_command_process(cmd, argv, argc, response);
     }
     else {
         strcpy(response, CLI_ERROR("Unknown module name"));

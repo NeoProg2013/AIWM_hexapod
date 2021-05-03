@@ -54,14 +54,13 @@ void sysmon_init(void) {
 /// @return none
 //  ***************************************************************************
 void sysmon_process(void) {
-
     if (sysmon_is_module_disable(SYSMON_MODULE_SYSTEM_MONITOR) == true) {
         sysmon_battery_charge = 0;
         sysmon_battery_voltage = 0;
         return;
     }
 
-    
+
     static uint64_t pause_start_time = 0;
     static uint32_t accumulate_counter = 0;
     switch (monitor_state) {

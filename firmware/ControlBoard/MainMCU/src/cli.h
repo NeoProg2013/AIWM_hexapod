@@ -27,6 +27,7 @@
 
 extern void cli_init(void);
 extern void cli_process(void);
+extern void cli_send_data(const char* data);
 
 
 #endif // _CLI_H_

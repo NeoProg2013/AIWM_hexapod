@@ -107,13 +107,13 @@ void hx711_power_down(void) {
 //  ***************************************************************************
 bool hx711_calibration(void) {
     for (uint32_t i = 0; i < 50; ++i) { // Skip few first samples after power up
-        while (!is_data_updated) {
+        while (!hx711_is_data_ready()) {
             if (!hx711_process()) {
                 return false;
             }
         }
-        int32_t data[6] = {0};
-        hx711_read(data);
+        int16_t dummy[6] = {0};
+        hx711_read(dummy);
     }
     
     // Reset offsets
@@ -124,12 +124,12 @@ bool hx711_calibration(void) {
     // Read samples for calcluate offsets
     int32_t acc[6] = {0};
     for (uint32_t i = 0; i < HX711_CALIB_SAMPLES; ++i) {
-        while (!is_data_updated) {
+        while (!hx711_is_data_ready()) {
             if (!hx711_process()) {
                 return false;
             }
         }
-        int32_t data[6] = {0};
+        int16_t data[6] = {0};
         hx711_read(data);
         
         for (uint32_t a = 0; a < 6; ++a) {
@@ -212,7 +212,7 @@ bool hx711_process(void) {
             if (hx711_read_data[i] & 0x00800000) {
                 hx711_read_data[i] |= 0xFF000000;
             }
-            hx711_read_data[i] >>= 6; // Cut x LSB for reduce noise
+            hx711_read_data[i] >>= 8; // Cut LSB for reduce noise
         }
         
         // Falling pulse for 128 gain & channel A
@@ -235,9 +235,16 @@ bool hx711_process(void) {
 }
 
 //  ***************************************************************************
+/// @brief  Check data ready
+/// @return true - data ready, false - not
+//  ***************************************************************************
+bool hx711_is_data_ready(void) {
+    return is_data_updated;
+}
+
+//  ***************************************************************************
 /// @brief  Process DI GPIO interrupt
 /// @param  pr: EXTI->PR register value
-/// @return none
 //  ***************************************************************************
 void hx711_process_irq(uint32_t pr) {
     if (pr & 0x00000073) {
@@ -250,11 +257,9 @@ void hx711_process_irq(uint32_t pr) {
 /// @param  values: pointer to buffer for data
 /// @return none
 //  ***************************************************************************
-bool hx711_read(int32_t* buffer) {
-    bool prev_flag_value = is_data_updated;
+void hx711_read(int16_t* buffer) {
     for (uint32_t i = 0; i < 6; ++i) {
-        buffer[i] = hx711_read_data[i] - hx711_offset[i];
+        buffer[i] = (int16_t)(hx711_read_data[i] - hx711_offset[i]);
     }
     is_data_updated = false;
-    return prev_flag_value;
 }

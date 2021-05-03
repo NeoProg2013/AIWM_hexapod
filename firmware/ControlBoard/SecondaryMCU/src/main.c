@@ -25,12 +25,13 @@ EXTI2_3_IRQn
 EXTI4_15_IRQn
 */
 
+static bool is_frame_transmitted = true;
 void frame_error_callback(void) {
     asm("NOP");
 }
 
 void frame_transmitted_callback(void) {
-    asm("NOP");
+    is_frame_transmitted = true;
 }
 
 
@@ -42,40 +43,56 @@ void frame_transmitted_callback(void) {
 int main() {
     system_init();
     systimer_init();
-    delay_ms(1000);
     
     usart1_callbacks_t callbacks;
     callbacks.frame_error_callback = frame_error_callback;
     callbacks.frame_transmitted_callback = frame_transmitted_callback;
     usart1_init(500000, &callbacks);
     
-    int counter = 1;
+    delay_ms(1000);
+    
+    hx711_init();
+    hx711_power_up();
+    hx711_calibration();
+    
+    uint64_t send_data_time = get_time_ms();
+    int16_t hx711_data[6] = {0};
+    int16_t mpu6050_data[3] = {0};
     while (true) {
-        uint8_t* tx_buffer = usart1_get_tx_buffer();
-        tx_buffer[0] = 0xAA;
-        tx_buffer[1] = counter;
-        tx_buffer[2] = counter;
-        tx_buffer[3] = counter;
-        tx_buffer[4] = counter;
-        tx_buffer[5] = counter;
-        tx_buffer[6] = counter;
-        tx_buffer[7] = counter;
-        tx_buffer[8] = counter;
-        tx_buffer[9] = counter;
-        tx_buffer[10] = counter;
-        tx_buffer[11] = counter;
-        tx_buffer[12] = counter;
+        bool hx711_process_result = hx711_process();
+        if (hx711_is_data_ready()) { 
+            hx711_read(hx711_data);
+        }
         
-        tx_buffer[13] = counter;
-        tx_buffer[14] = counter;
-        tx_buffer[15] = counter;
-        tx_buffer[16] = counter;
-        tx_buffer[17] = counter;
-        tx_buffer[18] = counter;
-        tx_buffer[19] = 0xAA;
-        counter++;
-        usart1_start_tx(20);
-        delay_ms(50);
+        if (get_time_ms() - send_data_time > 13 && is_frame_transmitted) {
+            uint8_t* tx_buffer = usart1_get_tx_buffer();
+            uint32_t tx_data_size = 0;
+            
+            // Write start frame marker
+            tx_buffer[tx_data_size++] = 0xAA;
+            
+            // Write HX711 data
+            for (uint32_t i = 0; i < 6; ++i) {
+                if (!hx711_process_result) {
+                    hx711_data[i] = 0xFFFF;
+                }
+                memcpy(&tx_buffer[tx_data_size], &hx711_data[i], sizeof(hx711_data[i]));
+                tx_data_size += sizeof(hx711_data[i]);
+            }
+            
+            // Write MPU6050 data
+            for (uint32_t i = 0; i < 3; ++i) {
+                memcpy(&tx_buffer[tx_data_size], &mpu6050_data[i], sizeof(mpu6050_data[i]));
+                tx_data_size += sizeof(mpu6050_data[i]);
+            }
+            
+            // Write end frame marker
+            tx_buffer[tx_data_size++] = 0xAA;
+            
+            // Send frame
+            is_frame_transmitted = false;
+            usart1_start_tx(tx_data_size);
+        }
     }
     
 /*

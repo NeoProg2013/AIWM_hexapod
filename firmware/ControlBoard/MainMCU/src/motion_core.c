@@ -363,7 +363,6 @@ static bool process_advanced_trajectory(float motion_time) {
 /// @return true - calculation success, false - no
 //  ***************************************************************************
 static bool kinematic_calculate_angles(void) {
-    
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         float coxa_zero_rotate_deg  = g_limbs[i].coxa.zero_rotate;
         float femur_zero_rotate_deg = g_limbs[i].femur.zero_rotate;
@@ -430,8 +429,8 @@ static bool kinematic_calculate_angles(void) {
         //
         // Protection
         //
-        if (g_limbs[i].coxa.angle < g_limbs[i].coxa.prot_min_angle)   g_limbs[i].coxa.angle = g_limbs[i].coxa.prot_min_angle;
-        if (g_limbs[i].coxa.angle > g_limbs[i].coxa.prot_max_angle)   g_limbs[i].coxa.angle = g_limbs[i].coxa.prot_max_angle;
+        if (g_limbs[i].coxa.angle < g_limbs[i].coxa.prot_min_angle)   g_limbs[i].coxa.angle  = g_limbs[i].coxa.prot_min_angle;
+        if (g_limbs[i].coxa.angle > g_limbs[i].coxa.prot_max_angle)   g_limbs[i].coxa.angle  = g_limbs[i].coxa.prot_max_angle;
         if (g_limbs[i].femur.angle < g_limbs[i].femur.prot_min_angle) g_limbs[i].femur.angle = g_limbs[i].femur.prot_min_angle;
         if (g_limbs[i].femur.angle > g_limbs[i].femur.prot_max_angle) g_limbs[i].femur.angle = g_limbs[i].femur.prot_max_angle;
         if (g_limbs[i].tibia.angle < g_limbs[i].tibia.prot_min_angle) g_limbs[i].tibia.angle = g_limbs[i].tibia.prot_min_angle;
