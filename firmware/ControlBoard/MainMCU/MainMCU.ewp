@@ -2473,12 +2473,6 @@
             </file>
         </group>
         <file>
-            <name>$PROJ_DIR$\src\camera.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\camera.h</name>
-        </file>
-        <file>
             <name>$PROJ_DIR$\src\cli.c</name>
         </file>
         <file>
@@ -2491,13 +2485,13 @@
             <name>$PROJ_DIR$\src\configurator.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\src\display.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\display.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\src\gait_sequences.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\gui.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\gui.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\indication.c</name>
@@ -2531,6 +2525,12 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\servo_driver.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\smcu.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\smcu.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\swlp.c</name>

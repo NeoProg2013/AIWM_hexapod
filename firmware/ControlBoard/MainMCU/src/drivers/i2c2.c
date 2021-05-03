@@ -5,10 +5,8 @@
 #include "i2c2.h"
 #include "project_base.h"
 #include "systimer.h"
-
-#define I2C_SCL_PIN                     (6) // PF6
-#define I2C_SDA_PIN                     (7) // PF7
-
+#define I2C_SCL_PIN                     GPIOF, 6
+#define I2C_SDA_PIN                     GPIOF, 7
 #define I2C_MAX_TX_BYTE_TIME            (2) // ms
 
 
@@ -28,47 +26,40 @@ static void disable_i2c(void);
 //  ***************************************************************************
 void i2c2_init(i2c_speed_t speed) {
     
-    //
-    // Setup GPIO
-    //
-    // Send 9 pulses on SCL
-    gpio_set_mode        (GPIOF, I2C_SCL_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_output_type (GPIOF, I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
-    gpio_set_output_speed(GPIOF, I2C_SCL_PIN, GPIO_SPEED_HIGH);
-    gpio_set_pull        (GPIOF, I2C_SCL_PIN, GPIO_PULL_NO);
+    // Send pulses on SCL
+    gpio_set_mode        (I2C_SCL_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(I2C_SCL_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (I2C_SCL_PIN, GPIO_PULL_NO);
     for (uint32_t i = 0; i < 10; ++i) {
-        gpio_reset(GPIOF, I2C_SCL_PIN);
+        gpio_reset(I2C_SCL_PIN);
         delay_ms(1);
-        gpio_set(GPIOF, I2C_SCL_PIN);
+        gpio_set(I2C_SCL_PIN);
         delay_ms(1);
     }
     
     // Setup SCL pin (PF6)
-    gpio_set_mode(GPIOF, I2C_SCL_PIN, GPIO_MODE_AF);
-    gpio_set_af  (GPIOF, I2C_SCL_PIN, 4);
+    gpio_set_mode(I2C_SCL_PIN, GPIO_MODE_AF);
+    gpio_set_af  (I2C_SCL_PIN, 4);
     
     // Setup SDA pin (PF7)
-    gpio_set_mode        (GPIOF, I2C_SDA_PIN, GPIO_MODE_AF);
-    gpio_set_output_type (GPIOF, I2C_SDA_PIN, GPIO_TYPE_OPEN_DRAIN);
-    gpio_set_output_speed(GPIOF, I2C_SDA_PIN, GPIO_SPEED_HIGH);
-    gpio_set_pull        (GPIOF, I2C_SDA_PIN, GPIO_PULL_NO);
-    gpio_set_af          (GPIOF, I2C_SDA_PIN, 4);
+    gpio_set_mode        (I2C_SDA_PIN, GPIO_MODE_AF);
+    gpio_set_output_type (I2C_SDA_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(I2C_SDA_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (I2C_SDA_PIN, GPIO_PULL_NO);
+    gpio_set_af          (I2C_SDA_PIN, 4);
     
     
-    //
-    // Setup I2C2
-    //
+    // Setup I2C
     RCC->APB1RSTR |= RCC_APB1RSTR_I2C2RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C2RST;
-
-    // Configure I2C
     I2C2->TIMINGR = speed;
     NVIC_EnableIRQ(I2C2_EV_IRQn);
     NVIC_SetPriority(I2C2_EV_IRQn, I2C2_IRQ_PRIORITY);
     NVIC_EnableIRQ(I2C2_ER_IRQn);
     NVIC_SetPriority(I2C2_ER_IRQn, I2C2_IRQ_PRIORITY);
     
-    // Configure TX DMA
+    // Setup TX DMA
     DMA1_Channel4->CCR  &= ~DMA_CCR_EN;
     DMA1_Channel4->CCR   = DMA_CCR_MINC | DMA_CCR_DIR | DMA_CCR_TEIE;
     DMA1_Channel4->CPAR  = (uint32_t)(&I2C2->TXDR);
@@ -135,9 +126,7 @@ bool i2c2_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal
 /// @return true - operation completed, false - operation in progress
 //  ***************************************************************************
 bool i2c2_is_async_operation_completed(void) {
-    
     if (I2C2->ISR & I2C_ISR_BUSY) {
-        
         if (get_time_ms() > async_operation_timeout_value) {
             disable_i2c();
         }
@@ -166,7 +155,6 @@ bool i2c2_get_async_operation_result(void) {
 /// @return true - success, false - timeout
 //  ***************************************************************************
 static bool send_internal_address(uint32_t internal_address, uint8_t internal_address_size) {
-
     uint8_t* ptr = (uint8_t*)&internal_address;
     ptr += internal_address_size - 1; // Go to MSB
     for (uint32_t i = 0; i < internal_address_size; ++i) {
@@ -196,7 +184,6 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
 //  ***************************************************************************
 #define I2C_WAIT_TIMEOUT_VALUE          (5) // ms
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
-
     uint64_t start_time = get_time_ms();
     do {
         if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C2->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
@@ -212,9 +199,7 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
 /// @return none
 //  ***************************************************************************
 static void disable_i2c(void) {
-    
-    // Send stop condition
-    I2C2->CR2 |= I2C_CR2_STOP;
+    I2C2->CR2 |= I2C_CR2_STOP; // Send stop condition
     for (uint32_t i = 0; (i < 1000) && (I2C2->CR2 & I2C_CR2_STOP); ++i);
     
     // Disable I2C
@@ -232,14 +217,12 @@ static void disable_i2c(void) {
 /// @return none
 //  ***************************************************************************
 void I2C2_EV_IRQHandler(void) {
-    
     uint32_t status = I2C2->ISR;
     I2C2->ICR = 0xFFFFFFFF; // Clear flags
 
     if (status & I2C_ISR_NACKF) {
         is_driver_error = true;
-    }
-    else if (status & I2C_ISR_TC) {
+    } else if (status & I2C_ISR_TC) {
         is_driver_error = false;
     }
     disable_i2c();
@@ -251,7 +234,6 @@ void I2C2_EV_IRQHandler(void) {
 /// @return none
 //  ***************************************************************************
 void I2C2_ER_IRQHandler(void) {
-    
     uint32_t status = I2C2->ISR;
     I2C2->ICR = 0xFFFFFFFF; // Clear flags
 

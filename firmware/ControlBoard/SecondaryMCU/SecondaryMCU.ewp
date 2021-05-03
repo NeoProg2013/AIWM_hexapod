@@ -2125,6 +2125,12 @@
             <file>
                 <name>$PROJ_DIR$\src\drivers\systimer.h</name>
             </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\usart1.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\usart1.h</name>
+            </file>
         </group>
         <file>
             <name>$PROJ_DIR$\src\main.c</name>

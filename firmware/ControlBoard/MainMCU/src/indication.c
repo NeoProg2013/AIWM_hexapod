@@ -94,8 +94,8 @@ void indication_process(void) {
         else if (sysmon_is_error_set(SYSMON_FATAL_ERROR | SYSMON_CONFIG_ERROR | SYSMON_MEMORY_ERROR | SYSMON_MATH_ERROR) == true) {
              blink_red_led(100);
         }
-        else if (sysmon_is_error_set(SYSMON_SYNC_ERROR | SYSMON_I2C_ERROR) == true) {
-            blink_yellow_led(500);
+        else if (sysmon_is_error_set(SYSMON_SYNC_ERROR | SYSMON_COMM_ERROR) == true) {
+             blink_yellow_led(500);
         }
         else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
              blink_blue_led(500);

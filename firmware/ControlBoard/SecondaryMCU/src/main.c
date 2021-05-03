@@ -6,6 +6,7 @@
 #include "systimer.h"
 #include "hx711.h"
 #include "i2c1.h"
+#include "usart1.h"
 
 static void system_init(void);
 
@@ -24,6 +25,14 @@ EXTI2_3_IRQn
 EXTI4_15_IRQn
 */
 
+void frame_error_callback(void) {
+    asm("NOP");
+}
+
+void frame_transmitted_callback(void) {
+    asm("NOP");
+}
+
 
 //  ***************************************************************************
 /// @brief  Program entry point
@@ -34,8 +43,43 @@ int main() {
     system_init();
     systimer_init();
     delay_ms(1000);
-
-    /*hx711_init();
+    
+    usart1_callbacks_t callbacks;
+    callbacks.frame_error_callback = frame_error_callback;
+    callbacks.frame_transmitted_callback = frame_transmitted_callback;
+    usart1_init(500000, &callbacks);
+    
+    int counter = 1;
+    while (true) {
+        uint8_t* tx_buffer = usart1_get_tx_buffer();
+        tx_buffer[0] = 0xAA;
+        tx_buffer[1] = counter;
+        tx_buffer[2] = counter;
+        tx_buffer[3] = counter;
+        tx_buffer[4] = counter;
+        tx_buffer[5] = counter;
+        tx_buffer[6] = counter;
+        tx_buffer[7] = counter;
+        tx_buffer[8] = counter;
+        tx_buffer[9] = counter;
+        tx_buffer[10] = counter;
+        tx_buffer[11] = counter;
+        tx_buffer[12] = counter;
+        
+        tx_buffer[13] = counter;
+        tx_buffer[14] = counter;
+        tx_buffer[15] = counter;
+        tx_buffer[16] = counter;
+        tx_buffer[17] = counter;
+        tx_buffer[18] = counter;
+        tx_buffer[19] = 0xAA;
+        counter++;
+        usart1_start_tx(20);
+        delay_ms(50);
+    }
+    
+/*
+    hx711_init();
     hx711_power_up();
     hx711_calibration();
     
@@ -58,16 +102,17 @@ int main() {
                 }
                 prev_data[i] = data[i];
             }
-            
         }
     }*/
     
-    i2c1_init(I2C_SPEED_400KHZ);
+    /*i2c1_init(I2C_SPEED_400KHZ);
     uint8_t buffer[10] = {0};
     static bool result = false;
     result = i2c1_read(0x68 << 1, 0x00, 1, buffer, 1);
     
-    while (true) {}
+    while (true) {}*/
+    
+    
 }
 
 //  ***************************************************************************
@@ -106,6 +151,10 @@ static void system_init(void) {
     RCC->AHBENR |= RCC_AHBENR_GPIOFEN;
     while ((RCC->AHBENR & RCC_AHBENR_GPIOFEN) == 0);
     
+    // Enable DMA
+    RCC->AHBENR |= RCC_AHBENR_DMAEN;
+    while ((RCC->AHBENR & RCC_AHBENR_DMAEN) == 0);
+    
     // Enable timers
     RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_TIM14EN) == 0);
@@ -117,4 +166,8 @@ static void system_init(void) {
     // Enable clocks for I2C1
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_I2C1EN) == 0);
+    
+    // Enable USART1 clocks
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+    while ((RCC->APB2ENR & RCC_APB2ENR_USART1EN) == 0);
 }

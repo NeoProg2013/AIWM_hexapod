@@ -10,8 +10,8 @@
 #include <stdbool.h>
 
 
-extern void oled_gl_init(void);
-extern void oled_gl_process(void);
+extern bool oled_gl_init(void);
+extern bool oled_gl_process(void);
 
 extern void oled_gl_clear_display(void);
 extern void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
@@ -25,9 +25,9 @@ extern void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str);
 extern void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t width);
 extern void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
-extern void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap);
+extern bool oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap);
 
-extern void oled_gl_sync_display_update(void);
+extern bool oled_gl_sync_display_update(void);
 extern void oled_gl_start_async_display_update(void);
 
 

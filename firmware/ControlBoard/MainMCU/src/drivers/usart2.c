@@ -4,13 +4,11 @@
 //  ***************************************************************************
 #include "usart2.h"
 #include "project_base.h"
+#define USART_TX_PIN                    GPIOB, 3
+#define USART_RX_PIN                    GPIOB, 4
 
-#define USART_TX_PIN                    (3) // PB3
-#define USART_RX_PIN                    (4) // PB4
-
-
-static uint8_t  tx_buffer[64] = {0};
-static uint8_t  rx_buffer[64] = {0};
+static uint8_t tx_buffer[64] = {0};
+static uint8_t rx_buffer[64] = {0};
 static usart2_callbacks_t usart_callbacks;
 
 
@@ -24,35 +22,23 @@ static void usart_reset(bool reset_tx, bool reset_rx);
 /// @return none
 //  ***************************************************************************
 void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
-
-    // Copy callbacks
     usart_callbacks = *callbacks;
     
-    
-    //
-    // Setup GPIO
-    //
     // Setup TX pin
-    GPIOB->MODER   |=  (0x02u << (USART_TX_PIN * 2u)); // Alternate function mode
-    GPIOB->OSPEEDR |=  (0x03u << (USART_TX_PIN * 2u)); // High speed
-    GPIOB->PUPDR   &= ~(0x03u << (USART_TX_PIN * 2u)); // Disable pull
-    GPIOB->AFR[0]  |=  (0x07u << (USART_TX_PIN * 4u)); // AF7
+    gpio_set_mode        (USART_TX_PIN, GPIO_MODE_AF);
+    gpio_set_output_speed(USART_TX_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (USART_TX_PIN, GPIO_PULL_NO);
+    gpio_set_af          (USART_TX_PIN, 7);
     
     // Setup RX pin
-    GPIOB->MODER   |=  (0x02u << (USART_RX_PIN * 2u)); // Alternate function mode
-    GPIOB->OSPEEDR |=  (0x03u << (USART_RX_PIN * 2u)); // High speed
-    GPIOB->PUPDR   &= ~(0x03u << (USART_RX_PIN * 2u)); // Disable pull
-    GPIOB->PUPDR   |=  (0x01u << (USART_RX_PIN * 2u)); // Enable pull up
-    GPIOB->AFR[0]  |=  (0x07u << (USART_RX_PIN * 4u)); // AF7
+    gpio_set_mode        (USART_RX_PIN, GPIO_MODE_AF);
+    gpio_set_output_speed(USART_RX_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (USART_RX_PIN, GPIO_PULL_UP);
+    gpio_set_af          (USART_RX_PIN, 7);
     
-    
-    //
-    // Setup USART2
-    //
+    // Setup USART2: 8N1, DMA for TX and RX
     RCC->APB1RSTR |= RCC_APB1RSTR_USART2RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_USART2RST;
-
-    // Setup USART: 8N1, DMA for TX and RX
     USART2->CR1  = USART_CR1_RTOIE;
     USART2->CR2  = USART_CR2_RTOEN;
     USART2->CR3  = USART_CR3_DMAT | USART_CR3_DMAR | USART_CR3_EIE;
@@ -141,16 +127,12 @@ uint8_t* usart2_get_rx_buffer(void) {
 /// @return none
 //  ***************************************************************************
 static void usart_reset(bool reset_tx, bool reset_rx) {
-
-    // Reset TX
     if (reset_tx) {
         USART2->CR1 &= ~USART_CR1_TE;
         USART2->ICR |= USART_ICR_FECF | USART_ICR_TCCF;
         DMA1_Channel7->CCR &= ~DMA_CCR_EN;
         DMA1->IFCR = DMA_IFCR_CGIF7;
     }
-    
-    // Reset RX
     if (reset_rx) {
         USART2->CR1 &= ~USART_CR1_RE;
         USART2->ICR |= USART_ICR_RTOCF | USART_ICR_FECF | USART_ICR_NCF | USART_ICR_ORECF | USART_ICR_PECF;
@@ -169,9 +151,7 @@ static void usart_reset(bool reset_tx, bool reset_rx) {
 /// @return none
 //  ***************************************************************************
 void DMA1_Channel7_IRQHandler(void) {
-
     uint32_t status = DMA1->ISR;
-
     if (status & DMA_ISR_TCIF7) {   // Frame transmit complete
         usart_reset(true, false);
         usart_callbacks.frame_transmitted_callback();
@@ -188,14 +168,12 @@ void DMA1_Channel7_IRQHandler(void) {
 /// @return none
 //  ***************************************************************************
 void DMA1_Channel6_IRQHandler(void) {
-
     uint32_t status = DMA1->ISR;
-
-    if (status & DMA_ISR_TCIF6) {
+    if (status & DMA_ISR_TCIF6) { // DMA buffer is overflow
         usart_reset(false, true);
         usart_callbacks.frame_error_callback();
     }
-    if (status & DMA_ISR_TEIF6) {   // DMA memory access error
+    if (status & DMA_ISR_TEIF6) { // DMA memory access error
         usart_reset(false, true);
         usart_callbacks.frame_error_callback();
     }
@@ -207,9 +185,7 @@ void DMA1_Channel6_IRQHandler(void) {
 /// @return none
 //  ***************************************************************************
 void USART2_IRQHandler(void) {
-
     uint32_t status = USART2->ISR;
-
     if (status & (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE | USART_ISR_PE)) {
         usart_reset(true, true);
         usart_callbacks.frame_error_callback();

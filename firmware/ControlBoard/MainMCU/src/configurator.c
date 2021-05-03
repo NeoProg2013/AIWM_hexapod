@@ -81,11 +81,9 @@ bool config_read(uint32_t address, uint8_t* buffer, uint32_t bytes_count) {
     }
 
     while (bytes_count != 0) {
-        
         uint32_t block_size = (bytes_count < CONFIG_SECTION_MAX_READ_SIZE) ? bytes_count : CONFIG_SECTION_MAX_READ_SIZE;
-   
         if (i2c1_read(STORAGE_DEVICE_ADDRESS, address, 2, buffer, block_size) == false) {
-            sysmon_set_error(SYSMON_I2C_ERROR | SYSMON_MEMORY_ERROR);
+            sysmon_set_error(SYSMON_COMM_ERROR | SYSMON_MEMORY_ERROR);
             sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
             return false;
         }
@@ -118,11 +116,9 @@ bool config_write(uint32_t address, uint8_t* data, uint32_t bytes_count) {
     }
     
     while (bytes_count != 0) {
-        
         uint32_t block_size = (bytes_count < CONFIG_SECTION_MAX_WRITE_SIZE) ? bytes_count : CONFIG_SECTION_MAX_WRITE_SIZE;
-   
         if (i2c1_write(STORAGE_DEVICE_ADDRESS, address, 2, data, block_size) == false) {
-            sysmon_set_error(SYSMON_I2C_ERROR | SYSMON_MEMORY_ERROR);
+            sysmon_set_error(SYSMON_COMM_ERROR | SYSMON_MEMORY_ERROR);
             sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
             return false;
         }

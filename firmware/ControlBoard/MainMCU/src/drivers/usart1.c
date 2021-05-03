@@ -4,10 +4,8 @@
 //  ***************************************************************************
 #include "usart1.h"
 #include "project_base.h"
-
-#define USART_TX_PIN                    (9)  // PA9
-#define USART_RX_PIN                    (10) // PA10
-
+#define USART_TX_PIN                    GPIOA, 9
+#define USART_RX_PIN                    GPIOA, 10
 
 static uint8_t  tx_buffer[3072] = {0};
 static uint8_t  rx_buffer[512]  = {0};
@@ -27,33 +25,23 @@ static void usart_reset(bool reset_tx, bool reset_rx);
 /// @return none
 //  ***************************************************************************
 void usart1_init(uint32_t baud_rate, usart1_callbacks_t* callbacks) {
-    
     usart_callbacks = *callbacks;
     
-    //
-    // Setup GPIO
-    //
     // Setup TX pin
-    GPIOA->MODER   |=  (0x02u << (USART_TX_PIN * 2u)); // Alternate function mode
-    GPIOA->OSPEEDR |=  (0x03u << (USART_TX_PIN * 2u)); // High speed
-    GPIOA->PUPDR   &= ~(0x03u << (USART_TX_PIN * 2u)); // Disable pull
-    GPIOA->AFR[1]  |=  (0x07u << (USART_TX_PIN * 4u - 32)); // AF7
+    gpio_set_mode        (USART_TX_PIN, GPIO_MODE_AF);
+    gpio_set_output_speed(USART_TX_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (USART_TX_PIN, GPIO_PULL_NO);
+    gpio_set_af          (USART_TX_PIN, 7);
     
     // Setup RX pin
-    GPIOA->MODER   |=  (0x02u << (USART_RX_PIN * 2u)); // Alternate function mode
-    GPIOA->OSPEEDR |=  (0x03u << (USART_RX_PIN * 2u)); // High speed
-    GPIOA->PUPDR   &= ~(0x03u << (USART_RX_PIN * 2u)); // Disable pull
-    GPIOA->PUPDR   |=  (0x01u << (USART_RX_PIN * 2u)); // Enable pull up
-    GPIOA->AFR[1]  |=  (0x07u << (USART_RX_PIN * 4u - 32)); // AF7
+    gpio_set_mode        (USART_RX_PIN, GPIO_MODE_AF);
+    gpio_set_output_speed(USART_RX_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (USART_RX_PIN, GPIO_PULL_UP);
+    gpio_set_af          (USART_RX_PIN, 7);
     
-    
-    //
-    // Setup USART
-    //
+    // Setup USART: 8N1
     RCC->APB2RSTR |= RCC_APB2RSTR_USART1RST;
     RCC->APB2RSTR &= ~RCC_APB2RSTR_USART1RST;
-
-    // Setup USART: 8N1
     USART1->CR2  = USART_CR2_RTOEN;
     USART1->CR3  = USART_CR3_EIE;
     USART1->BRR  = SYSTEM_CLOCK_FREQUENCY / baud_rate;

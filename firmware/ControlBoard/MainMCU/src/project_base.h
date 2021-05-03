@@ -35,8 +35,11 @@
 #define TIM17_IRQ_PRIORITY                  (0)        // 18-channels PWM driver
 #define USART2_IRQ_PRIORITY                 (2)        // SWLP communication
 #define USART1_IRQ_PRIORITY                 (7)        // CLI communication
-#define USART3_IRQ_PRIORITY                 (7)        // Camera communication
-#define I2C2_IRQ_PRIORITY                   (7)        // Display communication
+#define USART3_IRQ_PRIORITY                 (3)        // Camera communication
+#define I2C2_IRQ_PRIORITY                   (4)        // Display communication
+#define ADC_IRQ_PRIORITY                    (4)        // Battery voltage measurements
+
+
 
 
 
@@ -90,6 +93,9 @@ static inline void gpio_reset(GPIO_TypeDef* port, uint32_t pin) {
 }
 static inline void gpio_toggle(GPIO_TypeDef* port, uint32_t pin) {
     port->ODR ^= 0x01u << pin;
+}
+static inline bool gpio_read(GPIO_TypeDef* port, uint32_t pin) {
+    return port->IDR & 0x01u << pin;
 }
 
 

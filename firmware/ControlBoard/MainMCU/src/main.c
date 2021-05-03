@@ -11,8 +11,8 @@
 #include "motion_core.h"
 #include "sequences_engine.h"
 #include "indication.h"
-#include "gui.h"
-#include "camera.h"
+#include "display.h"
+#include "smcu.h"
 #include "pwm.h"
 #include "systimer.h"
 
@@ -40,7 +40,7 @@ void main() {
     swlp_init();
     cli_init();
     indication_init();
-    gui_init();
+    display_init();
     
     // Initialation and check EEPROM intergity
     config_init();
@@ -49,7 +49,7 @@ void main() {
     }
     
     // Initializaion submodules
-    camera_init();    
+    smcu_init();    
     sequences_engine_init();
     
     delay_ms(100);
@@ -89,8 +89,8 @@ void main() {
             swlp_process();
             cli_process();
             indication_process();
-            gui_process();
-            camera_process();
+            display_process();
+            smcu_process();
         }
     }
 }
@@ -101,13 +101,12 @@ void main() {
 /// @return none
 //  ***************************************************************************
 static void emergency_loop(void) {
-    
     while (true) {
         sysmon_process();
         swlp_process();
         cli_process();
         indication_process();
-        gui_process();
+        display_process();
     }
 }
 

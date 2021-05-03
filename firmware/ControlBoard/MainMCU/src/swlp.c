@@ -8,7 +8,6 @@
 #include "usart2.h"
 #include "sequences_engine.h"
 #include "indication.h"
-#include "camera.h"
 #include "system_monitor.h"
 #include "servo_driver.h"
 #include "systimer.h"

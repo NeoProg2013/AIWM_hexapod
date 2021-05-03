@@ -6,8 +6,8 @@
 #include "project_base.h"
 #include "systimer.h"
 
-#define I2C_SCL_PIN                     (8) // PB8
-#define I2C_SDA_PIN                     (9) // PB9
+#define I2C_SCL_PIN                     GPIOB, 8
+#define I2C_SDA_PIN                     GPIOB, 9
 
 #define I2C_WAIT_TIMEOUT_VALUE          (2) // ms
 
@@ -24,41 +24,34 @@ static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask);
 //  ***************************************************************************
 void i2c1_init(i2c_speed_t speed) {
     
-    //
-    // Setup GPIO
-    //
-    // Send 9 pulses on SCL
-    gpio_set_mode        (GPIOB, I2C_SCL_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_output_type (GPIOB, I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
-    gpio_set_output_speed(GPIOB, I2C_SCL_PIN, GPIO_SPEED_HIGH);
-    gpio_set_pull        (GPIOB, I2C_SCL_PIN, GPIO_PULL_NO);
+    // Send pulses on SCL
+    gpio_set_mode        (I2C_SCL_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(I2C_SCL_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (I2C_SCL_PIN, GPIO_PULL_NO);
     for (uint32_t i = 0; i < 10; ++i) {
-        gpio_reset(GPIOB, I2C_SCL_PIN);
+        gpio_reset(I2C_SCL_PIN);
         delay_ms(1);
-        gpio_set(GPIOB, I2C_SCL_PIN);
+        gpio_set(I2C_SCL_PIN);
         delay_ms(1);
     }
     
-    // Setup SCL pin (PB8)
-    gpio_set_mode(GPIOB, I2C_SCL_PIN, GPIO_MODE_AF);
-    gpio_set_af  (GPIOB, I2C_SCL_PIN, 4);
+    // Setup SCL pin
+    gpio_set_mode(I2C_SCL_PIN, GPIO_MODE_AF);
+    gpio_set_af  (I2C_SCL_PIN, 4);
     
     
-    // Setup SDA pin (PB9)
-    gpio_set_mode        (GPIOB, I2C_SDA_PIN, GPIO_MODE_AF);
-    gpio_set_output_type (GPIOB, I2C_SDA_PIN, GPIO_TYPE_OPEN_DRAIN);
-    gpio_set_output_speed(GPIOB, I2C_SDA_PIN, GPIO_SPEED_HIGH);
-    gpio_set_pull        (GPIOB, I2C_SDA_PIN, GPIO_PULL_NO);
-    gpio_set_af          (GPIOB, I2C_SDA_PIN, 4);
+    // Setup SDA pin
+    gpio_set_mode        (I2C_SDA_PIN, GPIO_MODE_AF);
+    gpio_set_output_type (I2C_SDA_PIN, GPIO_TYPE_OPEN_DRAIN);
+    gpio_set_output_speed(I2C_SDA_PIN, GPIO_SPEED_HIGH);
+    gpio_set_pull        (I2C_SDA_PIN, GPIO_PULL_NO);
+    gpio_set_af          (I2C_SDA_PIN, 4);
    
     
-    //
     // Setup I2C1
-    //
     RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C1RST;
-
-    // Configure I2C
     I2C1->TIMINGR = speed;
 }
 

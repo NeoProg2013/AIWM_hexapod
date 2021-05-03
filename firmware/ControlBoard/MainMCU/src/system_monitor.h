@@ -19,7 +19,7 @@
 #define SYSMON_VOLTAGE_ERROR            (0x08)                          // Not resettable
 #define SYSMON_SYNC_ERROR               (0x10)                          // Not resettable
 #define SYSMON_MATH_ERROR               (0x20)                          // Not resettable
-#define SYSMON_I2C_ERROR                (0x40)                          // Not resettable
+#define SYSMON_COMM_ERROR               (0x40)                          // Not resettable
 #define SYSMON_CONN_LOST_ERROR          (0x80)                          // Resettable
 
 
@@ -32,9 +32,9 @@
 #define SYSMON_MODULE_MOTION_DRIVER     (0x04)
 #define SYSMON_MODULE_SEQUENCES_ENGINE  (0x08)
 #define SYSMON_MODULE_SYSTEM_MONITOR    (0x10)
-#define SYSMON_MODULE_OLED_GL           (0x20)
-#define SYSMON_MODULE_GUI               (0x40)
-#define SYSMON_MODULE_CAMERA            (0x80)
+#define SYSMON_MODULE_DISPLAY           (0x20)
+#define SYSMON_MODULE_SMCU              (0x40)
+//#define SYSMON_MODULE_SMCU              (0x80)
 
 
 // NOTE: Need use external functions for access to this variables

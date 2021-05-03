@@ -20,6 +20,7 @@
 #define APB1_CLOCK_FREQUENCY                (48000000)
 #define APB2_CLOCK_FREQUENCY                (48000000)
 
+#define USART1_IRQ_PRIORITY                 (7)        // Communication with MMCU
 
 
 
@@ -72,6 +73,9 @@ static inline void gpio_set(GPIO_TypeDef* port, uint32_t pin) {
 }
 static inline void gpio_reset(GPIO_TypeDef* port, uint32_t pin) {
     port->BRR |= 0x01u << pin;
+}
+static inline void gpio_toggle(GPIO_TypeDef* port, uint32_t pin) {
+    port->ODR ^= 0x01u << pin;
 }
 static inline bool gpio_read(GPIO_TypeDef* port, uint32_t pin) {
     return port->IDR & 0x01u << pin;

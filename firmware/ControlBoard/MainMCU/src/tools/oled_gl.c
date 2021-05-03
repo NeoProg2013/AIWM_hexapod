@@ -28,34 +28,30 @@ static driver_state_t driver_state = STATE_NOINIT;
 /// @brief  Graphic library initialization
 /// @return none
 //  ***************************************************************************
-void oled_gl_init(void) {
-    if (!ssd1306_128x64_init())             { sysmon_set_error(SYSMON_I2C_ERROR); sysmon_disable_module(SYSMON_MODULE_OLED_GL); return; }
-    if (!ssd1306_128x64_set_inverse(false)) { sysmon_set_error(SYSMON_I2C_ERROR); sysmon_disable_module(SYSMON_MODULE_OLED_GL); return; }
-    if (!ssd1306_128x64_set_contrast(0xFF)) { sysmon_set_error(SYSMON_I2C_ERROR); sysmon_disable_module(SYSMON_MODULE_OLED_GL); return; }
-    if (!ssd1306_128x64_set_state(true))    { sysmon_set_error(SYSMON_I2C_ERROR); sysmon_disable_module(SYSMON_MODULE_OLED_GL); return; }
+bool oled_gl_init(void) {
+    if (!ssd1306_128x64_init())             return false;
+    if (!ssd1306_128x64_set_inverse(false)) return false;
+    if (!ssd1306_128x64_set_contrast(0xFF)) return false;
+    if (!ssd1306_128x64_set_state(true))    return false;
     
     driver_state = STATE_IDLE;
+    return true;
 }
 
 //  ***************************************************************************
 /// @brief  Graphic library process
 /// @return none
 //  ***************************************************************************
-void oled_gl_process(void) {
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
-    
+bool oled_gl_process(void) {
     static uint32_t current_row = 0;
+    
     switch (driver_state) {
-        
         case STATE_IDLE:
             break;
-        
+            
         case STATE_UPDATE_ROW:
             if (ssd1306_128x64_start_async_update_row(current_row) == false) {
-                sysmon_set_error(SYSMON_I2C_ERROR);
-                sysmon_disable_module(SYSMON_MODULE_OLED_GL);
-                return;
+                return false;
             }
             
             ++current_row;
@@ -70,11 +66,8 @@ void oled_gl_process(void) {
             
         case STATE_WAIT:
             if (ssd1306_128x64_is_async_operation_complete() == true) {
-                
                 if (ssd1306_128x64_is_async_operation_success() == false) {
-                    sysmon_set_error(SYSMON_I2C_ERROR);
-                    sysmon_disable_module(SYSMON_MODULE_OLED_GL);
-                    return;
+                    return false;
                 }
                 driver_state = STATE_UPDATE_ROW;
             }
@@ -82,10 +75,9 @@ void oled_gl_process(void) {
             
         case STATE_NOINIT:
         default:
-            sysmon_set_error(SYSMON_FATAL_ERROR);
-            sysmon_disable_module(SYSMON_MODULE_OLED_GL);
-            break;
+            return false;
     }
+    return true;
 }
 
 //  ***************************************************************************
@@ -96,9 +88,7 @@ void oled_gl_process(void) {
 /// @return none
 //  ***************************************************************************
 void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
-    
     uint8_t mask = 0;
-    
     int32_t cursor = height - 1;
     while (cursor >= 0) {
         mask |= (1 << (y + cursor));
@@ -217,9 +207,7 @@ void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t
 /// @return none
 //  ***************************************************************************
 void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
-    
     uint8_t mask = 0;
-    
     int32_t cursor = height - 1;
     while (cursor >= 0) {
         mask |= (1 << (y + cursor));
@@ -241,17 +229,16 @@ void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uin
 /// @param  bitmap: bitmap data
 /// @return none
 //  ***************************************************************************
-void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap) {
+bool oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap) {
     if ((bitmap_height % 8) != 0) {
-        sysmon_set_error(SYSMON_FATAL_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_OLED_GL);
-        return;
+        return false;
     }
     
     for (uint32_t i = 0; i < (bitmap_height / 8); ++i, bitmap += bitmap_width) {
         uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row + i, x);
         memcpy(frame_buffer, bitmap, bitmap_width);
     }
+    return true;
 }
 
 //  ***************************************************************************
@@ -259,13 +246,8 @@ void oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32
 /// @param  none
 /// @return none
 //  ***************************************************************************
-void oled_gl_sync_display_update(void) {
-    if (sysmon_is_module_disable(SYSMON_MODULE_OLED_GL) == true) return;
-    
-    if (ssd1306_128x64_full_update() == false) {
-        sysmon_set_error(SYSMON_I2C_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_OLED_GL);
-    }
+bool oled_gl_sync_display_update(void) {
+    return ssd1306_128x64_full_update();
 }
 
 //  ***************************************************************************

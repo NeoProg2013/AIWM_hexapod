@@ -10,9 +10,6 @@
 #define PAUSE_BETWEEN_CONVERSIONS       (5)
 #define ACCUMULATE_SAMPLES_COUNT        (100)
 
-#define ADC_CHANNELS_COUNT              (1)
-#define ADC_BATTERY_VOLTAGE_CH          (0)
-
 
 typedef enum {
     STATE_NO_INIT,
@@ -25,7 +22,7 @@ typedef enum {
 
 
 static monitor_state_t monitor_state = STATE_NO_INIT;
-static uint32_t acc_adc_bins[ADC_CHANNELS_COUNT] = {0};
+static uint32_t acc_adc_bins = 0;
 static int16_t  battery_voltage_offset = 0;
 
 uint8_t  sysmon_system_status = 0;
@@ -43,7 +40,6 @@ static void calculate_battery_voltage(void);
 /// @return none
 //  ***************************************************************************
 void sysmon_init(void) {
-
     sysmon_system_status = 0;
     sysmon_module_status = 0;
 
@@ -82,7 +78,7 @@ void sysmon_process(void) {
             break;
             
         case STATE_ACCUMULATE:
-            acc_adc_bins[ADC_BATTERY_VOLTAGE_CH] += adc_get_conversion_result(ADC_BATTERY_VOLTAGE_CH);
+            acc_adc_bins += adc_read();
             if (++accumulate_counter >= ACCUMULATE_SAMPLES_COUNT) {
                 accumulate_counter = 0;
                 monitor_state = STATE_CALCULATION;
@@ -95,10 +91,10 @@ void sysmon_process(void) {
 
         case STATE_CALCULATION:
             calculate_battery_voltage();
-            acc_adc_bins[ADC_BATTERY_VOLTAGE_CH] = 0;
             if (sysmon_battery_charge == 0) {
                 sysmon_set_error(SYSMON_VOLTAGE_ERROR);
             }
+            acc_adc_bins = 0;
             pause_start_time = get_time_ms();
             monitor_state = STATE_PAUSE;
             break;
@@ -181,7 +177,6 @@ bool sysmon_is_module_disable(uint32_t module) {
 /// @return none
 //  ***************************************************************************
 static void calculate_battery_voltage(void) {
-    
     // Revert voltage divisor factor (voltage_div_factor = 1 / real_factor)
     // Voltage divisor: VIN-[10k]-OUT-[3k3]-GND
     // * 1000 - convert V to mV
@@ -189,7 +184,7 @@ static void calculate_battery_voltage(void) {
     const float bins_to_voltage_factor = 3.3f / 4096.0f;
     
     // Battery voltage (max voltage 12.6V)
-    uint32_t avr_adc_bins = acc_adc_bins[ADC_BATTERY_VOLTAGE_CH] / ACCUMULATE_SAMPLES_COUNT;
+    uint32_t avr_adc_bins = acc_adc_bins / ACCUMULATE_SAMPLES_COUNT;
     float input_voltage = avr_adc_bins * bins_to_voltage_factor;
     int32_t battery_voltage = (uint32_t)(input_voltage * voltage_div_factor);
 
