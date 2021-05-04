@@ -35,7 +35,7 @@ static bool process_advanced_trajectory(float motion_time);
 static bool kinematic_calculate_angles(void);
 
 
-static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
+limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 
 static motion_t g_current_motion = {0};
 static motion_config_t g_current_motion_config = {0};
