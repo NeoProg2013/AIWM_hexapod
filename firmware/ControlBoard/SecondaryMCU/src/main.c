@@ -11,11 +11,7 @@
 static void system_init(void);
 
 
-void EXTI_IRQHandler(void) {
-    uint32_t pr = EXTI->PR;
-    EXTI->PR = 0xFFFFFFFF;
-    hx711_process_irq(pr);
-}
+
 
 /*
 
@@ -56,14 +52,32 @@ int main() {
     hx711_calibration();
     
     uint64_t send_data_time = get_time_ms();
-    int16_t hx711_data[6] = {0};
-    int16_t mpu6050_data[3] = {0};
+    bool hx711_is_first_read = true;
+    //bool mpu6050_is_first_read = true;
+    int16_t hx711_flt_data[6] = {0};
+    int16_t mpu6050_flt_data[3] = {0};
     while (true) {
+        
+        // Read data from HX711
         bool hx711_process_result = hx711_process();
         if (hx711_is_data_ready()) { 
-            hx711_read(hx711_data);
+            int16_t raw_data[6] = {0};
+            hx711_read(raw_data);
+            for (uint32_t i = 0; i < 6; ++i) {
+                if (hx711_is_first_read) {
+                    hx711_flt_data[i] = raw_data[i];
+                } else {
+                    hx711_flt_data[i] = (int16_t)(raw_data[i] * 0.1f + hx711_flt_data[i] * (1 - 0.1f));
+                }
+            }
+            hx711_is_first_read = false;
         }
         
+        // Read data from MPU6050
+        //
+        //
+        
+        // Send data to MMCU
         if (get_time_ms() - send_data_time > 13 && is_frame_transmitted) {
             uint8_t* tx_buffer = usart1_get_tx_buffer();
             uint32_t tx_data_size = 0;
@@ -74,16 +88,17 @@ int main() {
             // Write HX711 data
             for (uint32_t i = 0; i < 6; ++i) {
                 if (!hx711_process_result) {
-                    hx711_data[i] = 0xFFFF;
+                    hx711_flt_data[i] = 0xFFFF;
+                    hx711_is_first_read = true;
                 }
-                memcpy(&tx_buffer[tx_data_size], &hx711_data[i], sizeof(hx711_data[i]));
-                tx_data_size += sizeof(hx711_data[i]);
+                memcpy(&tx_buffer[tx_data_size], &hx711_flt_data[i], sizeof(hx711_flt_data[i]));
+                tx_data_size += sizeof(hx711_flt_data[i]);
             }
             
             // Write MPU6050 data
             for (uint32_t i = 0; i < 3; ++i) {
-                memcpy(&tx_buffer[tx_data_size], &mpu6050_data[i], sizeof(mpu6050_data[i]));
-                tx_data_size += sizeof(mpu6050_data[i]);
+                memcpy(&tx_buffer[tx_data_size], &mpu6050_flt_data[i], sizeof(mpu6050_flt_data[i]));
+                tx_data_size += sizeof(mpu6050_flt_data[i]);
             }
             
             // Write end frame marker
@@ -93,49 +108,11 @@ int main() {
             is_frame_transmitted = false;
             usart1_start_tx(tx_data_size);
         }
-    }
-    
-/*
-    hx711_init();
-    hx711_power_up();
-    hx711_calibration();
-    
-    int32_t data[6] = {0};
-    int32_t prev_data[6] = {0};
-    hx711_read(data);
-        
-    for (int i = 0; i < 8; ++i) {
-        prev_data[i] = data[i];
-    }
-    
-    while (true) {
-        hx711_process();
-        if (hx711_read(data)) {
-            for (int i = 0; i < 8; ++i) {
-                if (abs(prev_data[i] - data[i]) > 5000) {
-                    asm("NOP");
-                    asm("NOP");
-                    asm("NOP");
-                }
-                prev_data[i] = data[i];
-            }
-        }
-    }*/
-    
-    /*i2c1_init(I2C_SPEED_400KHZ);
-    uint8_t buffer[10] = {0};
-    static bool result = false;
-    result = i2c1_read(0x68 << 1, 0x00, 1, buffer, 1);
-    
-    while (true) {}*/
-    
-    
+    } 
 }
 
 //  ***************************************************************************
 /// @brief  System initialization
-/// @param  none
-/// @return none
 //  ***************************************************************************
 static void system_init(void) {
     
@@ -187,4 +164,18 @@ static void system_init(void) {
     // Enable USART1 clocks
     RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
     while ((RCC->APB2ENR & RCC_APB2ENR_USART1EN) == 0);
+}
+
+
+
+
+
+
+//  ***************************************************************************
+/// @brief  GPIO IRQ handler
+//  ***************************************************************************
+void EXTI_IRQHandler(void) {
+    uint32_t pr = EXTI->PR;
+    EXTI->PR = 0xFFFFFFFF;
+    hx711_process_irq(pr);
 }

@@ -71,16 +71,18 @@ void main() {
             servo_driver_power_off();
         }
         
+        smcu_process();
+        sequences_engine_process();
+        
         // Motion process
-        // This 3 functions should be call in this sequence
+        // This 2 functions should be call in this sequence
         static uint64_t prev_synchro_value = 0;
         if (synchro != prev_synchro_value) {
             if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0) {
                 sysmon_set_error(SYSMON_SYNC_ERROR);
             }
             prev_synchro_value = synchro;
-            
-            sequences_engine_process();
+
             motion_core_process();
             servo_driver_process();
         } 
@@ -90,7 +92,6 @@ void main() {
             cli_process();
             indication_process();
             display_process();
-            smcu_process();
         }
     }
 }

@@ -139,7 +139,6 @@ static void usart_reset(bool reset_tx, bool reset_rx) {
 /// @return none
 //  ***************************************************************************
 void USART1_IRQHandler(void) {
-
     uint32_t status = USART1->ISR;
     if (status & (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE | USART_ISR_PE)) {
         usart_reset(false, true);

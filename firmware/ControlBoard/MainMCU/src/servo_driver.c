@@ -122,7 +122,6 @@ void servo_driver_set_speed(uint32_t speed) {
     
     float factor = (float)speed / 100.0f;
     uint32_t freq = (uint32_t)(PWM_MIN_FREQUENCY_HZ + (float)(PWM_MAX_FREQUENCY_HZ - PWM_MIN_FREQUENCY_HZ) * factor);
-    
     pwm_set_frequency(freq);
 }
 
