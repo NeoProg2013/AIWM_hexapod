@@ -265,7 +265,6 @@ bool servo_driver_cli_command_process(const char* cmd, const char (*argv)[CLI_AR
 /// @return true - read success, false - fail
 //  ***************************************************************************
 static bool read_configuration(void) {
-    
     for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
         servo_t* servo = &servo_list[i];
         

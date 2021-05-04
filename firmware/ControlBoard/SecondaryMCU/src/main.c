@@ -45,7 +45,7 @@ int main() {
     callbacks.frame_transmitted_callback = frame_transmitted_callback;
     usart1_init(500000, &callbacks);
     
-    delay_ms(1000);
+    delay_ms(5000);
     
     hx711_init();
     hx711_power_up();
