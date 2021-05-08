@@ -40,10 +40,6 @@ static void calculate_battery_voltage(void);
 /// @return none
 //  ***************************************************************************
 void sysmon_init(void) {
-    sysmon_system_status = 0;
-    sysmon_module_status = 0;
-
-    // ADC initialization
     adc_init();
     monitor_state = STATE_START_CONVERSION;
 }

@@ -24,7 +24,6 @@ static bool is_cli_control_enabled = false;
 static void blink_red_led_with_buzzer(uint32_t period);
 static void blink_red_led(uint32_t period);
 static void blink_blue_led(uint32_t period);
-//static void blink_green_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
 
 
@@ -94,9 +93,6 @@ void indication_process(void) {
         }
         else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
              blink_blue_led(500);
-        }
-        else {
-            blink_red_led_with_buzzer(100);
         }
     }
 }
@@ -264,30 +260,3 @@ static void blink_blue_led(uint32_t period) {
         start_time = get_time_ms();
     }
 }
-
-//  ***************************************************************************
-/// @brief  Blink green LED
-/// @param  period: LED switch time
-/// @return none
-//  ***************************************************************************
-/*static void blink_green_led(uint32_t period) {
-    
-    static uint32_t start_time = 0;
-    static bool state = false;
-    
-    if (get_time_ms() - start_time > period) {
-        
-        if (state == false) {
-            LED_TURN_OFF(LED_G_PIN);
-        }
-        else {
-            LED_TURN_ON(LED_G_PIN);
-        }
-        LED_TURN_OFF(LED_R_PIN);
-        LED_TURN_OFF(LED_B_PIN);
-        BUZZER_TURN_OFF();
-        
-        state = !state;
-        start_time = get_time_ms();
-    }
-}*/

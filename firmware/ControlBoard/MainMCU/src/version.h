@@ -7,7 +7,7 @@
 #define _VERSION_H_
  
  
-#define FIRMWARE_VERSION				("1.01.210508 11087 Debug")
+#define FIRMWARE_VERSION				("1.01.210508 11090 Debug")
  
  
 #endif // _VERSION_H_
