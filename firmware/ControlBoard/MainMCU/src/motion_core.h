@@ -5,18 +5,18 @@
 //  ***************************************************************************
 #ifndef _MOTION_CORE_H_
 #define _MOTION_CORE_H_
-
 #include <stdint.h>
 #include <stdbool.h>
+#include "cli.h"
 
 #define SUPPORT_LIMBS_COUNT                 (6)
 
 #define MOTION_DEFAULT_SPEED                (87)
 #define LIMB_STEP_HEIGHT                    (30)
 
-#define MTIME_SCALE                         (1000)
-#define MTIME_MIN_VALUE                     (0 * MTIME_SCALE)
-#define MTIME_MAX_VALUE                     (1 * MTIME_SCALE)
+#define MTIME_SCALE                         (1000u)
+#define MTIME_MIN_VALUE                     (0u * MTIME_SCALE)
+#define MTIME_MAX_VALUE                     (1u * MTIME_SCALE)
 #define MTIME_MID_VALUE                     (MTIME_MAX_VALUE >> 1)
 #define MTIME_NO_UPDATE                     (MTIME_MAX_VALUE << 1)
 
@@ -62,6 +62,8 @@ extern void motion_core_init_motion_config(const motion_config_t* motion_config)
 extern void motion_core_update_motion_config(const motion_config_t* motion_config);
 extern void motion_core_process(void);
 extern bool motion_core_is_motion_complete(void);
+
+extern bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response);
 
 
 #endif /* _MOTION_CORE_H_ */

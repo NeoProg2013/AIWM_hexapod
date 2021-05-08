@@ -128,6 +128,7 @@ void display_process(void) {
     switch (module_state) {
         
         case STATE_UPDATE_BATTERY_CHARGE:
+            oled_gl_clear_row_fragment(0, 18, 0, 17, 8);
             oled_gl_draw_dec_number(0, 18, sysmon_battery_charge);
             module_state = STATE_UPDATE_SYSTEM_STATUS;
             break;

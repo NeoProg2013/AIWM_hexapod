@@ -7,15 +7,15 @@
 #include "system_monitor.h"
 #include "systimer.h"
 
-#define LED_R_PIN                   (13) // PC13
-#define LED_G_PIN                   (14) // PC14
-#define LED_B_PIN                   (15) // PC15
-#define BUZZER_PIN                  (0) // PC0
+#define LED_R_PIN                   GPIOC, 13
+#define LED_G_PIN                   GPIOC, 14
+#define LED_B_PIN                   GPIOC, 15
+#define BUZZER_PIN                  GPIOC, 0
 
-#define LED_TURN_OFF(pin)           gpio_reset(GPIOC, pin)
-#define LED_TURN_ON(pin)            gpio_set  (GPIOC, pin)
-#define BUZZER_TURN_OFF()           gpio_reset(GPIOC, BUZZER_PIN)
-#define BUZZER_TURN_ON()            gpio_set  (GPIOC, BUZZER_PIN)
+#define LED_TURN_OFF(pin)           gpio_reset(pin)
+#define LED_TURN_ON(pin)            gpio_set  (pin)
+#define BUZZER_TURN_OFF()           gpio_reset(BUZZER_PIN)
+#define BUZZER_TURN_ON()            gpio_set  (BUZZER_PIN)
 
 
 static bool is_cli_control_enabled = false;
@@ -34,30 +34,25 @@ static void blink_yellow_led(uint32_t period);
 /// @return none
 //  ***************************************************************************
 void indication_init(void) {
+    gpio_set_mode        (LED_R_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (LED_R_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(LED_R_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (LED_R_PIN, GPIO_PULL_NO);
     
-    // Front LED red pin (PC13)
-    gpio_set_mode        (GPIOC, LED_R_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_output_type (GPIOC, LED_R_PIN, GPIO_TYPE_PUSH_PULL);
-    gpio_set_output_speed(GPIOC, LED_R_PIN, GPIO_SPEED_LOW);
-    gpio_set_pull        (GPIOC, LED_R_PIN, GPIO_PULL_NO);
+    gpio_set_mode        (LED_G_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (LED_G_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(LED_G_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (LED_G_PIN, GPIO_PULL_NO);
     
-    // Front LED green pin (PC14)
-    gpio_set_mode        (GPIOC, LED_G_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_output_type (GPIOC, LED_G_PIN, GPIO_TYPE_PUSH_PULL);
-    gpio_set_output_speed(GPIOC, LED_G_PIN, GPIO_SPEED_LOW);
-    gpio_set_pull        (GPIOC, LED_G_PIN, GPIO_PULL_NO);
+    gpio_set_mode        (LED_B_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (LED_B_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(LED_B_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (LED_B_PIN, GPIO_PULL_NO);
     
-    // Front LED blue pin (PC15)
-    gpio_set_mode        (GPIOC, LED_B_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_output_type (GPIOC, LED_B_PIN, GPIO_TYPE_PUSH_PULL);
-    gpio_set_output_speed(GPIOC, LED_B_PIN, GPIO_SPEED_LOW);
-    gpio_set_pull        (GPIOC, LED_B_PIN, GPIO_PULL_NO);
-    
-    // Buzzer pin (PC0): output mode, push-pull, high speed, no pull
-    gpio_set_mode        (GPIOC, BUZZER_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_output_type (GPIOC, BUZZER_PIN, GPIO_TYPE_PUSH_PULL);
-    gpio_set_output_speed(GPIOC, BUZZER_PIN, GPIO_SPEED_LOW);
-    gpio_set_pull        (GPIOC, BUZZER_PIN, GPIO_PULL_NO);
+    gpio_set_mode        (BUZZER_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (BUZZER_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(BUZZER_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (BUZZER_PIN, GPIO_PULL_NO);
 
     
     // Disable all

@@ -19,38 +19,14 @@ typedef enum {
 } state_t;
 
 
-static state_t state = STATE_NO_INIT;
+static state_t  state = STATE_NO_INIT;
 static uint32_t received_frame_size = 0;
-static bool is_enable_data_logging = false;
+static int16_t  foot_sensors_data[6] = {0};
+static int16_t  accel_sensor_data[3] = {0};
 
 
 static void frame_received_callback(uint32_t frame_size);
 static void frame_error_callback(void);
-
-typedef struct {
-    float x;
-    float y;
-    float z;
-} point_3d_t;
-
-typedef struct {
-    float    angle;
-    uint16_t length;
-    int16_t  zero_rotate;
-    
-    int16_t  prot_min_angle; // Protection min angle, [degree]
-    int16_t  prot_max_angle; // Protection max angle, [degree]
-} link_t;
-
-typedef struct {
-    point_3d_t position;
-    link_t coxa;
-    link_t femur;
-    link_t tibia;
-} limb_t;
-
-
-extern limb_t g_limbs[6];
 
 
 //  ***************************************************************************
@@ -90,25 +66,15 @@ void smcu_process(void) {
             ++cursor;
             
             // Read HX711 data
-            int16_t hx711_data[6] = {0};
             for (uint32_t i = 0; i < 6; ++i) {
-                memcpy(&hx711_data[i], &rx_buffer[cursor], sizeof(hx711_data[i]));
-                cursor += sizeof(hx711_data[i]);
+                memcpy(&foot_sensors_data[i], &rx_buffer[cursor], sizeof(foot_sensors_data[i]));
+                cursor += sizeof(foot_sensors_data[i]);
             }
             
             // Read MPU6050 data
-            int16_t mpu6050_data[3] = {0};
             for (uint32_t i = 0; i < 3; ++i) {
-                memcpy(&mpu6050_data[i], &rx_buffer[cursor], sizeof(mpu6050_data[i]));
-                cursor += sizeof(mpu6050_data[i]);
-            }
-            
-            if (is_enable_data_logging) {
-                char buffer[256] = {0};
-                sprintf(buffer, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\r\n", 
-                        hx711_data[0], (int16_t)g_limbs[0].position.y, hx711_data[1], (int16_t)g_limbs[1].position.y, hx711_data[2], (int16_t)g_limbs[2].position.y,
-                        hx711_data[3], (int16_t)g_limbs[3].position.y, hx711_data[4], (int16_t)g_limbs[4].position.y, hx711_data[5], (int16_t)g_limbs[5].position.y);
-                cli_send_data(buffer);
+                memcpy(&accel_sensor_data[i], &rx_buffer[cursor], sizeof(accel_sensor_data[i]));
+                cursor += sizeof(accel_sensor_data[i]);
             }
             
             // Update frame receive time
@@ -127,28 +93,14 @@ void smcu_process(void) {
     }
 }
 
-
 //  ***************************************************************************
-/// @brief  CLI command process
-/// @param  cmd: command string
-/// @param  argv: argument list
-/// @param  argc: arguments count
-/// @param  response: response
-/// @retval response
-/// @return true - success, false - fail
+/// @brief  Get sensors data
+/// @param  foot_sensors: pointer for get address to foot sensor data
+/// @param  accel_sensor: pointer for get address to accel sensor data
 //  ***************************************************************************
-bool smcu_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
-    if (strcmp(cmd, "logging") == 0 && argc == 1) {
-        if (argv[0][0] == '1') {
-            is_enable_data_logging = true;
-        } else {
-            is_enable_data_logging = false;
-        }
-    } else {
-        strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
-        return false;
-    }
-    return true;
+void smcu_get_sensor_data(int16_t** foot_sensors, int16_t** accel_sensor) {
+    *foot_sensors = foot_sensors_data;
+    *accel_sensor = accel_sensor_data;
 }
 
 

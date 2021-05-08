@@ -8,6 +8,7 @@
 #include "configurator.h"
 #include "systimer.h"
 #include "pwm.h"
+#include "smcu.h"
 #include "system_monitor.h"
 #include <math.h>
 
@@ -35,11 +36,13 @@ static bool process_advanced_trajectory(float motion_time);
 static bool kinematic_calculate_angles(void);
 
 
-limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
+static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 
 static motion_t g_current_motion = {0};
 static motion_config_t g_current_motion_config = {0};
 static motion_config_t g_next_motion_config = {0};
+
+static bool is_enable_data_logging = false;
 
 
 
@@ -127,6 +130,11 @@ void motion_core_process(void) {
     // Scale time to [0.0; 1.0] range
     float scaled_motion_time = (float)g_current_motion.motion_time / (float)MTIME_SCALE;
     
+    // Gatherig sensor data
+    int16_t* foot_sensors_data = NULL;
+    int16_t* accel_sensor_data = NULL;
+    smcu_get_sensor_data(&foot_sensors_data, &accel_sensor_data);
+    
     // Calculate new limbs positions
     if (process_linear_trajectory(scaled_motion_time) == false) {
         sysmon_set_error(SYSMON_MATH_ERROR);
@@ -159,6 +167,20 @@ void motion_core_process(void) {
         g_current_motion_config = g_next_motion_config;
         servo_driver_set_speed(g_current_motion_config.speed);
     }
+    
+    
+    if (is_enable_data_logging) {
+        void* tx_buffer = cli_get_tx_buffer();
+        sprintf(tx_buffer, "[MOTION CORE]: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", 
+                (int16_t)g_limbs[0].position.x * 10, (int16_t)g_limbs[0].position.y * 10, (int16_t)g_limbs[0].position.z * 10, foot_sensors_data[0], 
+                (int16_t)g_limbs[1].position.x * 10, (int16_t)g_limbs[1].position.y * 10, (int16_t)g_limbs[1].position.z * 10, foot_sensors_data[1], 
+                (int16_t)g_limbs[2].position.x * 10, (int16_t)g_limbs[2].position.y * 10, (int16_t)g_limbs[2].position.z * 10, foot_sensors_data[2], 
+                (int16_t)g_limbs[3].position.x * 10, (int16_t)g_limbs[3].position.y * 10, (int16_t)g_limbs[3].position.z * 10, foot_sensors_data[3], 
+                (int16_t)g_limbs[4].position.x * 10, (int16_t)g_limbs[4].position.y * 10, (int16_t)g_limbs[4].position.z * 10, foot_sensors_data[4], 
+                (int16_t)g_limbs[5].position.x * 10, (int16_t)g_limbs[5].position.y * 10, (int16_t)g_limbs[5].position.z * 10, foot_sensors_data[5], 
+                accel_sensor_data[0], accel_sensor_data[1], accel_sensor_data[2]);
+        cli_send_data(NULL);
+    }
 }
 
 //  ***************************************************************************
@@ -167,6 +189,25 @@ void motion_core_process(void) {
 //  ***************************************************************************
 bool motion_core_is_motion_complete(void) {
     return g_current_motion.motion_time >= g_current_motion.time_stop;
+}
+
+//  ***************************************************************************
+/// @brief  CLI command process
+/// @param  cmd: command string
+/// @param  argv: argument list
+/// @param  argc: arguments count
+/// @param  response: response
+/// @retval response
+/// @return true - success, false - fail
+//  ***************************************************************************
+bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
+    if (strcmp(cmd, "logging") == 0 && argc == 1) {
+        is_enable_data_logging = (argv[0][0] == '1');
+    } else {
+        strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
+        return false;
+    }
+    return true;
 }
 
 

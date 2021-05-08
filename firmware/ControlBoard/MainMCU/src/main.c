@@ -89,9 +89,9 @@ void main() {
         else { // Here is other operations
             sysmon_process();
             swlp_process();
-            cli_process();
             indication_process();
             display_process();
+            cli_process();
         }
     }
 }

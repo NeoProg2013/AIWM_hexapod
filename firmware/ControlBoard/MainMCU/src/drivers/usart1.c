@@ -9,8 +9,6 @@
 
 static uint8_t  tx_buffer[3072] = {0};
 static uint8_t  rx_buffer[512]  = {0};
-static uint8_t* tx_buffer_cursor = NULL;
-static uint32_t tx_bytes_count = 0;
 static uint8_t* rx_buffer_cursor = NULL;
 static uint32_t rx_bytes_count = 0;
 static usart1_callbacks_t usart_callbacks;
@@ -59,14 +57,21 @@ void usart1_init(uint32_t baud_rate, usart1_callbacks_t* callbacks) {
 /// @param  bytes_count: bytes count for transmit
 /// @return none
 //  ***************************************************************************
-void usart1_start_tx(uint32_t bytes_count) {
-    if (bytes_count) {  
+void usart1_start_sync_tx(uint32_t bytes_count) {
+    if (bytes_count) {   
         usart_reset(true, false);
-        tx_bytes_count = bytes_count;
-        tx_buffer_cursor = tx_buffer;
-        USART1->CR1 |= USART_CR1_TXEIE;
         USART1->CR1 |= USART_CR1_TE;
+      
+        uint8_t* buffer_cursor = tx_buffer;
+        while (bytes_count > 0) {
+            while ((USART1->ISR & USART_ISR_TXE) != USART_ISR_TXE);
+            USART1->TDR = *buffer_cursor;
+            --bytes_count;
+            ++buffer_cursor;
+        }
+        while ((USART1->ISR & USART_ISR_TC) != USART_ISR_TC);
     }
+    usart_reset(true, false);
 }
 
 //  ***************************************************************************
@@ -113,15 +118,10 @@ uint8_t* usart1_get_rx_buffer(void) {
 /// @return none
 //  ***************************************************************************
 static void usart_reset(bool reset_tx, bool reset_rx) {
-
-    // Reset TX
     if (reset_tx) {
         USART1->CR1 &= ~USART_CR1_TE; // Disable TX
-        USART1->CR1 &= ~(USART_CR1_TCIE | USART_CR1_TXEIE); // Disable interrupts
         USART1->ICR |= USART_ICR_FECF | USART_ICR_TCCF;
     }
-        
-    // Reset RX
     if (reset_rx) {
         USART1->CR1 &= ~USART_CR1_RE; // Disable RX
         USART1->CR1 &= ~(USART_CR1_RTOIE | USART_CR1_RXNEIE); // Disable interrupts
@@ -158,18 +158,5 @@ void USART1_IRQHandler(void) {
         else {
             USART1->RDR; // Dummy read
         }
-    }
-    if ((status & USART_ISR_TXE) && (USART1->CR1 & USART_CR1_TXEIE)) {
-        USART1->TDR = (*tx_buffer_cursor);
-        --tx_bytes_count;
-        ++tx_buffer_cursor;
-        if (tx_bytes_count == 0) {
-            USART1->CR1 &= ~USART_CR1_TXEIE;
-            USART1->CR1 |= USART_CR1_TCIE;
-        }
-    }
-    if ((status & USART_ISR_TC) && (USART1->CR1 & USART_CR1_TCIE)) {
-        usart_reset(true, false);
-        usart_callbacks.frame_transmitted_callback();
     }
 }

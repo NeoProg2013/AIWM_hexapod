@@ -27,6 +27,7 @@
 
 extern void cli_init(void);
 extern void cli_process(void);
+extern void* cli_get_tx_buffer(void);
 extern void cli_send_data(const char* data);
 
 

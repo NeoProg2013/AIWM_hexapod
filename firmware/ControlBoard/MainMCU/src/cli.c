@@ -13,14 +13,13 @@
 #include "indication.h"
 #include "smcu.h"
 #include "version.h"
-#define COMMUNICATION_BAUD_RATE                     (250000)
+#define COMMUNICATION_BAUD_RATE                     (1000000)
 
 
 typedef enum {
     STATE_NO_INIT,
     STATE_WAIT_FRAME,
-    STATE_FRAME_RECEIVED,
-    STATE_TRANSMIT
+    STATE_FRAME_RECEIVED
 } state_t;
 
 
@@ -28,7 +27,7 @@ static state_t state = STATE_NO_INIT;
 
 
 static void frame_received_callback(uint32_t frame_size);
-static void frame_transmitted_or_error_callback(void);
+static void frame_error_callback(void);
 static bool parse_command_line(char* cmd_line, char* module, char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t* argc);
 static bool process_command(const char* module, const char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t argc, char* response);
 
@@ -41,8 +40,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
 void cli_init(void) {
     usart1_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
-    callbacks.frame_transmitted_callback = frame_transmitted_or_error_callback;
-    callbacks.frame_error_callback = frame_transmitted_or_error_callback;
+    callbacks.frame_error_callback = frame_error_callback;
     usart1_init(COMMUNICATION_BAUD_RATE, &callbacks);
     
     state = STATE_WAIT_FRAME;
@@ -82,9 +80,18 @@ void cli_process(void) {
         }
 
         // Send response
-        usart1_start_tx(strlen(tx_buffer));
-        state = STATE_TRANSMIT;
+        usart1_start_sync_tx(strlen(tx_buffer));
+        usart1_start_rx();
+        state = STATE_WAIT_FRAME;
     }
+}
+
+//  ***************************************************************************
+/// @brief  Get TX buffer for send data
+/// @return TX buffer address
+//  ***************************************************************************
+void* cli_get_tx_buffer(void) {
+    return usart1_get_tx_buffer();
 }
 
 //  ***************************************************************************
@@ -93,10 +100,13 @@ void cli_process(void) {
 //  ***************************************************************************
 void cli_send_data(const char* data) {
     char* tx_buffer = (char*)usart1_get_tx_buffer();
-    strcpy(tx_buffer, data);
-    usart1_start_tx(strlen(tx_buffer));
-    state = STATE_TRANSMIT;
+    if (data != NULL) {
+        strcpy(tx_buffer, data);
+    }
+    usart1_start_sync_tx(strlen(tx_buffer));
 }
+
+
 
 
 
@@ -175,17 +185,14 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     else if (strcmp(module, "servo") == 0) {
         return servo_driver_cli_command_process(cmd, argv, argc, response);
     }
-    /*else if (strcmp(module, "motion") == 0) {
+    else if (strcmp(module, "motion") == 0) {
         return motion_core_cli_command_process(cmd, argv, argc, response);
-    }*/
+    }
     else if (strcmp(module, "config") == 0) {
         return config_cli_command_process(cmd, argv, argc, response);
     }
     else if (strcmp(module, "indication") == 0) {
         return indication_cli_command_process(cmd, argv, argc, response);
-    }
-    else if (strcmp(module, "smcu") == 0) {
-        return smcu_cli_command_process(cmd, argv, argc, response);
     }
     else {
         strcpy(response, CLI_ERROR("Unknown module name"));
@@ -253,7 +260,7 @@ static void frame_received_callback(uint32_t frame_size) {
 /// @param  none
 /// @return none
 //  ***************************************************************************
-static void frame_transmitted_or_error_callback(void) {
+static void frame_error_callback(void) {
     state = STATE_WAIT_FRAME;
     usart1_start_rx();
 }

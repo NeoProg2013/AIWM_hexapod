@@ -6,10 +6,8 @@
 #include "stm32f373xc.h"
 #include "project_base.h"
 #include <string.h>
-
 #define PWM_CHANNEL_DISABLE_VALUE       (0xFFFF)
 #define PWM_CHANNEL_PULSE_TRIM          (3)
-
 
 #if 1000000 / PWM_MIN_FREQUENCY_HZ > 65535
 #error "PWM period should be less 65535 ticks (1 tick = 1us), check PWM_START_FREQUENCY_HZ value"

@@ -78,7 +78,6 @@ void sequences_engine_process(void) {
     static uint64_t prev_active_time = 0;
 
     switch (engine_state) {
-        
         case STATE_IDLE:
             if (current_sequence != next_sequence) {
                 engine_state = STATE_CHANGE_SEQUENCE;
@@ -110,24 +109,20 @@ void sequences_engine_process(void) {
                 sequence_stage = STAGE_MAIN;
             }
             if (sequence_stage == STAGE_MAIN && current_motion >= current_sequence_info->finalize_motions_begin) {
-                
-                if (current_sequence != next_sequence) { 
-                    // Need change current sequence - go to finalize motions if it available
+                if (current_sequence != next_sequence) { // Need change current sequence - go to finalize motions if it available
                     current_motion = current_sequence_info->finalize_motions_begin;
                     sequence_stage = STAGE_FINALIZE;
                 }
                 else {   
                     if (current_sequence_info->is_sequence_looped == true) {
                         current_motion = current_sequence_info->main_motions_begin;
-                    }
-                    else {
-                        // Not looped sequence completed and new sequence not selected
-                        sequences_engine_select_sequence(SEQUENCE_NONE, 0, 0, 0);
-                        engine_state = STATE_CHANGE_SEQUENCE;
+                    } else { // Not looped sequence completed and new sequence not selected
+                        sequence_stage = STAGE_FINALIZE;
                     }
                 }              
             }
             if (sequence_stage == STAGE_FINALIZE && current_motion >= current_sequence_info->total_motions_count) {
+                sequences_engine_select_sequence(SEQUENCE_NONE, 0, 0, 0);
                 engine_state = STATE_CHANGE_SEQUENCE;
                 hexapod_state = (current_sequence == SEQUENCE_DOWN) ? HEXAPOD_STATE_DOWN : HEXAPOD_STATE_UP;
             }    
