@@ -41,6 +41,7 @@ static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 static motion_t g_current_motion = {0};
 static motion_config_t g_current_motion_config = {0};
 static motion_config_t g_next_motion_config = {0};
+static bool is_motion_completed = true;
 
 static bool is_enable_data_logging = false;
 
@@ -89,6 +90,7 @@ void motion_core_init(const point_3d_t* start_points) {
 //  ***************************************************************************
 void motion_core_start_motion(const motion_t* motion) {
     g_current_motion = *motion;
+    is_motion_completed = false;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         if (g_current_motion.trajectories[i] == TRAJECTORY_XYZ_LINEAR) { // Set start point for linear traertory
             g_current_motion.start_positions[i] = g_limbs[i].position;
@@ -124,6 +126,7 @@ void motion_core_process(void) {
 
 
     if (g_current_motion.motion_time >= g_current_motion.time_stop) {
+        is_motion_completed = true;
         return; // We reach to end of motion - nothing do
     }
     
@@ -172,12 +175,12 @@ void motion_core_process(void) {
     if (is_enable_data_logging) {
         void* tx_buffer = cli_get_tx_buffer();
         sprintf(tx_buffer, "[MOTION CORE]: %lu %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", (uint32_t)get_time_ms(),
-                (int16_t)g_limbs[0].position.x * 10, (int16_t)g_limbs[0].position.y * 10, (int16_t)g_limbs[0].position.z * 10, foot_sensors_data[0], 
-                (int16_t)g_limbs[1].position.x * 10, (int16_t)g_limbs[1].position.y * 10, (int16_t)g_limbs[1].position.z * 10, foot_sensors_data[1], 
-                (int16_t)g_limbs[2].position.x * 10, (int16_t)g_limbs[2].position.y * 10, (int16_t)g_limbs[2].position.z * 10, foot_sensors_data[2], 
-                (int16_t)g_limbs[3].position.x * 10, (int16_t)g_limbs[3].position.y * 10, (int16_t)g_limbs[3].position.z * 10, foot_sensors_data[3], 
-                (int16_t)g_limbs[4].position.x * 10, (int16_t)g_limbs[4].position.y * 10, (int16_t)g_limbs[4].position.z * 10, foot_sensors_data[4], 
-                (int16_t)g_limbs[5].position.x * 10, (int16_t)g_limbs[5].position.y * 10, (int16_t)g_limbs[5].position.z * 10, foot_sensors_data[5], 
+                (int16_t)(g_limbs[0].position.x * 100.0f), (int16_t)(g_limbs[0].position.y * 100.0f), (int16_t)(g_limbs[0].position.z * 100.0f), foot_sensors_data[0], 
+                (int16_t)(g_limbs[1].position.x * 100.0f), (int16_t)(g_limbs[1].position.y * 100.0f), (int16_t)(g_limbs[1].position.z * 100.0f), foot_sensors_data[1], 
+                (int16_t)(g_limbs[2].position.x * 100.0f), (int16_t)(g_limbs[2].position.y * 100.0f), (int16_t)(g_limbs[2].position.z * 100.0f), foot_sensors_data[2], 
+                (int16_t)(g_limbs[3].position.x * 100.0f), (int16_t)(g_limbs[3].position.y * 100.0f), (int16_t)(g_limbs[3].position.z * 100.0f), foot_sensors_data[3], 
+                (int16_t)(g_limbs[4].position.x * 100.0f), (int16_t)(g_limbs[4].position.y * 100.0f), (int16_t)(g_limbs[4].position.z * 100.0f), foot_sensors_data[4], 
+                (int16_t)(g_limbs[5].position.x * 100.0f), (int16_t)(g_limbs[5].position.y * 100.0f), (int16_t)(g_limbs[5].position.z * 100.0f), foot_sensors_data[5], 
                 accel_sensor_data[0], accel_sensor_data[1], accel_sensor_data[2]);
         cli_send_data(NULL);
     }
@@ -188,7 +191,7 @@ void motion_core_process(void) {
 /// @return true - motion completed, false - motion in progress
 //  ***************************************************************************
 bool motion_core_is_motion_complete(void) {
-    return g_current_motion.motion_time >= g_current_motion.time_stop;
+    return is_motion_completed;
 }
 
 //  ***************************************************************************
