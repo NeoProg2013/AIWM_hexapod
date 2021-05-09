@@ -5,6 +5,7 @@
 #include "system_monitor.h"
 #include "project_base.h"
 #include "adc.h"
+#include "configurator.h"
 #include "systimer.h"
 
 #define PAUSE_BETWEEN_CONVERSIONS       (5)
@@ -41,6 +42,9 @@ static void calculate_battery_voltage(void);
 //  ***************************************************************************
 void sysmon_init(void) {
     adc_init();
+    if (!config_read_16(MM_VBAT_OFFSET_EE_ADDRESS, (uint16_t*)&battery_voltage_offset)) {
+        battery_voltage_offset = 0;
+    }
     monitor_state = STATE_START_CONVERSION;
 }
 

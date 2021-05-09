@@ -45,14 +45,26 @@ void config_init(void) {
 /// @param  none
 /// @return true - success, false - otherwise
 //  ***************************************************************************
-bool config_check_intergity(void) {
-    
+bool config_check_intergity(void) { 
     for (uint32_t page = 0; page < CONFIG_SECTION_PAGE_COUNT; ++page) {
         if (config_check_page_integrity(page) == false) {
             sysmon_set_error(SYSMON_MEMORY_ERROR);
             sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
             return false;
         }
+    }
+    
+    // Check memory map version
+    uint16_t version = 0;
+    if (!config_read_16(MM_VERSION_EE_ADDRESS, &version)) {
+        sysmon_set_error(SYSMON_MEMORY_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
+        return false;
+    }
+    if (version != MM_VERSION) {
+        sysmon_set_error(SYSMON_MEMORY_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_CONFIGURATOR);
+        return false;
     }
     return true;
 }
@@ -65,10 +77,7 @@ bool config_check_intergity(void) {
 /// @return true - success, false - error
 //  ***************************************************************************
 bool config_read(uint32_t address, uint8_t* buffer, uint32_t bytes_count) {
-
-    // Clear buffer
     memset(buffer, 0xFF, bytes_count);
-    
     if (sysmon_is_module_disable(SYSMON_MODULE_CONFIGURATOR) == true) {
         return false;
     }
@@ -103,7 +112,6 @@ bool config_read(uint32_t address, uint8_t* buffer, uint32_t bytes_count) {
 /// @return true - success, false - error
 //  ***************************************************************************
 bool config_write(uint32_t address, uint8_t* data, uint32_t bytes_count) {
-
     if (sysmon_is_module_disable(SYSMON_MODULE_CONFIGURATOR) == true) {
         return false;
     }
@@ -151,14 +159,10 @@ bool config_read_32(uint32_t address, uint32_t* buffer) { return config_read(add
 /// @return true - success, false - fail
 //  ***************************************************************************
 bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
-
     if (strcmp(cmd, "enable") == 0) {
         sysmon_enable_module(SYSMON_MODULE_CONFIGURATOR);
-    }
-    else if (strcmp(cmd, "read") == 0 && argc == 1) {
-
-        // Get page number
-        uint32_t page = atoi(argv[0]);
+    } else if (strcmp(cmd, "read") == 0 && argc == 1) {
+        uint32_t page = atoi(argv[0]); // Get page number
         if (page >= CONFIG_SECTION_PAGE_COUNT) {
             strcpy(response, CLI_ERROR("Page number is out of range"));
             return false;
@@ -180,11 +184,8 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
                                 cli_buffer[i +  8], cli_buffer[i +  9], cli_buffer[i + 10], cli_buffer[i + 11],
                                 cli_buffer[i + 12], cli_buffer[i + 13], cli_buffer[i + 14], cli_buffer[i + 15]);
         }
-    }
-    else if (strcmp(cmd, "read-raw") == 0 && argc == 1) {
-
-        // Get page number
-        uint32_t page = atoi(argv[0]);
+    } else if (strcmp(cmd, "read-raw") == 0 && argc == 1) {
+        uint32_t page = atoi(argv[0]); // Get page number
         if (page >= CONFIG_SECTION_PAGE_COUNT) {
             strcpy(response, CLI_ERROR("Page number is out of range"));
             return false;
@@ -204,11 +205,8 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
                                 cli_buffer[i +  8], cli_buffer[i +  9], cli_buffer[i + 10], cli_buffer[i + 11],
                                 cli_buffer[i + 12], cli_buffer[i + 13], cli_buffer[i + 14], cli_buffer[i + 15]);
         }
-    }
-    else if (strcmp(cmd, "read16") == 0 && argc == 2) {
-
-        // Get address
-        uint32_t address = strtol(argv[0], NULL, 16);
+    } else if (strcmp(cmd, "read16") == 0 && argc >= 1) {
+        uint32_t address = strtol(argv[0], NULL, 16); // Get address
         if (address > CONFIG_SECTION_SIZE) {
             strcpy(response, CLI_ERROR("Adress value is out of range"));
             return false;
@@ -221,18 +219,13 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             return false;
         }
 
-        // Get sign
-        if (argv[1][0] == 's') {
+        if (argc == 2 && argv[1][0] == 's') { // Get sign
             sprintf(response, CLI_OK("value = %d"), (int16_t)data);
-        }
-        else {
+        } else {
             sprintf(response, CLI_OK("value = %d"), (uint16_t)data);
         }
-    }
-    else if (strcmp(cmd, "read32") == 0 && argc == 2) {
-
-        // Get address
-        uint32_t address = strtol(argv[0], NULL, 16);
+    } else if (strcmp(cmd, "read32") == 0 && argc >= 1) {
+        uint32_t address = strtol(argv[0], NULL, 16); // Get address
         if (address > CONFIG_SECTION_SIZE) {
             strcpy(response, CLI_ERROR("Address value is out of range"));
             return false;
@@ -245,25 +238,19 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             return false;
         }
 
-        // Get sign
-        if (argv[1][0] == 's') {
+        if (argc == 2 && argv[1][0] == 's') { // Get sign
             sprintf(response, CLI_OK("value = %d"), (int32_t)data);
-        }
-        else {
+        } else {
             sprintf(response, CLI_OK("value = %u"), (uint32_t)data);
         }
-    }
-    else if (strcmp(cmd, "write") == 0 && argc == 2) {
-
-        // Get address
-        uint32_t address = strtol(argv[0], NULL, 16);
+    } else if (strcmp(cmd, "write") == 0 && argc == 2) {
+        uint32_t address = strtol(argv[0], NULL, 16); // Get address
         if (address > CONFIG_SECTION_SIZE) {
             strcpy(response, CLI_ERROR("Address value is out of range"));
             return false;
         }
 
-        // Get bytes count
-        uint32_t data_len = strlen(argv[1]);
+        uint32_t data_len = strlen(argv[1]); // Get bytes count
         if (data_len & 0x01) {
             strcpy(response, CLI_ERROR("Wrong data array"));
             return false;
@@ -274,7 +261,6 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
         char hex_value[3] = {0, 0, '\0'};
         const char* data = &argv[1][0];
         for (uint32_t i = 0; i < bytes_count; ++i, ++address) {
-
             hex_value[0] = *(data + 0);
             hex_value[1] = *(data + 1);
             data += 2;
@@ -285,53 +271,35 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
                 return false;
             }
         }
-    }
-    else if (strcmp(cmd, "write16") == 0 && argc == 2) {
-
-        // Get address
-        uint32_t address = strtol(argv[0], NULL, 16);
+    } else if (strcmp(cmd, "write16") == 0 && argc == 2) {
+        uint32_t address = strtol(argv[0], NULL, 16); // Get address
         if (address > CONFIG_SECTION_SIZE) {
             strcpy(response, CLI_ERROR("Address value is out of range"));
             return false;
         }
-
-        // Parse data
         uint16_t data = atoi(argv[1]);
-
-        // Write data
         if (config_write_16(address, data) == false) {
             strcpy(response, CLI_ERROR("Cannot write data to memory"));
             return false;
         }
-    }
-    else if (strcmp(cmd, "write32") == 0 && argc == 2) {
-
-        // Get address
-        uint32_t address = strtol(argv[0], NULL, 16);
+    } else if (strcmp(cmd, "write32") == 0 && argc == 2) {
+        uint32_t address = strtol(argv[0], NULL, 16); // Get address
         if (address > CONFIG_SECTION_SIZE) {
             strcpy(response, CLI_ERROR("Address value is out of range"));
             return false;
         }
-
-        // Parse data
         uint32_t data = atoi(argv[1]);
-
-        // Write data
         if (config_write_32(address, data) == false) {
             strcpy(response, CLI_ERROR("Cannot write data to memory"));
             return false;
         }
-    }
-    else if (strcmp(cmd, "erase") == 0 && argc == 0) {
+    } else if (strcmp(cmd, "erase") == 0 && argc == 0) {
         if (config_erase() == false) {
             strcpy(response, CLI_ERROR("Cannot write data to memory"));
             return false;
         }
-    }
-    else if (strcmp(cmd, "check") == 0 && argc == 1) {
-
-        // Get page number
-        uint32_t page = atoi(argv[0]);
+    } else if (strcmp(cmd, "check") == 0 && argc == 1) {
+        uint32_t page = atoi(argv[0]); // Get page number
         if (page >= CONFIG_SECTION_PAGE_COUNT) {
             strcpy(response, CLI_ERROR("Page number is out of range"));
             return false;
@@ -341,11 +309,8 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             strcpy(response, CLI_ERROR("Verification failed"));
             return false;
         }
-    }
-    else if (strcmp(cmd, "update-checksum") == 0 && argc == 1) {
-
-        // Get page number
-        uint32_t page = atoi(argv[0]);
+    } else if (strcmp(cmd, "update-checksum") == 0 && argc == 1) {
+        uint32_t page = atoi(argv[0]); // Get page number
         if (page >= CONFIG_SECTION_PAGE_COUNT) {
             strcpy(response, CLI_ERROR("Page number is out of range"));
             return false;
@@ -356,8 +321,7 @@ bool config_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_
             strcpy(response, CLI_ERROR("Can't update checksum"));
             return false;
         }
-    }
-    else {
+    } else {
         strcpy(response, CLI_ERROR("Unknown command or format for configurator"));
         return false;
     }
@@ -386,7 +350,6 @@ static bool config_write_32(uint32_t address, uint32_t data) { return config_wri
 /// @return true - success, false - error
 //  ***************************************************************************
 static bool config_calc_checksum(uint32_t page, uint16_t *checksum) {
-
     *checksum = 0;
 
     uint32_t offset = page * CONFIG_SECTION_PAGE_SIZE;
@@ -445,7 +408,6 @@ static bool config_update_checksum(uint32_t page) {
 /// @return true - success, false - error
 //  ***************************************************************************
 static bool config_erase(void) {
-
     uint8_t clear_data[CONFIG_SECTION_MAX_WRITE_SIZE] = {0};
     memset(clear_data, 0xFF, sizeof(clear_data));
 

@@ -171,7 +171,7 @@ void motion_core_process(void) {
     
     if (is_enable_data_logging) {
         void* tx_buffer = cli_get_tx_buffer();
-        sprintf(tx_buffer, "[MOTION CORE]: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", 
+        sprintf(tx_buffer, "[MOTION CORE]: %lu %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", (uint32_t)get_time_ms(),
                 (int16_t)g_limbs[0].position.x * 10, (int16_t)g_limbs[0].position.y * 10, (int16_t)g_limbs[0].position.z * 10, foot_sensors_data[0], 
                 (int16_t)g_limbs[1].position.x * 10, (int16_t)g_limbs[1].position.y * 10, (int16_t)g_limbs[1].position.z * 10, foot_sensors_data[1], 
                 (int16_t)g_limbs[2].position.x * 10, (int16_t)g_limbs[2].position.y * 10, (int16_t)g_limbs[2].position.z * 10, foot_sensors_data[2], 

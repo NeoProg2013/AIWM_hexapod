@@ -6,12 +6,22 @@
 #ifndef _MEMORY_MAP_H_
 #define _MEMORY_MAP_H_
 
+#define MM_VERSION                                          (0x0001)
 
+
+
+#define MM_VERSION_EE_ADDRESS                               (0x0000)    ///< U16 Memory map version
 #define MM_PAGE_CHECKSUM_OFFSET                             (0xFE)      ///< U16 Page checksum
 #define MM_PAGE_CHECKSUM_SIZE                               (2)
 
 //
-// Configuration map for limbs
+// PAGE 0
+//
+#define MM_VBAT_OFFSET_EE_ADDRESS                           (0x0010)    ///< U16 VBAT voltage offset
+
+
+//
+// PAGE 1
 //
 #define MM_LIMB_CONFIG_BASE_EE_ADDRESS                      (0x0100)
 #define MM_LIMB_COXA_LENGTH_OFFSET                          (0x00)
@@ -27,8 +37,9 @@
 #define MM_LIMB_PROTECTION_TIBIA_MIN_ANGLE_OFFSET           (0x58)      ///< S16 Min tibia angle (protection)
 #define MM_LIMB_PROTECTION_TIBIA_MAX_ANGLE_OFFSET           (0x5A)      ///< S16 Max tibia angle (protection)
 
+
 //
-// Configuration map for servos
+// PAGE 2
 //
 #define MM_SERVO_CONFIG_BLOCK_BASE_EE_ADDRESS               (0x0200)
 #define MM_SERVO_CONFIG_BLOCK_SIZE                          (8)

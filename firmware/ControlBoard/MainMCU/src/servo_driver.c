@@ -181,7 +181,8 @@ void servo_driver_process(void) {
     
     if (is_enable_data_logging) {
         void* tx_buffer = cli_get_tx_buffer();
-        sprintf(tx_buffer, "[SERVO DRV]: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n",
+        sprintf(tx_buffer, "[SERVO DRV]: %lu %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", 
+                (int32_t)get_time_ms(),
                 (int32_t)servo_list[0].logic_angle, servo_list[0].pulse_width,
                 (int32_t)servo_list[1].logic_angle, servo_list[1].pulse_width,
                 (int32_t)servo_list[2].logic_angle, servo_list[2].pulse_width,
