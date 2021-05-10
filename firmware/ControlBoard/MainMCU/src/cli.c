@@ -157,7 +157,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                           CLI_HELP("")
                           CLI_HELP("\"indication\" driver commands description")
                           CLI_HELP("    - external-control <0|1>              - enable indication control")
-                          CLI_HELP("    - set-state RGBBuzzer              - set state for LEDs and Buzzer")
+                          CLI_HELP("    - set-state RGBBuzzer                 - set state for LEDs and Buzzer")
                           CLI_HELP("")
                           CLI_HELP("For example you can send me next command: system status")
                           CLI_HELP("I hope now you can work with me :)"));

@@ -7,6 +7,7 @@
 #include "hx711.h"
 #include "i2c1.h"
 #include "usart1.h"
+#include "mpu6050.h"
 
 static void system_init(void);
 
@@ -39,6 +40,7 @@ void frame_transmitted_callback(void) {
 int main() {
     system_init();
     systimer_init();
+    i2c1_init(I2C_SPEED_400KHZ);
     
     usart1_callbacks_t callbacks;
     callbacks.frame_error_callback = frame_error_callback;
@@ -47,35 +49,61 @@ int main() {
     
     delay_ms(5000);
     
+    
+    bool hx711_is_ok = false;
+    bool mpu6050_is_ok = false;
+    
     hx711_init();
     hx711_power_up();
-    hx711_calibration();
+    hx711_is_ok = hx711_calibration();
+    
+    mpu6050_is_ok = mpu6050_init();
+    if (mpu6050_is_ok) {
+        mpu6050_is_ok = mpu6050_start();
+    }
     
     uint64_t send_data_time = get_time_ms();
     bool hx711_is_first_read = true;
-    //bool mpu6050_is_first_read = true;
+    bool mpu6050_is_first_read = true;
     int16_t hx711_flt_data[6] = {0};
-    int16_t mpu6050_flt_data[3] = {0};
+    int16_t mpu6050_flt_data[2] = {0};
     while (true) {
-        
         // Read data from HX711
-        bool hx711_process_result = hx711_process();
-        if (hx711_is_data_ready()) { 
-            int16_t raw_data[6] = {0};
-            hx711_read(raw_data);
-            for (uint32_t i = 0; i < 6; ++i) {
-                if (hx711_is_first_read) {
-                    hx711_flt_data[i] = raw_data[i];
-                } else {
-                    hx711_flt_data[i] = (int16_t)(raw_data[i] * 0.1f + hx711_flt_data[i] * (1 - 0.1f));
+        if (hx711_is_ok) {
+            hx711_is_ok = hx711_process();
+            if (hx711_is_data_ready()) { 
+                int16_t raw_data[6] = {0};
+                hx711_read(raw_data);
+                for (uint32_t i = 0; i < 6; ++i) {
+                    if (hx711_is_first_read) {
+                        hx711_flt_data[i] = raw_data[i];
+                    } else {
+                        hx711_flt_data[i] = (int16_t)(raw_data[i] * 0.1f + hx711_flt_data[i] * (1 - 0.1f));
+                    }
                 }
+                hx711_is_first_read = false;
             }
-            hx711_is_first_read = false;
         }
         
         // Read data from MPU6050
-        //
-        //
+        if (mpu6050_is_ok) {
+            bool is_ready = false;
+            mpu6050_is_ok = mpu6050_is_data_ready(&is_ready);
+            if (mpu6050_is_ok && is_ready) {
+                float raw_data[2] = {0};
+                mpu6050_is_ok = mpu6050_read_data(raw_data);
+                if (mpu6050_is_ok) {
+                    if (mpu6050_is_first_read) {
+                        mpu6050_flt_data[0] = (int16_t)raw_data[0];
+                        mpu6050_flt_data[1] = (int16_t)raw_data[1];
+                    } else {
+                        mpu6050_flt_data[0] = (int16_t)(raw_data[0] * 0.5f + mpu6050_flt_data[0] * (1 - 0.5f));
+                        mpu6050_flt_data[1] = (int16_t)(raw_data[1] * 0.5f + mpu6050_flt_data[1] * (1 - 0.5f));
+                    }
+                    mpu6050_is_first_read = false;
+                }
+            }
+        }
         
         // Send data to MMCU
         if (get_time_ms() - send_data_time > 13 && is_frame_transmitted) {
@@ -87,16 +115,18 @@ int main() {
             
             // Write HX711 data
             for (uint32_t i = 0; i < 6; ++i) {
-                if (!hx711_process_result) {
+                if (!hx711_is_ok) {
                     hx711_flt_data[i] = 0xFFFF;
-                    hx711_is_first_read = true;
                 }
                 memcpy(&tx_buffer[tx_data_size], &hx711_flt_data[i], sizeof(hx711_flt_data[i]));
                 tx_data_size += sizeof(hx711_flt_data[i]);
             }
             
             // Write MPU6050 data
-            for (uint32_t i = 0; i < 3; ++i) {
+            for (uint32_t i = 0; i < 2; ++i) {
+                if (!mpu6050_is_ok) {
+                    mpu6050_flt_data[i] = 0xFFFF;
+                }
                 memcpy(&tx_buffer[tx_data_size], &mpu6050_flt_data[i], sizeof(mpu6050_flt_data[i]));
                 tx_data_size += sizeof(mpu6050_flt_data[i]);
             }
@@ -108,7 +138,7 @@ int main() {
             is_frame_transmitted = false;
             usart1_start_tx(tx_data_size);
         }
-    } 
+    }
 }
 
 //  ***************************************************************************

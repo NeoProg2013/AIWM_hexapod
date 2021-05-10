@@ -2120,6 +2120,12 @@
                 <name>$PROJ_DIR$\src\drivers\i2c1.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\src\drivers\mpu6050.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\drivers\mpu6050.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\drivers\systimer.c</name>
             </file>
             <file>
