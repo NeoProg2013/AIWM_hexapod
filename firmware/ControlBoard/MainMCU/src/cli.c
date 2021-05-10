@@ -188,6 +188,9 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     else if (strcmp(module, "motion") == 0) {
         return motion_core_cli_command_process(cmd, argv, argc, response);
     }
+    else if (strcmp(module, "smcu") == 0) {
+        return smcu_cli_command_process(cmd, argv, argc, response);
+    }
     else if (strcmp(module, "config") == 0) {
         return config_cli_command_process(cmd, argv, argc, response);
     }

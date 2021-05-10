@@ -24,6 +24,8 @@ static uint32_t received_frame_size = 0;
 static int16_t  foot_sensors_data[6] = {0};
 static int16_t  accel_sensor_data[3] = {0};
 
+static bool is_enable_data_logging = false;
+
 
 static void frame_received_callback(uint32_t frame_size);
 static void frame_error_callback(void);
@@ -77,6 +79,14 @@ void smcu_process(void) {
                 cursor += sizeof(accel_sensor_data[i]);
             }
             
+            if (is_enable_data_logging) {
+                char buffer[256] = {0};
+                sprintf(buffer, "%d,%d,%d,%d,%d,%d %d,%d,%d\r\n", 
+                        foot_sensors_data[0], foot_sensors_data[1], foot_sensors_data[2], foot_sensors_data[3], foot_sensors_data[4], foot_sensors_data[5], 
+                        accel_sensor_data[0], accel_sensor_data[1], accel_sensor_data[2]);
+                cli_send_data(buffer);
+            }
+            
             // Update frame receive time
             frame_receive_time = get_time_ms(); 
         } while (false);
@@ -101,6 +111,29 @@ void smcu_process(void) {
 void smcu_get_sensor_data(int16_t** foot_sensors, int16_t** accel_sensor) {
     *foot_sensors = foot_sensors_data;
     *accel_sensor = accel_sensor_data;
+}
+
+//  ***************************************************************************
+/// @brief  CLI command process
+/// @param  cmd: command string
+/// @param  argv: argument list
+/// @param  argc: arguments count
+/// @param  response: response
+/// @retval response
+/// @return true - success, false - fail
+//  ***************************************************************************
+bool smcu_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
+    if (strcmp(cmd, "logging") == 0 && argc == 1) {
+        if (argv[0][0] == '1') {
+            is_enable_data_logging = true;
+        } else {
+            is_enable_data_logging = false;
+        }
+    } else {
+        strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
+        return false;
+    }
+    return true;
 }
 
 
