@@ -12,21 +12,7 @@
 static void system_init(void);
 
 
-
-
-/*
-
-
-EXTI0_1_IRQn
-EXTI2_3_IRQn
-EXTI4_15_IRQn
-*/
-
 static bool is_frame_transmitted = true;
-void frame_error_callback(void) {
-    asm("NOP");
-}
-
 void frame_transmitted_callback(void) {
     is_frame_transmitted = true;
 }
@@ -43,12 +29,9 @@ int main() {
     i2c1_init(I2C_SPEED_400KHZ);
     
     usart1_callbacks_t callbacks;
-    callbacks.frame_error_callback = frame_error_callback;
+    callbacks.frame_error_callback = frame_transmitted_callback;
     callbacks.frame_transmitted_callback = frame_transmitted_callback;
     usart1_init(500000, &callbacks);
-    
-    delay_ms(5000);
-    
     
     bool hx711_is_ok = false;
     bool mpu6050_is_ok = false;
@@ -59,26 +42,31 @@ int main() {
     
     mpu6050_is_ok = mpu6050_init();
     if (mpu6050_is_ok) {
-        mpu6050_is_ok = mpu6050_start();
+        mpu6050_is_ok = mpu6050_set_state(true);
+    }
+    if (mpu6050_is_ok) {
+        mpu6050_is_ok = mpu6050_calibration();
     }
     
+ 
     uint64_t send_data_time = get_time_ms();
-    bool hx711_is_first_read = true;
-    bool mpu6050_is_first_read = true;
-    int16_t hx711_flt_data[6] = {0};
-    int16_t mpu6050_flt_data[2] = {0};
+    float hx711_flt_data[6] = {0};
+    float mpu6050_flt_data[2] = {0};
+    
     while (true) {
         // Read data from HX711
         if (hx711_is_ok) {
             hx711_is_ok = hx711_process();
-            if (hx711_is_data_ready()) { 
+            if (hx711_is_ok && hx711_is_data_ready()) { 
+                static bool hx711_is_first_read = true;
                 int16_t raw_data[6] = {0};
                 hx711_read(raw_data);
                 for (uint32_t i = 0; i < 6; ++i) {
                     if (hx711_is_first_read) {
                         hx711_flt_data[i] = raw_data[i];
                     } else {
-                        hx711_flt_data[i] = (int16_t)(raw_data[i] * 0.1f + hx711_flt_data[i] * (1 - 0.1f));
+                        const float flt_factor = 0.3f;
+                        hx711_flt_data[i] = (float)raw_data[i] * flt_factor + hx711_flt_data[i] * (1.0f - flt_factor);
                     }
                 }
                 hx711_is_first_read = false;
@@ -88,20 +76,19 @@ int main() {
         // Read data from MPU6050
         if (mpu6050_is_ok) {
             bool is_ready = false;
-            mpu6050_is_ok = mpu6050_is_data_ready(&is_ready);
+            float raw_data[2] = {0};
+            mpu6050_is_ok = mpu6050_read_data(raw_data, &is_ready);
             if (mpu6050_is_ok && is_ready) {
-                float raw_data[2] = {0};
-                mpu6050_is_ok = mpu6050_read_data(raw_data);
-                if (mpu6050_is_ok) {
-                    if (mpu6050_is_first_read) {
-                        mpu6050_flt_data[0] = (int16_t)raw_data[0];
-                        mpu6050_flt_data[1] = (int16_t)raw_data[1];
-                    } else {
-                        mpu6050_flt_data[0] = (int16_t)(raw_data[0] * 0.5f + mpu6050_flt_data[0] * (1 - 0.5f));
-                        mpu6050_flt_data[1] = (int16_t)(raw_data[1] * 0.5f + mpu6050_flt_data[1] * (1 - 0.5f));
-                    }
-                    mpu6050_is_first_read = false;
+                static bool mpu6050_is_first_read = true;
+                if (mpu6050_is_first_read) {
+                    mpu6050_flt_data[0] = raw_data[0];
+                    mpu6050_flt_data[1] = raw_data[1];
+                } else {
+                    const float flt_factor = 0.1f;
+                    mpu6050_flt_data[0] = raw_data[0] * flt_factor + mpu6050_flt_data[0] * (1.0f - flt_factor);
+                    mpu6050_flt_data[1] = raw_data[1] * flt_factor + mpu6050_flt_data[1] * (1.0f - flt_factor);
                 }
+                mpu6050_is_first_read = false;
             }
         }
         
@@ -115,20 +102,22 @@ int main() {
             
             // Write HX711 data
             for (uint32_t i = 0; i < 6; ++i) {
+                int16_t data = (int16_t)mpu6050_flt_data[i];
                 if (!hx711_is_ok) {
-                    hx711_flt_data[i] = 0xFFFF;
+                    data = 0;
                 }
-                memcpy(&tx_buffer[tx_data_size], &hx711_flt_data[i], sizeof(hx711_flt_data[i]));
-                tx_data_size += sizeof(hx711_flt_data[i]);
+                memcpy(&tx_buffer[tx_data_size], &data, sizeof(data));
+                tx_data_size += sizeof(data);
             }
             
             // Write MPU6050 data
             for (uint32_t i = 0; i < 2; ++i) {
+                int32_t data = (int32_t)(mpu6050_flt_data[i] * 10000.0f);
                 if (!mpu6050_is_ok) {
-                    mpu6050_flt_data[i] = 0xFFFF;
+                    data = 0;
                 }
-                memcpy(&tx_buffer[tx_data_size], &mpu6050_flt_data[i], sizeof(mpu6050_flt_data[i]));
-                tx_data_size += sizeof(mpu6050_flt_data[i]);
+                memcpy(&tx_buffer[tx_data_size], &data, sizeof(data));
+                tx_data_size += sizeof(data);
             }
             
             // Write end frame marker
@@ -195,11 +184,6 @@ static void system_init(void) {
     RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
     while ((RCC->APB2ENR & RCC_APB2ENR_USART1EN) == 0);
 }
-
-
-
-
-
 
 //  ***************************************************************************
 /// @brief  GPIO IRQ handler

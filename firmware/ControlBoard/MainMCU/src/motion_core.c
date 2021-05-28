@@ -11,6 +11,9 @@
 #include "smcu.h"
 #include "system_monitor.h"
 #include <math.h>
+#define M_PI                                (3.14159265f)
+#define RAD_TO_DEG(rad)                     ((rad) * 180.0f / M_PI)
+#define DEG_TO_RAD(deg)                     ((deg) * M_PI / 180.0f)
 
 
 typedef struct {
@@ -33,7 +36,8 @@ typedef struct {
 static bool read_configuration(void);
 static bool process_linear_trajectory(float motion_time);
 static bool process_advanced_trajectory(float motion_time);
-static bool kinematic_calculate_angles(void);
+static bool kinematic_calculate_angles(float* y_offsets);
+static void ground_level_compensation(float x_rotate, float z_rotate, float* offsets);
 
 
 static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
@@ -42,6 +46,7 @@ static motion_t g_current_motion = {0};
 static motion_config_t g_current_motion_config = {0};
 static motion_config_t g_next_motion_config = {0};
 static bool is_motion_completed = true;
+static bool is_ground_leveling_enabled = false;
 
 static bool is_enable_data_logging = false;
 
@@ -64,7 +69,8 @@ void motion_core_init(const point_3d_t* start_points) {
     }
     
     // Calculate start link angles
-    if (kinematic_calculate_angles() == false) {
+    float y_offsets[SUPPORT_LIMBS_COUNT] = {0};
+    if (kinematic_calculate_angles(y_offsets) == false) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         // Do not return - need init servo driver for CLI access
@@ -123,35 +129,60 @@ void motion_core_update_motion_config(const motion_config_t* motion_config) {
 //  ***************************************************************************
 void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
-
-
-    if (g_current_motion.motion_time >= g_current_motion.time_stop) {
-        is_motion_completed = true;
-        return; // We reach to end of motion - nothing do
-    }
     
-    // Scale time to [0.0; 1.0] range
-    float scaled_motion_time = (float)g_current_motion.motion_time / (float)MTIME_SCALE;
-    
-    // Gatherig sensor data
+    // Gathering sensor data
     int16_t* foot_sensors_data = NULL;
-    int16_t* accel_sensor_data = NULL;
+    int32_t* accel_sensor_data = NULL;
     smcu_get_sensor_data(&foot_sensors_data, &accel_sensor_data);
     
-    // Calculate new limbs positions
-    if (process_linear_trajectory(scaled_motion_time) == false) {
-        sysmon_set_error(SYSMON_MATH_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-        return;
+    
+    is_motion_completed = g_current_motion.motion_time >= g_current_motion.time_stop;
+    if (!is_motion_completed) {
+        
+        // Scale time to [0.0; 1.0] range
+        float scaled_motion_time = (float)g_current_motion.motion_time / (float)MTIME_SCALE;
+        
+        // Calculate new limbs positions
+        if (process_linear_trajectory(scaled_motion_time) == false) {
+            sysmon_set_error(SYSMON_MATH_ERROR);
+            sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+            return;
+        }
+        if (process_advanced_trajectory(scaled_motion_time) == false) {
+            sysmon_set_error(SYSMON_MATH_ERROR);
+            sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+            return;
+        }
+        
+        // Time shift and load new trajectory configuration if need
+        g_current_motion.motion_time += g_current_motion.time_step;
+        if (g_current_motion.motion_time == g_current_motion.time_update) {
+            g_current_motion_config = g_next_motion_config;
+            servo_driver_set_speed(g_current_motion_config.speed);
+        }
+        
+        if (is_enable_data_logging) {
+            void* tx_buffer = cli_get_tx_buffer();
+            sprintf(tx_buffer, "[MOTION CORE]: %lu %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", (uint32_t)get_time_ms(),
+                    (int16_t)(g_limbs[0].position.x * 100.0f), (int16_t)(g_limbs[0].position.y * 100.0f), (int16_t)(g_limbs[0].position.z * 100.0f), foot_sensors_data[0], 
+                    (int16_t)(g_limbs[1].position.x * 100.0f), (int16_t)(g_limbs[1].position.y * 100.0f), (int16_t)(g_limbs[1].position.z * 100.0f), foot_sensors_data[1], 
+                    (int16_t)(g_limbs[2].position.x * 100.0f), (int16_t)(g_limbs[2].position.y * 100.0f), (int16_t)(g_limbs[2].position.z * 100.0f), foot_sensors_data[2], 
+                    (int16_t)(g_limbs[3].position.x * 100.0f), (int16_t)(g_limbs[3].position.y * 100.0f), (int16_t)(g_limbs[3].position.z * 100.0f), foot_sensors_data[3], 
+                    (int16_t)(g_limbs[4].position.x * 100.0f), (int16_t)(g_limbs[4].position.y * 100.0f), (int16_t)(g_limbs[4].position.z * 100.0f), foot_sensors_data[4], 
+                    (int16_t)(g_limbs[5].position.x * 100.0f), (int16_t)(g_limbs[5].position.y * 100.0f), (int16_t)(g_limbs[5].position.z * 100.0f), foot_sensors_data[5], 
+                    accel_sensor_data[0], accel_sensor_data[1]);
+            cli_send_data(NULL);
+        }
     }
-    if (process_advanced_trajectory(scaled_motion_time) == false) {
-        sysmon_set_error(SYSMON_MATH_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-        return;
+    
+    // Ground level compensation
+    float y_offsets[SUPPORT_LIMBS_COUNT] = {0};
+    if (is_ground_leveling_enabled) {
+        ground_level_compensation(accel_sensor_data[1] / 10000.0f, accel_sensor_data[0] / 10000.0f, y_offsets);
     }
     
     // Calculate servo logic angles
-    if (kinematic_calculate_angles() == false) {
+    if (kinematic_calculate_angles(y_offsets) == false) {
         sysmon_set_error(SYSMON_MATH_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         return;
@@ -163,27 +194,6 @@ void motion_core_process(void) {
         servo_driver_move(i * 3 + 1, g_limbs[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
     }
-
-    // Time shift and load new trajectory configuration if need
-    g_current_motion.motion_time += g_current_motion.time_step;
-    if (g_current_motion.motion_time == g_current_motion.time_update) {
-        g_current_motion_config = g_next_motion_config;
-        servo_driver_set_speed(g_current_motion_config.speed);
-    }
-    
-    
-    if (is_enable_data_logging) {
-        void* tx_buffer = cli_get_tx_buffer();
-        sprintf(tx_buffer, "[MOTION CORE]: %lu %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", (uint32_t)get_time_ms(),
-                (int16_t)(g_limbs[0].position.x * 100.0f), (int16_t)(g_limbs[0].position.y * 100.0f), (int16_t)(g_limbs[0].position.z * 100.0f), foot_sensors_data[0], 
-                (int16_t)(g_limbs[1].position.x * 100.0f), (int16_t)(g_limbs[1].position.y * 100.0f), (int16_t)(g_limbs[1].position.z * 100.0f), foot_sensors_data[1], 
-                (int16_t)(g_limbs[2].position.x * 100.0f), (int16_t)(g_limbs[2].position.y * 100.0f), (int16_t)(g_limbs[2].position.z * 100.0f), foot_sensors_data[2], 
-                (int16_t)(g_limbs[3].position.x * 100.0f), (int16_t)(g_limbs[3].position.y * 100.0f), (int16_t)(g_limbs[3].position.z * 100.0f), foot_sensors_data[3], 
-                (int16_t)(g_limbs[4].position.x * 100.0f), (int16_t)(g_limbs[4].position.y * 100.0f), (int16_t)(g_limbs[4].position.z * 100.0f), foot_sensors_data[4], 
-                (int16_t)(g_limbs[5].position.x * 100.0f), (int16_t)(g_limbs[5].position.y * 100.0f), (int16_t)(g_limbs[5].position.z * 100.0f), foot_sensors_data[5], 
-                accel_sensor_data[0], accel_sensor_data[1]);
-        cli_send_data(NULL);
-    }
 }
 
 //  ***************************************************************************
@@ -192,6 +202,14 @@ void motion_core_process(void) {
 //  ***************************************************************************
 bool motion_core_is_motion_complete(void) {
     return is_motion_completed;
+}
+
+//  ***************************************************************************
+/// @brief  Enable/disable ground leveling feature
+/// @return is_enable: true - enable, false - disable
+//  ***************************************************************************
+void motion_core_set_ground_leveling_state(bool is_enable) {
+    is_ground_leveling_enabled = is_enable;
 }
 
 //  ***************************************************************************
@@ -258,11 +276,6 @@ static bool read_configuration(void) {
 
     return true;
 }
-
-#define M_PI                                (3.14159265f)
-#define RAD_TO_DEG(rad)                     ((rad) * 180.0f / M_PI)
-#define DEG_TO_RAD(deg)                     ((deg) * M_PI / 180.0f)
-
 
 //  ***************************************************************************
 /// @brief  Process linear trajectory
@@ -397,12 +410,56 @@ static bool process_advanced_trajectory(float motion_time) {
 }
 
 //  ***************************************************************************
+/// @brief  Ground level compensation
+/// @param  x_rotate, z_rotate: hexapod plane rotate relative ground plane
+/// @return true - calculation success, false - no
+//  ***************************************************************************
+static void ground_level_compensation(float x_rotate, float z_rotate, float* offsets) {
+    if (z_rotate < -8) {
+        z_rotate = -8;
+    } else if (z_rotate > 8) {
+        z_rotate = 8;
+    }
+    float k = tanf(DEG_TO_RAD(z_rotate));
+    if (z_rotate < 0) {
+        offsets[0] = -4.0f * k * g_limbs[0].position.x;
+        offsets[1] = -4.0f * k * g_limbs[1].position.x;
+        offsets[2] = -4.0f * k * g_limbs[2].position.x;
+    } else {
+        offsets[3] = -4.0f * k * g_limbs[3].position.x;
+        offsets[4] = -4.0f * k * g_limbs[4].position.x;
+        offsets[5] = -4.0f * k * g_limbs[5].position.x;
+    }
+    
+    /*if (x_rotate < -8) {
+        x_rotate = -8;
+    } else if (x_rotate > 8) {
+        x_rotate = 8;
+    }
+    float k = tanf(DEG_TO_RAD(x_rotate));
+    if (x_rotate < 0) {
+        offsets[0] = -4.0f * k * g_limbs[0].position.x;
+        offsets[3] = -4.0f * k * g_limbs[1].position.x;
+    } else {
+        offsets[2] = -4.0f * k * g_limbs[3].position.x;
+        offsets[5] = -4.0f * k * g_limbs[5].position.x;
+    }*/
+    
+    void* tx_buffer = cli_get_tx_buffer();
+    sprintf(tx_buffer, "[MOTION CORE]: %lu %d %d,%d,%d,%d,%d,%d %d,%d\r\n", (uint32_t)get_time_ms(), (int16_t)(k * 100),
+            (int16_t)(offsets[0]), (int16_t)(offsets[1]), (int16_t)(offsets[2]),  
+            (int16_t)(offsets[3]), (int16_t)(offsets[4]), (int16_t)(offsets[5]),  
+            (int16_t)(x_rotate * 100), (int16_t)(z_rotate * 100));
+    cli_send_data(NULL);
+}
+
+//  ***************************************************************************
 /// @brief  Calculate angles
-/// @param  limbs_list: @ref limb_t
+/// @param  y_offsets: offset by Y axis for each limb
 /// @retval limbs_list::servo_angle
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-static bool kinematic_calculate_angles(void) {
+static bool kinematic_calculate_angles(float* y_offsets) {
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         float coxa_zero_rotate_deg  = g_limbs[i].coxa.zero_rotate;
         float femur_zero_rotate_deg = g_limbs[i].femur.zero_rotate;
@@ -412,7 +469,7 @@ static bool kinematic_calculate_angles(void) {
         float tibia_length = g_limbs[i].tibia.length;
 
         float x = g_limbs[i].position.x;
-        float y = g_limbs[i].position.y;
+        float y = g_limbs[i].position.y + y_offsets[i];
         float z = g_limbs[i].position.z;
 
 
@@ -445,6 +502,9 @@ static bool kinematic_calculate_angles(void) {
         // Calculate distance to destination point
         float d = sqrt(x1 * x1 + y1 * y1);
         if (d > femur_length + tibia_length) {
+            void* tx_buffer = cli_get_tx_buffer();
+            sprintf(tx_buffer, "[MOTION CORE]: Point not attainable\r\n");
+            cli_send_data(NULL);
             return false; // Point not attainable
         }
 

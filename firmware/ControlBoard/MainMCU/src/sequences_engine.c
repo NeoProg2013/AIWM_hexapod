@@ -84,9 +84,9 @@ void sequences_engine_process(void) {
             }
             else {
                 // Auto select down sequence timer
-                if (get_time_ms() - prev_active_time > AUTO_SELECT_DOWN_SEQUENCE_TIME) {
+                /*if (get_time_ms() - prev_active_time > AUTO_SELECT_DOWN_SEQUENCE_TIME) {
                     sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
-                }
+                }*/
             }
             break;
         
@@ -140,6 +140,22 @@ void sequences_engine_process(void) {
                 prev_active_time = get_time_ms();
             } else {
                 motion_core_init_motion_config(&sequence_motion_config);
+            }
+            
+            if (hexapod_state == HEXAPOD_STATE_UP) {
+                switch (current_sequence) {
+                    case SEQUENCE_NONE:
+                    case SEQUENCE_MOVE:
+                    case SEQUENCE_UP_DOWN:
+                    case SEQUENCE_PUSH_PULL:
+                    case SEQUENCE_ROTATE_X:
+                    case SEQUENCE_ROTATE_Z:
+                        motion_core_set_ground_leveling_state(true);
+                        break;
+                    default:
+                        motion_core_set_ground_leveling_state(false);
+                        break;
+                }
             }
             break;
             

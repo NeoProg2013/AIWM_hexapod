@@ -10,7 +10,7 @@
 #include "systimer.h"
 #define COMMUNICATION_BAUD_RATE             (500000)
 #define COMMUNICATION_TIMEOUT               (50) // ms
-#define SMCU_FRAME_SIZE                     (18)
+#define SMCU_FRAME_SIZE                     (22)
 
 typedef enum {
     STATE_NO_INIT,
@@ -22,7 +22,7 @@ typedef enum {
 static state_t  state = STATE_NO_INIT;
 static uint32_t received_frame_size = 0;
 static int16_t  foot_sensors_data[6] = {0};
-static int16_t  accel_sensor_data[2] = {0};
+static int32_t  accel_sensor_data[2] = {0}; // 0.0001*
 
 static bool is_enable_all_data_logging   = false;
 static bool is_enable_foot_data_logging  = false;
@@ -116,6 +116,8 @@ void smcu_process(void) {
     // Check communication timeout
     sysmon_enable_module(SYSMON_MODULE_SMCU);
     if (get_time_ms() - frame_receive_time > COMMUNICATION_TIMEOUT) {
+        memset(foot_sensors_data, 0, sizeof(foot_sensors_data));
+        memset(accel_sensor_data, 0, sizeof(accel_sensor_data));
         sysmon_disable_module(SYSMON_MODULE_SMCU);
     }
 }
@@ -125,7 +127,7 @@ void smcu_process(void) {
 /// @param  foot_sensors: pointer for get address to foot sensor data
 /// @param  accel_sensor: pointer for get address to accel sensor data
 //  ***************************************************************************
-void smcu_get_sensor_data(int16_t** foot_sensors, int16_t** accel_sensor) {
+void smcu_get_sensor_data(int16_t** foot_sensors, int32_t** accel_sensor) {
     *foot_sensors = foot_sensors_data;
     *accel_sensor = accel_sensor_data;
 }

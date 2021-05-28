@@ -240,15 +240,15 @@ static const uint8_t DMP_CONFIG_BINARY[] = {
 #define PWR1_SLEEP_DIS                      (0x00)
 
 
+static uint8_t fifo_data[32] = {0};
+
+
+static bool is_data_ready(bool* is_ready);
 static bool write_memory_block(const uint8_t* data, uint32_t address, uint32_t bank, uint32_t data_size);
 static bool write_dmp_config();
 
 
 
-//  ***************************************************************************
-/// @brief  MPU6050 initialization
-/// @return true - success, false - i2c error
-//  ***************************************************************************
 bool mpu6050_init(void) {
     uint8_t reg = 0; // Check device ID
     if (!i2c1_read(MPU6050_I2C_ADDRESS, REG_WHO_AM_I, 1, &reg, 1)) return false;
@@ -320,86 +320,59 @@ bool mpu6050_init(void) {
     return true;
 }
 
-//  ***************************************************************************
-/// @brief  MPU6050 start DMP
-/// @return true - success, false - i2c error
-//  ***************************************************************************
-bool mpu6050_start(void) {
-    uint8_t reg = 0x0C; // Reset FIFO and DMP
-    if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
-
-    reg = 0xC0; // Enable FIFO and DMP
-    if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
-    
-    return true;
-}
-
-//  ***************************************************************************
-/// @brief  MPU6050 stop DMP
-/// @return true - success, false - i2c error
-//  ***************************************************************************
-bool mpu6050_stop(void) {
-    uint8_t reg = 0x00; // Disable FIFO and DMP
-    if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
-
-    reg = 0x0C; // Reset FIFO and DMP
-    if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
-
-    return true;
-}
-
-//  ***************************************************************************
-/// @brief  Check data ready
-/// @param  is_ready: true - data is ready, false - no
-/// @return true - check success, false - i2c error
-//  ***************************************************************************
-bool mpu6050_is_data_ready(bool* is_ready) {
-    *is_ready = false;
-    
-    uint8_t buffer[2] = { 0 }; // Get FIFO buffer size
-    if (!i2c1_read(MPU6050_I2C_ADDRESS, REG_FIFO_COUNTH, 1, buffer, 2)) return false;
-    uint32_t fifo_bytes_count = ((uint16_t)buffer[0] << 8) | buffer[1];
-    
-    // Check FIFO buffer size
-    if (fifo_bytes_count == 0) {
-        return true;
+bool mpu6050_set_state(bool is_enable) {
+    if (is_enable) {
+        uint8_t reg = 0x0C; // Reset FIFO and DMP
+        if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
+        reg = 0xC0; // Enable FIFO and DMP
+        if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
+    } 
+    else {
+        uint8_t reg = 0x00; // Disable FIFO and DMP
+        if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
+        reg = 0x0C; // Reset FIFO and DMP
+        if (!i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
     }
-    if ((fifo_bytes_count % FIFO_PACKET_SIZE) != 0) { // Overrun
-        uint8_t reg = 0;
-        if (!i2c1_read(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
-        reg &= ~USERCTRL_FIFO_RESET_MASK;
-        reg |= USERCTRL_FIFO_RESET;
-        i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1);
-        return true;
-    }
-    *is_ready = true;
     return true;
 }
 
-//  ***************************************************************************
-/// @brief  Read data
-/// @param  xy_angles: buffer for XY angles
-/// @return true - read success, false - i2c error
-//  ***************************************************************************
-bool mpu6050_read_data(float* xy_angles) {
-    uint8_t data[32] = {0};
-    while (true) { // Read last data from FIFO buffer
+bool mpu6050_calibration(void) {
+    uint64_t start_calibration_time = get_time_ms();
+    while (get_time_ms() - start_calibration_time > 25000) {
         bool is_ready = false;
-        if (!mpu6050_is_data_ready(&is_ready)) return false;
+        float dummy[2] = {0};
+        if (!mpu6050_read_data(dummy, &is_ready)) {
+            return false;
+        }
+        delay_ms(1);
+    }
+    return true;
+}
+
+bool mpu6050_read_data(float* xy_angles, bool* is_ready) {
+    // Check data ready
+    if (!is_data_ready(is_ready)) return false;
+    if (*is_ready == false) {
+        return true;
+    }
+    
+    // Read last data from FIFO buffer
+    while (true) { 
+        if (!i2c1_read(MPU6050_I2C_ADDRESS, REG_FIFO_R_W, 1, fifo_data, FIFO_PACKET_SIZE)) return false;
         
-        if (!is_ready) {
+        bool is_ready_int = false;
+        if (!is_data_ready(&is_ready_int)) return false;
+        if (!is_ready_int) {
             break;
         }
-        
-        if (!i2c1_read(MPU6050_I2C_ADDRESS, REG_FIFO_R_W, 1, data, FIFO_PACKET_SIZE)) return false;
     }
     
     // Parse quaternions
     int16_t raw_q[4] = { 0 };
-    raw_q[0] = ((int16_t)data[0]  << 8) | data[1];
-    raw_q[1] = ((int16_t)data[4]  << 8) | data[5];
-    raw_q[2] = ((int16_t)data[8]  << 8) | data[9];
-    raw_q[3] = ((int16_t)data[12] << 8) | data[13];
+    raw_q[0] = ((int16_t)fifo_data[0]  << 8) | fifo_data[1];
+    raw_q[1] = ((int16_t)fifo_data[4]  << 8) | fifo_data[5];
+    raw_q[2] = ((int16_t)fifo_data[8]  << 8) | fifo_data[9];
+    raw_q[3] = ((int16_t)fifo_data[12] << 8) | fifo_data[13];
 
     // Scaling
     float Q[4] = { 0 };    // WXYZ
@@ -421,8 +394,33 @@ bool mpu6050_read_data(float* xy_angles) {
 
 
 
+//  ***************************************************************************
+/// @brief  Check data ready
+/// @param  is_ready: true - data is ready, false - no
+/// @return true - success, false - i2c error
+//  ***************************************************************************
+static bool is_data_ready(bool* is_ready) {
+    *is_ready = false;
+    
+    uint8_t buffer[2] = { 0 }; // Get FIFO buffer size
+    if (!i2c1_read(MPU6050_I2C_ADDRESS, REG_FIFO_COUNTH, 1, buffer, 2)) return false;
+    uint32_t fifo_bytes_count = ((uint16_t)buffer[0] << 8) | buffer[1];
+    
+    // Check FIFO buffer size
+    if (fifo_bytes_count == 0) {
+        return true;
+    }
+    if ((fifo_bytes_count % FIFO_PACKET_SIZE) != 0) { // Overrun
+        uint8_t reg = 0;
+        if (!i2c1_read(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1)) return false;
+        reg &= ~USERCTRL_FIFO_RESET_MASK;
+        reg |= USERCTRL_FIFO_RESET;
+        return i2c1_write(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, &reg, 1);
+    }
+    *is_ready = true;
+    return true;
+}
 
-#define MAX_BLOCK_SIZE            (64)
 //  ***************************************************************************
 /// @brief  Write memory block to MPU6050
 /// @param  data: data for write
@@ -431,6 +429,7 @@ bool mpu6050_read_data(float* xy_angles) {
 /// @param  data_size: bytes count for write
 /// @return true - success, false - i2c error
 //  ***************************************************************************
+#define MAX_BLOCK_SIZE            (64)
 static bool write_memory_block(const uint8_t* data, uint32_t address, uint32_t bank, uint32_t data_size)  {
     
     for (uint32_t i = 0; i < data_size; i += MAX_BLOCK_SIZE) {

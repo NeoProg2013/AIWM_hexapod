@@ -10,36 +10,33 @@
 #define MPU6050_DRIVER_BUSY						(0x01)
 #define MPU6050_DRIVER_ERROR					(0x02)
 
+
 /**************************************************************************
 * @brief	MPU6050 initialization
 * @note		Write firmware for DMP
-* @retval	true - initialize success, false - initialize fail
+* @return   true - initialize success, false - initialize fail
 **************************************************************************/
 bool mpu6050_init(void);
 
 /**************************************************************************
-* @brief	Function for DMP start
-* @retval	true - success, false - error
+* @brief	MPU6050 calibration
+* @return   true - success, false - error
 **************************************************************************/
-bool mpu6050_start(void);
+bool mpu6050_calibration(void);
 
 /**************************************************************************
-* @brief	Function for DMP stop
-* @retval	true - success, false - error
+* @brief	Function for DMP start\stop
+* @param	is_enable: true - DMP start, false - DMP stop
+* @return	true - success, false - error
 **************************************************************************/
-bool mpu6050_stop(void);
+bool mpu6050_set_state(bool is_enable);
 
 /**************************************************************************
-* @brief	Function for check data ready
-* @retval	true - data ready, false - data not ready or error
-**************************************************************************/
-bool mpu6050_is_data_ready(bool* is_ready);
-
-/**************************************************************************
-* @brief	Function for get data (XYZ) from MPU6050
-* @note		This function use I2C async mode for read FIFO packet
+* @brief	Read data from MPU6050
 * @param	XY: buffer for angles
+* @return   true - success, false - error
 **************************************************************************/
-bool mpu6050_read_data(float* xy_angles);
+bool mpu6050_read_data(float* xy_angles, bool* is_ready);
+
 
 #endif /* __MPU6050_H__ */

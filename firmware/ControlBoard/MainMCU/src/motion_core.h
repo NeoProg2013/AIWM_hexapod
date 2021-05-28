@@ -62,6 +62,7 @@ extern void motion_core_init_motion_config(const motion_config_t* motion_config)
 extern void motion_core_update_motion_config(const motion_config_t* motion_config);
 extern void motion_core_process(void);
 extern bool motion_core_is_motion_complete(void);
+extern void motion_core_set_ground_leveling_state(bool is_enable);
 
 extern bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response);
 
