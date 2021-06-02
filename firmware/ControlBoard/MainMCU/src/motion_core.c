@@ -415,42 +415,55 @@ static bool process_advanced_trajectory(float motion_time) {
 /// @return true - calculation success, false - no
 //  ***************************************************************************
 static void ground_level_compensation(float x_rotate, float z_rotate, float* offsets) {
-    if (z_rotate < -8) {
-        z_rotate = -8;
-    } else if (z_rotate > 8) {
-        z_rotate = 8;
+    if (z_rotate < -10) {
+        z_rotate = -10;
+    } else if (z_rotate > 10) {
+        z_rotate = 10;
     }
-    float k = tanf(DEG_TO_RAD(z_rotate));
-    if (z_rotate < 0) {
-        offsets[0] = -4.0f * k * g_limbs[0].position.x;
-        offsets[1] = -4.0f * k * g_limbs[1].position.x;
-        offsets[2] = -4.0f * k * g_limbs[2].position.x;
-    } else {
-        offsets[3] = -4.0f * k * g_limbs[3].position.x;
-        offsets[4] = -4.0f * k * g_limbs[4].position.x;
-        offsets[5] = -4.0f * k * g_limbs[5].position.x;
+    if (x_rotate < -10) {
+        x_rotate = -10;
+    } else if (x_rotate > 10) {
+        x_rotate = 10;
+    }
+
+    
+    // Surface normal
+    point_3d_t n;
+    n.x = 0;
+    n.y = 1;
+    n.z = 0;
+    
+    // Move surface to max position
+    point_3d_t a = {0, 0, 0};
+    if (z_rotate < 0) a.x = +135.0f;
+    else              a.x = -135.0f;
+    if (x_rotate < 0) a.z = +70.0f;
+    else              a.z = -70.0f;
+    
+    // Rotate normal by axis X
+    float x_rotate_rad = DEG_TO_RAD(x_rotate);
+    n.x = n.x;
+    n.y = n.y * cosf(x_rotate_rad) + n.z * sinf(x_rotate_rad);
+    n.z = n.y * sinf(x_rotate_rad) - n.z * cosf(x_rotate_rad);
+    
+    // Rotate normal by axis Z
+    float z_rotate_rad = DEG_TO_RAD(z_rotate);
+    n.x = n.x * cosf(z_rotate_rad) + n.y * sinf(z_rotate_rad);
+    n.y = n.x * sinf(z_rotate_rad) - n.y * cosf(z_rotate_rad);
+    n.z = n.z;
+    
+    // Calculate Y offsets
+    for (int32_t i = 0; i < sizeof(g_limbs) / sizeof(g_limbs[0]); ++i) {
+        offsets[i] = (-1) * (-n.z * (g_limbs[i].position.z - a.z) - n.x * (g_limbs[i].position.x - a.x)) / n.y;
     }
     
-    /*if (x_rotate < -8) {
-        x_rotate = -8;
-    } else if (x_rotate > 8) {
-        x_rotate = 8;
-    }
-    float k = tanf(DEG_TO_RAD(x_rotate));
-    if (x_rotate < 0) {
-        offsets[0] = -4.0f * k * g_limbs[0].position.x;
-        offsets[3] = -4.0f * k * g_limbs[1].position.x;
-    } else {
-        offsets[2] = -4.0f * k * g_limbs[3].position.x;
-        offsets[5] = -4.0f * k * g_limbs[5].position.x;
-    }*/
-    
-    void* tx_buffer = cli_get_tx_buffer();
-    sprintf(tx_buffer, "[MOTION CORE]: %lu %d %d,%d,%d,%d,%d,%d %d,%d\r\n", (uint32_t)get_time_ms(), (int16_t)(k * 100),
+
+    /*void* tx_buffer = cli_get_tx_buffer();
+    sprintf(tx_buffer, "[MOTION CORE]: %lu [%d,%d,%d] [%d,%d,%d] [%d,%d]\r\n", (uint32_t)get_time_ms(),
             (int16_t)(offsets[0]), (int16_t)(offsets[1]), (int16_t)(offsets[2]),  
             (int16_t)(offsets[3]), (int16_t)(offsets[4]), (int16_t)(offsets[5]),  
             (int16_t)(x_rotate * 100), (int16_t)(z_rotate * 100));
-    cli_send_data(NULL);
+    cli_send_data(NULL);*/
 }
 
 //  ***************************************************************************
@@ -529,12 +542,36 @@ static bool kinematic_calculate_angles(float* y_offsets) {
         //
         // Protection
         //
-        if (g_limbs[i].coxa.angle < g_limbs[i].coxa.prot_min_angle)   g_limbs[i].coxa.angle  = g_limbs[i].coxa.prot_min_angle;
-        if (g_limbs[i].coxa.angle > g_limbs[i].coxa.prot_max_angle)   g_limbs[i].coxa.angle  = g_limbs[i].coxa.prot_max_angle;
-        if (g_limbs[i].femur.angle < g_limbs[i].femur.prot_min_angle) g_limbs[i].femur.angle = g_limbs[i].femur.prot_min_angle;
-        if (g_limbs[i].femur.angle > g_limbs[i].femur.prot_max_angle) g_limbs[i].femur.angle = g_limbs[i].femur.prot_max_angle;
-        if (g_limbs[i].tibia.angle < g_limbs[i].tibia.prot_min_angle) g_limbs[i].tibia.angle = g_limbs[i].tibia.prot_min_angle;
-        if (g_limbs[i].tibia.angle > g_limbs[i].tibia.prot_max_angle) g_limbs[i].tibia.angle = g_limbs[i].tibia.prot_max_angle;
+        if (g_limbs[i].coxa.angle < g_limbs[i].coxa.prot_min_angle) {
+            sprintf(cli_get_tx_buffer(), "[MOTION CORE]: COXA protection from %d to %d\r\n", (int32_t)g_limbs[i].coxa.angle, g_limbs[i].coxa.prot_min_angle);
+            cli_send_data(NULL);
+            g_limbs[i].coxa.angle = g_limbs[i].coxa.prot_min_angle;
+        }
+        if (g_limbs[i].coxa.angle > g_limbs[i].coxa.prot_max_angle) {
+            sprintf(cli_get_tx_buffer(), "[MOTION CORE]: COXA protection from %d to %d\r\n", (int32_t)g_limbs[i].coxa.angle, g_limbs[i].coxa.prot_max_angle);
+            cli_send_data(NULL);
+            g_limbs[i].coxa.angle  = g_limbs[i].coxa.prot_max_angle;
+        }
+        if (g_limbs[i].femur.angle < g_limbs[i].femur.prot_min_angle) {
+            sprintf(cli_get_tx_buffer(), "[MOTION CORE]: FEMUR protection from %d to %d\r\n", (int32_t)g_limbs[i].femur.angle, g_limbs[i].femur.prot_min_angle);
+            cli_send_data(NULL);
+            g_limbs[i].femur.angle = g_limbs[i].femur.prot_min_angle;
+        }
+        if (g_limbs[i].femur.angle > g_limbs[i].femur.prot_max_angle) {
+            sprintf(cli_get_tx_buffer(), "[MOTION CORE]: FEMUR protection from %d to %d\r\n", (int32_t)g_limbs[i].femur.angle, g_limbs[i].femur.prot_max_angle);
+            cli_send_data(NULL);
+            g_limbs[i].femur.angle = g_limbs[i].femur.prot_max_angle;
+        }
+        if (g_limbs[i].tibia.angle < g_limbs[i].tibia.prot_min_angle) {
+            sprintf(cli_get_tx_buffer(), "[MOTION CORE]: TIBIA protection from %d to %d\r\n", (int32_t)g_limbs[i].tibia.angle, g_limbs[i].tibia.prot_min_angle);
+            cli_send_data(NULL);
+            g_limbs[i].tibia.angle = g_limbs[i].tibia.prot_min_angle;
+        }
+        if (g_limbs[i].tibia.angle > g_limbs[i].tibia.prot_max_angle) {
+            sprintf(cli_get_tx_buffer(), "[MOTION CORE]: TIBIA protection from %d to %d\r\n", (int32_t)g_limbs[i].tibia.angle, g_limbs[i].tibia.prot_max_angle);
+            cli_send_data(NULL);
+            g_limbs[i].tibia.angle = g_limbs[i].tibia.prot_max_angle;
+        }
     }
     return true;
 }
