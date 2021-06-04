@@ -49,6 +49,7 @@ static bool is_motion_completed = true;
 static bool is_ground_leveling_enabled = false;
 
 static bool is_enable_data_logging = false;
+static bool is_ground_leveling_logging = false;
 
 
 
@@ -224,6 +225,8 @@ void motion_core_set_ground_leveling_state(bool is_enable) {
 bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
     if (strcmp(cmd, "logging") == 0 && argc == 1) {
         is_enable_data_logging = (argv[0][0] == '1');
+    } else if (strcmp(cmd, "gl-logging") == 0 && argc == 1) {
+        is_ground_leveling_logging = (argv[0][0] == '1');
     } else {
         strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
         return false;
@@ -415,15 +418,16 @@ static bool process_advanced_trajectory(float motion_time) {
 /// @return true - calculation success, false - no
 //  ***************************************************************************
 static void ground_level_compensation(float x_rotate, float z_rotate, float* offsets) {
-    if (z_rotate < -10) {
-        z_rotate = -10;
-    } else if (z_rotate > 10) {
-        z_rotate = 10;
+    const float max_rotate_angle = 6.4f;
+    if (z_rotate < -max_rotate_angle) {
+        z_rotate = -max_rotate_angle;
+    } else if (z_rotate > max_rotate_angle) {
+        z_rotate = max_rotate_angle;
     }
-    if (x_rotate < -10) {
-        x_rotate = -10;
-    } else if (x_rotate > 10) {
-        x_rotate = 10;
+    if (x_rotate < -max_rotate_angle) {
+        x_rotate = -max_rotate_angle;
+    } else if (x_rotate > max_rotate_angle) {
+        x_rotate = max_rotate_angle;
     }
 
     
@@ -435,10 +439,10 @@ static void ground_level_compensation(float x_rotate, float z_rotate, float* off
     
     // Move surface to max position
     point_3d_t a = {0, 0, 0};
-    if (z_rotate < 0) a.x = +135.0f;
-    else              a.x = -135.0f;
-    if (x_rotate < 0) a.z = +70.0f;
-    else              a.z = -70.0f;
+    if (z_rotate < 0) a.x = +(135.0f + 80.f);
+    else              a.x = -(135.0f + 80.f);
+    if (x_rotate < 0) a.z = +(70.0f + 104.0f);
+    else              a.z = -(70.0f + 104.0f);
     
     // Rotate normal by axis X
     float x_rotate_rad = DEG_TO_RAD(x_rotate);
@@ -454,16 +458,30 @@ static void ground_level_compensation(float x_rotate, float z_rotate, float* off
     
     // Calculate Y offsets
     for (int32_t i = 0; i < sizeof(g_limbs) / sizeof(g_limbs[0]); ++i) {
-        offsets[i] = (-1) * (-n.z * (g_limbs[i].position.z - a.z) - n.x * (g_limbs[i].position.x - a.x)) / n.y;
+        float z_sign = 1.0f;
+        if (g_limbs[i].position.z != 0) {
+            z_sign = g_limbs[i].position.z / fabs(g_limbs[i].position.z);
+        }
+        float z = g_limbs[i].position.z + z_sign * 104.0f;
+        
+        float x_sign = 1.0f;
+        if (g_limbs[i].position.x != 0) {
+            x_sign = g_limbs[i].position.x / fabs(g_limbs[i].position.x);
+        }
+        float x = g_limbs[i].position.x + x_sign * 104.0f;
+        
+        offsets[i] = (-1) * (-n.z * (z - a.z) - n.x * (x - a.x)) / n.y;
     }
     
 
-    /*void* tx_buffer = cli_get_tx_buffer();
-    sprintf(tx_buffer, "[MOTION CORE]: %lu [%d,%d,%d] [%d,%d,%d] [%d,%d]\r\n", (uint32_t)get_time_ms(),
-            (int16_t)(offsets[0]), (int16_t)(offsets[1]), (int16_t)(offsets[2]),  
-            (int16_t)(offsets[3]), (int16_t)(offsets[4]), (int16_t)(offsets[5]),  
-            (int16_t)(x_rotate * 100), (int16_t)(z_rotate * 100));
-    cli_send_data(NULL);*/
+    if (is_ground_leveling_logging) {
+        void* tx_buffer = cli_get_tx_buffer();
+        sprintf(tx_buffer, "[MOTION CORE]: %lu [%d,%d,%d] [%d,%d,%d] [%d,%d]\r\n", (uint32_t)get_time_ms(),
+                (int16_t)(offsets[0]), (int16_t)(offsets[1]), (int16_t)(offsets[2]),  
+                (int16_t)(offsets[3]), (int16_t)(offsets[4]), (int16_t)(offsets[5]),  
+                (int16_t)(x_rotate * 100), (int16_t)(z_rotate * 100));
+        cli_send_data(NULL);
+    }
 }
 
 //  ***************************************************************************
