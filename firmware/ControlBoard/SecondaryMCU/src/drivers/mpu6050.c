@@ -338,7 +338,7 @@ bool mpu6050_set_state(bool is_enable) {
 
 bool mpu6050_calibration(void) {
     uint64_t start_calibration_time = get_time_ms();
-    while (get_time_ms() - start_calibration_time > 25000) {
+    while (get_time_ms() - start_calibration_time < 25000) {
         bool is_ready = false;
         float dummy[2] = {0};
         if (!mpu6050_read_data(dummy, &is_ready)) {
