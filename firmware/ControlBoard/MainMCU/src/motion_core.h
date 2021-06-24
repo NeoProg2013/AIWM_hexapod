@@ -46,7 +46,8 @@ typedef struct {
     int32_t      motion_time;                             // Trajectory motion time. Can use for set start motion time value
     int32_t      time_stop;                               // Trajectory stop time
     int32_t      time_update;                             // Motion time value for motion configuration update
-    int32_t      time_step;                               // Trajectory time step (speed)
+    bool         is_ignore_ext_speed;
+    uint8_t      speed;
 } motion_t;
 
 typedef struct {
@@ -57,8 +58,7 @@ typedef struct {
 
 
 extern void motion_core_init(const point_3d_t* start_points);
-extern void motion_core_start_motion(const motion_t* motion);
-extern void motion_core_init_motion_config(const motion_config_t* motion_config);
+extern void motion_core_start_motion(const motion_t* motion, const motion_config_t* motion_config);
 extern void motion_core_update_motion_config(const motion_config_t* motion_config);
 extern void motion_core_process(void);
 extern bool motion_core_is_motion_complete(void);

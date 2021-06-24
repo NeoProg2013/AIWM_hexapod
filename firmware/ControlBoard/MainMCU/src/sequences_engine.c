@@ -91,7 +91,7 @@ void sequences_engine_process(void) {
             break;
         
         case STATE_MOVE:
-            motion_core_start_motion(&current_sequence_info->motions[current_motion]);
+            motion_core_start_motion(&current_sequence_info->motions[current_motion], &sequence_motion_config);
             engine_state = STATE_WAIT;
             break;
         
@@ -138,8 +138,6 @@ void sequences_engine_process(void) {
             if (current_sequence == SEQUENCE_NONE) {
                 engine_state = STATE_IDLE;
                 prev_active_time = get_time_ms();
-            } else {
-                motion_core_init_motion_config(&sequence_motion_config);
             }
             
             if (hexapod_state == HEXAPOD_STATE_UP) {
