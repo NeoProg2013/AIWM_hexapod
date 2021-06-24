@@ -95,7 +95,7 @@ void motion_core_init(const point_3d_t* start_points) {
 /// @brief  Start motion
 /// @param  motion: motion description. @ref motion_t
 //  ***************************************************************************
-void motion_core_start_motion(const motion_t* motion) {
+void motion_core_start_motion(const motion_t* motion, const motion_config_t* motion_config) {
     g_current_motion = *motion;
     is_motion_completed = false;
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
@@ -103,17 +103,15 @@ void motion_core_start_motion(const motion_t* motion) {
             g_current_motion.start_positions[i] = g_limbs[i].position;
         }
     }
-}
-
-//  ***************************************************************************
-/// @brief  Reset motion configuration
-/// @note   Call before select new sequence
-/// @param  motion_config: motion configuration
-//  ***************************************************************************
-void motion_core_init_motion_config(const motion_config_t* motion_config) {
+    
     g_next_motion_config = *motion_config;
     g_current_motion_config = *motion_config;
-    servo_driver_set_speed(motion_config->speed);
+    
+    if (g_current_motion.speed == 0) {
+        servo_driver_set_speed(motion_config->speed);
+    } else {
+        servo_driver_set_speed(g_current_motion.speed);
+    }
 }
 
 //  ***************************************************************************
@@ -156,10 +154,15 @@ void motion_core_process(void) {
         }
         
         // Time shift and load new trajectory configuration if need
-        g_current_motion.motion_time += g_current_motion.time_step;
+        g_current_motion.motion_time += MTIME_STEP;
         if (g_current_motion.motion_time == g_current_motion.time_update) {
             g_current_motion_config = g_next_motion_config;
-            servo_driver_set_speed(g_current_motion_config.speed);
+            
+            if (g_current_motion.speed == 0) {
+                servo_driver_set_speed(motion_config->speed);
+            } else {
+                servo_driver_set_speed(g_current_motion.speed);
+            }
         }
         
         if (is_enable_data_logging) {
@@ -178,9 +181,9 @@ void motion_core_process(void) {
     
     // Ground level compensation
     float y_offsets[SUPPORT_LIMBS_COUNT] = {0};
-    if (is_ground_leveling_enabled) {
+    /*if (is_ground_leveling_enabled) {
         ground_level_compensation(accel_sensor_data[1] / 10000.0f, accel_sensor_data[0] / 10000.0f, y_offsets);
-    }
+    }*/
     
     // Calculate servo logic angles
     if (kinematic_calculate_angles(y_offsets) == false) {
@@ -462,7 +465,7 @@ static void ground_level_compensation(float x_rotate, float z_rotate, float* off
         if (g_limbs[i].position.z != 0) {
             z_sign = g_limbs[i].position.z / fabs(g_limbs[i].position.z);
         }
-        float z = g_limbs[i].position.z + z_sign * 104.0f;
+        float z = g_limbs[i].position.z + z_sign * 104.0f; // 104 - coxa position from center by axix Z
         
         float x_sign = 1.0f;
         if (g_limbs[i].position.x != 0) {

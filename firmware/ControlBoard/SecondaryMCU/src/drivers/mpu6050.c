@@ -170,9 +170,12 @@ static const uint8_t DMP_CONFIG_BINARY[] = {
     0x07,0x7E,0x01,0x30,                              // CFG_16  inv_set_footer
 
     0x07,0x46,0x01,0x9A,                              // CFG_GYRO_SOURCE inv_send_gyro
+	//0x07,0x47,0x04,0xF1,0x28,0x30,0x38,               // CFG_9 inv_send_gyro -> inv_construct3_fifo
+    //0x07,0x6C,0x04,0xF1,0x28,0x30,0x38,               // CFG_12 inv_send_accel -> inv_construct3_fifo
     0x07,0x47,0x04,0xF1,0x28,0x30,0x38,               // CFG_9 inv_send_gyro -> inv_construct3_fifo
 
     0x02,0x16,0x02,0x00,0x00                          // D_0_22  inv_set_fifo_rate 
+	// DMP output frequency is calculated easily using this equation: (200Hz / (1 + value))
 };
 
 #define REG_SMPLRT_DIV                      (0x19)

@@ -15,6 +15,7 @@
 #define LIMB_STEP_HEIGHT                    (30)
 
 #define MTIME_SCALE                         (1000u)
+#define MTIME_STEP                          (20u)
 #define MTIME_MIN_VALUE                     (0u * MTIME_SCALE)
 #define MTIME_MAX_VALUE                     (1u * MTIME_SCALE)
 #define MTIME_MID_VALUE                     (MTIME_MAX_VALUE >> 1)
@@ -46,7 +47,7 @@ typedef struct {
     int32_t      motion_time;                             // Trajectory motion time. Can use for set start motion time value
     int32_t      time_stop;                               // Trajectory stop time
     int32_t      time_update;                             // Motion time value for motion configuration update
-    int32_t      time_step;                               // Trajectory time step (speed)
+    uint8_t      speed;                                   // Override external speed in persents (0 - no override)  
 } motion_t;
 
 typedef struct {
@@ -57,8 +58,7 @@ typedef struct {
 
 
 extern void motion_core_init(const point_3d_t* start_points);
-extern void motion_core_start_motion(const motion_t* motion);
-extern void motion_core_init_motion_config(const motion_config_t* motion_config);
+extern void motion_core_start_motion(const motion_t* motion, const motion_config_t* motion_config);
 extern void motion_core_update_motion_config(const motion_config_t* motion_config);
 extern void motion_core_process(void);
 extern bool motion_core_is_motion_complete(void);

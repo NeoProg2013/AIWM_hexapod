@@ -11,9 +11,9 @@
 
 #define SUPPORT_PWM_CHANNELS_COUNT                  (18)
 
-#define PWM_START_FREQUENCY_HZ                      (270)
+#define PWM_START_FREQUENCY_HZ                      (200)
 #define PWM_MIN_FREQUENCY_HZ                        (70)
-#define PWM_MAX_FREQUENCY_HZ                        (300)
+#define PWM_MAX_FREQUENCY_HZ                        (200)
 
 
 // PWM period counter for synchronize
