@@ -157,9 +157,8 @@ void motion_core_process(void) {
         g_current_motion.motion_time += MTIME_STEP;
         if (g_current_motion.motion_time == g_current_motion.time_update) {
             g_current_motion_config = g_next_motion_config;
-            
             if (g_current_motion.speed == 0) {
-                servo_driver_set_speed(motion_config->speed);
+                servo_driver_set_speed(g_current_motion_config.speed);
             } else {
                 servo_driver_set_speed(g_current_motion.speed);
             }
