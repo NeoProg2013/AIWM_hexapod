@@ -180,9 +180,9 @@ void motion_core_process(void) {
     
     // Ground level compensation
     float y_offsets[SUPPORT_LIMBS_COUNT] = {0};
-    /*if (is_ground_leveling_enabled) {
+    if (is_ground_leveling_enabled) {
         ground_level_compensation(accel_sensor_data[1] / 10000.0f, accel_sensor_data[0] / 10000.0f, y_offsets);
-    }*/
+    }
     
     // Calculate servo logic angles
     if (kinematic_calculate_angles(y_offsets) == false) {
@@ -229,6 +229,10 @@ bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG
         is_enable_data_logging = (argv[0][0] == '1');
     } else if (strcmp(cmd, "gl-logging") == 0 && argc == 1) {
         is_ground_leveling_logging = (argv[0][0] == '1');
+    } else if (strcmp(cmd, "gl-enable") == 0) {
+        is_ground_leveling_enabled = true;
+    } else if (strcmp(cmd, "gl-disable") == 0) {
+        is_ground_leveling_enabled = false;
     } else {
         strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
         return false;
