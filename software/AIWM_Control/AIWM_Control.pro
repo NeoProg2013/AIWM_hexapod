@@ -1,5 +1,5 @@
 QT += qml quick xml svg network
-CONFIG += c++11
+CONFIG += c++17
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -14,7 +14,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    core.cpp \
     streamframeprovider.cpp \
     streamservice.cpp \
     swlp.cpp
@@ -36,8 +35,7 @@ HEADERS += \
     streamframeprovider.h \
     streamservice.h \
     swlp.h \
-    swlp_protocol.h \
-    core.h
+    swlp_protocol.h
 
 DISTFILES += \
     android/AndroidManifest.xml \

@@ -5,7 +5,6 @@ import QtGraphicalEffects 1.0
 import QtQuick.Extras 1.4
 
 Item {
-
     id: root
     width: 400
     height: 600
@@ -13,11 +12,8 @@ Item {
 
     property int systemStatus: 0xFF
     property int moduleStatus: 0xFF
-
-    function resetPage() {
-        systemStatus = 0xFF
-        moduleStatus = 0xFF
-    }
+    property int batteryCharge: 100
+    property int batteryVoltage: 12600
 
     FontLoader {
         id: fixedFont
@@ -25,12 +21,18 @@ Item {
     }
 
     Connections {
-        target: CppCore
-        function onSystemStatusUpdated(newSystemStatus) {
+        target: CppSwlpService
+        function onSystemStatusUpdated(newSystemStatus, newModuleStatus) {
             systemStatus = newSystemStatus
-        }
-        function onModuleStatusUpdated(newModuleStatus) {
             moduleStatus = newModuleStatus
+        }
+        function onBatteryStatusUpdated(newBatteryCharge, newBatteryVoltage) {
+            batteryCharge = newBatteryCharge
+            batteryVoltage = newBatteryVoltage
+        }
+        function onConnectionClosed() {
+            systemStatus = 0xFF
+            moduleStatus = 0xFF
         }
     }
 
@@ -41,6 +43,20 @@ Item {
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.top: parent.top
+        Label {
+            width: 90
+            height: 17
+            font.family: fixedFont.name
+            text: batteryCharge + "% (" + batteryVoltage / 1000.0 + "V)"
+            color: (batteryCharge < 20) ? "#DD0000" : ((batteryCharge < 60) ? "#DDDD00" : "#00DD00")
+            anchors.right: parent.right
+            anchors.top: parent.top
+            horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
+            anchors.topMargin: 5
+            anchors.rightMargin: 5
+
+        }
     }
 
     SwipeView {
@@ -57,14 +73,15 @@ Item {
         currentIndex: 1
 
         Item {
-
             Rectangle {
                 id: joystickItem
                 width: 270
                 height: 270
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
                 color: "#00000000"
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
                 border.color: "#AAAAAA"
 
                 ParallelAnimation {
@@ -106,7 +123,7 @@ Item {
 
                         onReleased: {
                             animationReturn.start()
-                            CppCore.sendStopMoveCommand()
+                            CppSwlpService.sendStopMoveCommand()
                         }
                         onPositionChanged: {
 
@@ -116,28 +133,20 @@ Item {
                             var scaled_x = Math.abs(x / factor)
                             var scaled_max_x = (drag.maximumX / 2) / factor
 
-                            var curvature = Math.exp(scaled_x) / Math.exp(
-                                        scaled_max_x) * 1999
-
+                            var curvature = Math.exp(scaled_x) / Math.exp(scaled_max_x) * 1999
                             curvature = Math.round(curvature)
                             if (x < 0) {
                                 curvature = -curvature
                             }
 
                             var deadZoneHeight = 20
-                            var minDeadZone = (joystickItem.height - dragItem.height
-                                               - deadZoneHeight) / 2
-                            var maxDeadZone = (joystickItem.height - dragItem.height
-                                               + deadZoneHeight) / 2
-                            var stepLength = 0
-                            if (dragItem.y < minDeadZone
-                                    || dragItem.y > maxDeadZone) {
-                                stepLength = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+                            var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2
+                            var maxDeadZone = (joystickItem.height - dragItem.height + deadZoneHeight) / 2
+                            var distance = 0
+                            if (dragItem.y < minDeadZone || dragItem.y > maxDeadZone) {
+                                distance = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
+                                CppSwlpService.sendStartMotionCommand(motionSpeed.value, Math.round(distance), Math.round(curvature))
                             }
-
-                            CppCore.sendStartMotionCommand(
-                                        Math.round(stepLength),
-                                        Math.round(curvature))
                         }
                     }
                 }
@@ -150,9 +159,32 @@ Item {
                     sourceSize.height: dragItem.height
                 }
             }
+
+            Label {
+                height: 17
+                text: motionSpeed.value
+                font.family: fixedFont.name
+                anchors.top: parent.top
+                horizontalAlignment: Text.AlignHCenter
+                anchors.left: motionSpeed.left
+                anchors.right: motionSpeed.right
+            }
+
+            Slider {
+                id: motionSpeed
+                x: 350
+                y: 22
+                width: 30
+                height: 248
+                stepSize: 1
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                orientation: Qt.Vertical
+                to: 100
+                value: 90
+            }
         }
         Item {
-            id: element
             RowLayout {
                 height: 40
                 anchors.right: parent.right
@@ -165,10 +197,10 @@ Item {
                     Layout.fillWidth: true
                     imageSrc: "qrc:/images/getUp.svg"
                     onButtonPressed: {
-                        CppCore.sendGetUpCommand()
+                        CppSwlpService.sendGetUpCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -177,10 +209,10 @@ Item {
                     imageSrc: "qrc:/images/getDown.svg"
                     Layout.fillHeight: true
                     onButtonPressed: {
-                        CppCore.sendGetDownCommand()
+                        CppSwlpService.sendGetDownCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -189,10 +221,10 @@ Item {
                     Layout.fillWidth: true
                     imageSrc: "qrc:/images/swordLeft.svg"
                     onButtonPressed: {
-                        CppCore.sendAttackLeftCommand()
+                        CppSwlpService.sendAttackLeftCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -201,10 +233,10 @@ Item {
                     imageSrc: "qrc:/images/swordRight.svg"
                     Layout.fillHeight: true
                     onButtonPressed: {
-                        CppCore.sendAttackRightCommand()
+                        CppSwlpService.sendAttackRightCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
             }
@@ -223,10 +255,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendPushPullCommand()
+                        CppSwlpService.sendPushPullCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -236,10 +268,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendDanceCommand()
+                        CppSwlpService.sendDanceCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -250,10 +282,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendUpDownCommand()
+                        CppSwlpService.sendUpDownCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -263,10 +295,10 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendRotateXCommand()
+                        CppSwlpService.sendRotateXCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
 
@@ -276,14 +308,15 @@ Item {
                     Layout.fillWidth: true
 
                     onButtonPressed: {
-                        CppCore.sendRotateZCommand()
+                        CppSwlpService.sendRotateZCommand()
                     }
                     onButtonReleased: {
-                        CppCore.sendStopMoveCommand()
+                        CppSwlpService.sendStopMoveCommand()
                     }
                 }
             }
             GridLayout {
+                property bool disable: false
                 id: errorStatus
                 y: 95
                 width: 188
@@ -300,12 +333,12 @@ Item {
                 columns: 2
 
                 StatusLabel {
-                    text: "Connection\nlost"
+                    text: "-"
                     Layout.minimumHeight: 40
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x80
+                    color: "#888888"
                 }
 
                 StatusLabel {
@@ -314,7 +347,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x40
+                    color: (systemStatus & 0x40) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -323,7 +356,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x20
+                    color: (systemStatus & 0x20) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -332,7 +365,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x10
+                    color: (systemStatus & 0x10) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -341,7 +374,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x08
+                    color: (systemStatus & 0x08) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -350,7 +383,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x04
+                    color: (systemStatus & 0x04) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -359,7 +392,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x02
+                    color: (systemStatus & 0x02) ? "#DD0000" : "#888888"
                 }
 
                 StatusLabel {
@@ -368,7 +401,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: systemStatus & 0x01
+                    color: (systemStatus & 0x01) ? "#DD0000" : "#888888"
                 }
             }
             GridLayout {
@@ -391,8 +424,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x80
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x80) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -401,8 +433,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x40
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x40) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -411,8 +442,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x20
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x20) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -421,8 +451,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x10
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x10) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -431,8 +460,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x08
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x08) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -441,8 +469,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x04
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x04) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -451,8 +478,7 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x02
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x02) ? "#DD0000" : "#00DD00"
                 }
 
                 StatusLabel {
@@ -461,17 +487,9 @@ Item {
                     Layout.maximumHeight: 40
                     Layout.preferredWidth: 118
                     Layout.fillWidth: true
-                    isActive: moduleStatus & 0x01
-                    deactiveColor: "#00DD00"
+                    color: (moduleStatus & 0x01) ? "#DD0000" : "#00DD00"
                 }
             }
         }
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:3;anchors_height:290}D{i:4;anchors_width:270}
-}
-##^##*/
-

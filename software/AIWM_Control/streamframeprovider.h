@@ -4,6 +4,7 @@
 #include <QQuickImageProvider>
 #include <QByteArray>
 #include <QFile>
+#include <QMutex>
 
 
 class StreamFrameProvider : public QQuickImageProvider
@@ -12,11 +13,12 @@ public:
     StreamFrameProvider();
     virtual ~StreamFrameProvider();
     QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize) override;
-    virtual void setImageRawData(const QByteArray& rawData);
+    void setImageRawData(const QByteArray& rawData);
 
 private:
     const int m_imageWidth;
     const int m_imageHeight;
+    QMutex m_mutex;
     QPixmap m_lastPixmap;
     QFile file;
 };

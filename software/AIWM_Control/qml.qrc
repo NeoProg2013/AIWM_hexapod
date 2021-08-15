@@ -4,33 +4,17 @@
         <file>AndroidQML/ControlPage.qml</file>
         <file>AndroidQML/ImageButton.qml</file>
         <file>AndroidQML/main.qml</file>
-        <file>images/arrowDown.svg</file>
-        <file>images/arrowLeft.svg</file>
-        <file>images/arrowRight.svg</file>
-        <file>images/arrowUp.svg</file>
         <file>AndroidQML/StatusLabel.qml</file>
-        <file>core.cpp</file>
-        <file>core.h</file>
         <file>main.cpp</file>
-        <file>images/arrowDoubleDown.svg</file>
-        <file>images/arrowDoubleLeft.svg</file>
-        <file>images/arrowDoubleRight.svg</file>
-        <file>images/arrowDoubleUp.svg</file>
         <file>images/dance.svg</file>
         <file>images/swordLeft.svg</file>
         <file>images/swordRight.svg</file>
         <file>images/getDown.svg</file>
         <file>images/getUp.svg</file>
-        <file>images/decreaseHeight.svg</file>
-        <file>images/increaseHeight.svg</file>
-        <file>images/run.svg</file>
         <file>images/rotateX.svg</file>
         <file>images/rotateZ.svg</file>
-        <file>images/arrowRotateLeft.svg</file>
-        <file>images/arrowRotateRight.svg</file>
         <file>AndroidQML/ConnectionPage.qml</file>
         <file>images/powerOn.svg</file>
-        <file>images/light.svg</file>
         <file>swlp.cpp</file>
         <file>swlp.h</file>
         <file>swlp_protocol.h</file>

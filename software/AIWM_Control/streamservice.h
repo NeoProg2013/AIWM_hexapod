@@ -1,39 +1,45 @@
-#ifndef TCPCLIENT_H
-#define TCPCLIENT_H
-
+#ifndef STREAM_SERVICE_H
+#define STREAM_SERVICE_H
 #include <QObject>
-#include <QTcpSocket>
-#include <QNetworkAccessManager>
+#include <QThread>
+#include <QTimer>
 #include <QNetworkReply>
 #include <QEventLoop>
 #include "streamframeprovider.h"
 
 
-class StreamService : public QObject
-{
+class StreamService : public QThread {
     Q_OBJECT
 public:
-    explicit StreamService(StreamFrameProvider* frameProvider, QObject *parent = nullptr);
-    virtual ~StreamService();
+    StreamService(StreamFrameProvider* frameProvider) : QThread(nullptr), m_frameProvider(frameProvider) {}
+    virtual ~StreamService() {}
+
+    //
+    // Q_INVOKABLE methods call from GUI thread
+    //
+    Q_INVOKABLE bool startService();
+    Q_INVOKABLE void stopService();
 
 signals:
     void frameReceived();
-    void badFrameReceived();
     void connectionClosed();
 
-public slots:
-    virtual void runService(QString cameraIp);
-    void httpDataReceived();
-    void httpConnectionClosed();
+protected:
+    virtual void run() override;
 
-private:
-    bool m_isRunning                        {false};
-    QEventLoop* m_eventLoop                 {nullptr};
-    QNetworkAccessManager* m_manager        {nullptr};
-    QNetworkReply* m_requestReply           {nullptr};
-    QTimer* m_timeoutTimer                  {nullptr};
-    StreamFrameProvider* m_frameProvider    {nullptr};
-    QByteArray m_imageBuffer;
+protected slots:
+    virtual void httpDataReceived();
+
+protected:
+    std::atomic<bool> m_isReady                 {false};
+    std::atomic<bool> m_isError                 {false};
+
+    QEventLoop* m_eventLoop                     {nullptr};
+    QTimer* m_timeoutTimer                      {nullptr};
+    QNetworkReply* m_requestReply               {nullptr};
+
+    QByteArray m_buffer;
+    StreamFrameProvider* const m_frameProvider  {nullptr};
 };
 
-#endif // TCPCLIENT_H
+#endif // STREAM_SERVICE_H

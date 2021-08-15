@@ -2,11 +2,6 @@ import QtQuick 2.12
 import QtQuick.Controls 2.5
 
 Label {
-
-    property bool isActive: false
-    property string activeColor: "#DD0000"
-    property string deactiveColor: "#888888"
-
     FontLoader {
         id: fixedFont
         source: "qrc:/fonts/OpenSans-Regular.ttf"
@@ -16,7 +11,7 @@ Label {
     width: 85
     height: 55
     clip: true
-    color: (root.isActive == true) ? activeColor : deactiveColor
+    color: "#888888"
     text: "TEXT"
     font.family: fixedFont.name
     font.pointSize: 8
