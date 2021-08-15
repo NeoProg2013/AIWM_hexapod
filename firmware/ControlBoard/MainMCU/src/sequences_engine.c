@@ -84,9 +84,9 @@ void sequences_engine_process(void) {
             }
             else {
                 // Auto select down sequence timer
-                /*if (get_time_ms() - prev_active_time > AUTO_SELECT_DOWN_SEQUENCE_TIME) {
+                if (get_time_ms() - prev_active_time > AUTO_SELECT_DOWN_SEQUENCE_TIME) {
                     sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
-                }*/
+                }
             }
             break;
         
