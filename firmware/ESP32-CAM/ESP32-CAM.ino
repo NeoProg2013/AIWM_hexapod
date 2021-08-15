@@ -114,6 +114,8 @@ static void startCameraServer() {
 }
  
 void setup() {
+
+run_setup:
 	
 	  pinMode(4, OUTPUT);
 	  digitalWrite(4, LOW);
@@ -122,9 +124,6 @@ void setup() {
     digitalWrite(33, LOW);
     
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // Disable brownout detector
-    
-    Serial.setDebugOutput(false);
-    Serial.begin(9600);
      
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -153,7 +152,7 @@ void setup() {
      
     // Camera initialization
     if (esp_camera_init(&config) != ESP_OK) {
-        Serial.print("ERROR");
+        goto run_setup;
         return;
     }
 
@@ -164,13 +163,9 @@ void setup() {
     s->set_saturation(s, 1);
     
     // Wi-Fi connection
-    for (uint32_t i = 0; WiFi.status() != WL_CONNECTED && i < 60; ++i) {
+    for (uint32_t i = 0; WiFi.status() != WL_CONNECTED; ++i) {
         WiFi.begin(ssid, password);
         delay(1000);
-    }
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.print("ERROR");
-        return;
     }
 
     // Start streaming web server
@@ -178,7 +173,6 @@ void setup() {
 }
  
 void loop() {
-
     static bool is_led_enabled = false;
     static uint32_t prev_time = 0;
     if (millis() - prev_time > 500) {
@@ -190,16 +184,5 @@ void loop() {
         }
         is_led_enabled = !is_led_enabled;
         prev_time = millis();
-    }
-
-    static uint32_t prev_send_ip_time = 0;
-    if (millis() - prev_send_ip_time > 1000) {
-        if (WiFi.status() != WL_CONNECTED) {
-            Serial.print("ERROR");
-        }
-        else {
-            Serial.print(WiFi.localIP());
-        }
-        prev_send_ip_time = millis();
     }
 }
