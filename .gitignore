@@ -1,8 +1,3 @@
-/firmware/Debug
-/firmware/AIWM.dep
-/firmware/settings/AIWM.wsdt
-/firmware/settings/AIWM.dbgdt
-/firmware/settings/AIWM.dnx
 *.bak
 /hardware/ControlBoard/__Previews
 /hardware/PowerBoard/History
@@ -10,3 +5,11 @@
 /hardware/PowerBoard/debug.log
 /hardware/ControlBoard/History
 /hardware/ControlBoard/debug.log
+/firmware/ControlBoard/MainMCU/Debug/
+/firmware/ControlBoard/MainMCU/MainMCU.dep
+/firmware/ControlBoard/MainMCU/MainMCU.ewt
+/firmware/ControlBoard/MainMCU/settings/
+/firmware/ControlBoard/SecondaryMCU/Debug/
+/firmware/ControlBoard/SecondaryMCU/settings/
+/firmware/ControlBoard/SecondaryMCU/SecondaryMCU.dep
+/firmware/ControlBoard/SecondaryMCU/SecondaryMCU.ewt
