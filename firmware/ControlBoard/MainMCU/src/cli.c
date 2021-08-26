@@ -121,6 +121,7 @@ void cli_send_data(const char* data) {
 /// @return true - success, false - error
 //  ***************************************************************************
 static bool process_command(const char* module, const char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t argc, char* response) {
+    uint32_t cmd_list_size = 0;
     if (strcmp(module, "help") == 0 || strcmp(module, "?") == 0) {
         sprintf(response, CLI_HELP("+------------------------------------------------------------------------+")
                           CLI_HELP("| Artificial intelligence walking machine - CLI help subsystem           |")
@@ -192,7 +193,12 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
         return smcu_cli_command_process(cmd, argv, argc, response);
     }
     else if (strcmp(module, "config") == 0) {
-        return config_cli_command_process(cmd, argv, argc, response);
+        const cli_cmd_t* cmd_list = config_get_cmd_list(&cmd_list_size);
+        for (uint32_t i = 0; i < cmd_list_size; ++i) {
+            if (strcmp(cmd, cmd_list[i].cmd) == 0) {
+                return cmd_list[i].handler(argv, argc, response);
+            }
+        }
     }
     else if (strcmp(module, "indication") == 0) {
         return indication_cli_command_process(cmd, argv, argc, response);
@@ -200,7 +206,8 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     else {
         strcpy(response, CLI_ERROR("Unknown module name"));
     }
-    return true;
+    strcpy(response, CLI_ERROR("Unknown command or format"));
+    return false;
 }
 
 //  ***************************************************************************
