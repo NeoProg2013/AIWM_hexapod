@@ -12,12 +12,12 @@
 #define STORAGE_DEVICE_ADDRESS              (0xA0)
 
 #define CONFIG_SECTION_ADDRESS              (0x0000)
-#define CONFIG_SECTION_PAGE_SIZE            (256)
-#define CONFIG_SECTION_PAGE_COUNT           (3)
+#define CONFIG_SECTION_PAGE_SIZE            (256u)
+#define CONFIG_SECTION_PAGE_COUNT           (3u)
 #define CONFIG_SECTION_SIZE                 (CONFIG_SECTION_PAGE_SIZE * CONFIG_SECTION_PAGE_COUNT)
 
-#define CONFIG_SECTION_MAX_READ_SIZE        (128)
-#define CONFIG_SECTION_MAX_WRITE_SIZE       (32)
+#define CONFIG_SECTION_MAX_READ_SIZE        (128u)
+#define CONFIG_SECTION_MAX_WRITE_SIZE       (32u)
 
 
 static bool config_write_8(uint32_t address, uint8_t data);
@@ -39,11 +39,11 @@ CLI_CMD_HANDLER(config_cli_cmd_update);
 static const cli_cmd_t cli_cmd_list[] = {
     { .cmd = "enable",    .handler = config_cli_cmd_enable    },
     { .cmd = "read-page", .handler = config_cli_cmd_read_page },
-    { .cmd = "read",      .handler = config_cli_cmd_enable    },
-    { .cmd = "write",     .handler = config_cli_cmd_enable    },
-    { .cmd = "erase",     .handler = config_cli_cmd_enable    },
-    { .cmd = "check",     .handler = config_cli_cmd_enable    },
-    { .cmd = "update",    .handler = config_cli_cmd_enable    }
+    { .cmd = "read",      .handler = config_cli_cmd_read      },
+    { .cmd = "write",     .handler = config_cli_cmd_write     },
+    { .cmd = "erase",     .handler = config_cli_cmd_erase     },
+    { .cmd = "check",     .handler = config_cli_cmd_check     },
+    { .cmd = "update",    .handler = config_cli_cmd_update    }
 };
 
 
@@ -198,7 +198,6 @@ static bool config_calc_checksum(uint32_t page, uint16_t *checksum) {
 
     uint32_t offset = page * CONFIG_SECTION_PAGE_SIZE;
     for (uint32_t address = 0; address < CONFIG_SECTION_PAGE_SIZE - MM_PAGE_CHECKSUM_SIZE; ++address) {
-
         uint8_t byte = 0;
         if (config_read_8(address + offset, &byte) == false) {
             return false;
@@ -260,6 +259,7 @@ static bool config_erase(void) {
 
 
 
+
 // ***************************************************************************
 // CLI SECTION
 // ***************************************************************************
@@ -270,17 +270,15 @@ CLI_CMD_HANDLER(config_cli_cmd_enable) {
     return true;
 }
 CLI_CMD_HANDLER(config_cli_cmd_read_page) {
-    if (argc < 1) return false;
-    
-    uint32_t page = atoi(argv[0]); // Get page number
-    if (page >= CONFIG_SECTION_PAGE_COUNT) {
-        strcpy(response, CLI_ERROR("Page number is out of range"));
+    if (argc < 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: config read-page <page number> [raw]"));
         return false;
     }
-
-    // Read data
+    
+    // Read data: argv[0] - page number
+    uint32_t page = atoi(argv[0]);
     if (config_read(page * CONFIG_SECTION_PAGE_SIZE, cli_buffer, CONFIG_SECTION_PAGE_SIZE) == false) {
-        strcpy(response, CLI_ERROR("Cannot read data from memory"));
+        sprintf(response, CLI_ERROR("Can't read data by address %X"), page * CONFIG_SECTION_PAGE_SIZE);
         return false;
     }
 
@@ -307,63 +305,59 @@ CLI_CMD_HANDLER(config_cli_cmd_read_page) {
     return true;
 }
 CLI_CMD_HANDLER(config_cli_cmd_read) {
-    if (argc < 1) return false;
-    
-    uint32_t address = strtol(argv[0], NULL, 16); // Get address
-    if (address > CONFIG_SECTION_SIZE) {
-        strcpy(response, CLI_ERROR("Adress value is out of range"));
+    if (argc < 2) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: config read <hex address> [8,16,32]"));
         return false;
     }
     
-    if (argc == 2 && strcmp(argv[1], "16") == 0) {
-        uint16_t data = 0;
-        if (!config_read_16(address, &data)) {
-            strcpy(response, CLI_ERROR("Cannot read data from memory"));
-            return false;
-        }
-        sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int16_t)data, (uint16_t)data);
-    } 
-    else if (argc == 2 && strcmp(argv[1], "32") == 0) {
-        uint32_t data = 0;
-        if (!config_read_32(address, &data)) {
-            strcpy(response, CLI_ERROR("Cannot read data from memory"));
-            return false;
-        }
-        sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int32_t)data, (uint32_t)data);
-    } 
-    else {
+    uint32_t address = strtol(argv[0], NULL, 16);
+    if (strcmp(argv[1], "8") == 0) {
         uint8_t data = 0;
         if (!config_read_8(address, &data)) {
-            strcpy(response, CLI_ERROR("Cannot read data from memory"));
+            sprintf(response, CLI_ERROR("Can't read data by address %X"), address);
             return false;
         }
         sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int8_t)data, (uint8_t)data);
     }
+    else if (strcmp(argv[1], "16") == 0) {
+        uint16_t data = 0;
+        if (!config_read_16(address, &data)) {
+            sprintf(response, CLI_ERROR("Can't read data by address %X"), address);
+            return false;
+        }
+        sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int16_t)data, (uint16_t)data);
+    } 
+    else if (strcmp(argv[1], "32") == 0) {
+        uint32_t data = 0;
+        if (!config_read_32(address, &data)) {
+            sprintf(response, CLI_ERROR("Can't read data by address %X"), address);
+            return false;
+        }
+        sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int32_t)data, (uint32_t)data);
+    } 
     return true;
 }
 CLI_CMD_HANDLER(config_cli_cmd_write) {
-    if (argc < 1) return false;
-    
-    uint32_t address = strtol(argv[0], NULL, 16); // Get address
-    if (address > CONFIG_SECTION_SIZE) {
-        strcpy(response, CLI_ERROR("Adress value is out of range"));
+    if (argc < 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: config write <hex address> [8,16,32,hex bytes array]"));
         return false;
     }
     
+    uint32_t address = strtol(argv[0], NULL, 16); // Get address
     bool result = true;
-    if (argc >= 2 && strcmp(argv[1], "8") == 0) {
-        result = config_write_8(address, atoi(argv[1]));
+    if (argc >= 3 && strcmp(argv[1], "8") == 0) {
+        result = config_write_8(address, (uint8_t)atoi(argv[2]));
     } 
-    else if (argc >= 2 && strcmp(argv[1], "16") == 0) {
-        result = config_write_16(address, atoi(argv[1]));
+    else if (argc >= 3 && strcmp(argv[1], "16") == 0) {
+        result = config_write_16(address, (uint16_t)atoi(argv[2]));
     } 
-    else if (argc >= 2 && strcmp(argv[1], "32") == 0) {
-        result = config_write_32(address, atoi(argv[1]));
+    else if (argc >= 3 && strcmp(argv[1], "32") == 0) {
+        result = config_write_32(address, (uint32_t)atoi(argv[2]));
     } 
     else {
-        uint32_t data_len = strlen(argv[1]); // Get bytes count
+        uint32_t data_len = strlen(argv[2]); // Get bytes count
         if (data_len & 0x01) {
-            strcpy(response, CLI_ERROR("Wrong data array"));
+            strcpy(response, CLI_ERROR("Wrong data array - bytes count value should be even"));
             return false;
         }
         uint32_t bytes_count = data_len >> 1;
@@ -380,44 +374,50 @@ CLI_CMD_HANDLER(config_cli_cmd_write) {
     }
     
     if (!result) {
-        strcpy(response, CLI_ERROR("Cannot write data to memory"));
+        sprintf(response, CLI_ERROR("Can't write data by address %X"), address);
     }
     return result;
 }
 CLI_CMD_HANDLER(config_cli_cmd_erase) {
     if (config_erase() == false) {
-        strcpy(response, CLI_ERROR("Cannot erase memory"));
+        strcpy(response, CLI_ERROR("Can't erase memory"));
         return false;
     }
     return true;
 }
 CLI_CMD_HANDLER(config_cli_cmd_check) {
-    if (argc < 1) return false;
+    if (argc != 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: config check <page number>"));
+        return false;
+    }
     
-    uint32_t page = atoi(argv[0]); // Get page number
+    uint32_t page = atoi(argv[0]);
     if (page >= CONFIG_SECTION_PAGE_COUNT) {
-        strcpy(response, CLI_ERROR("Page number is out of range"));
+        sprintf(response, CLI_ERROR("Page number (%u) is out of range, it should be less %u"), page, CONFIG_SECTION_PAGE_COUNT);
         return false;
     }
 
     if (config_check_page_integrity(page) == false) {
-        strcpy(response, CLI_ERROR("Verification failed"));
+        strcpy(response, CLI_ERROR("Page integrity is broken!"));
         return false;
     }
     return true;
 }
 CLI_CMD_HANDLER(config_cli_cmd_update) {
-    if (argc < 1) return false;
+    if (argc != 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: config update <page number>"));
+        return false;
+    }
     
-    uint32_t page = atoi(argv[0]); // Get page number
+    uint32_t page = atoi(argv[0]);
     if (page >= CONFIG_SECTION_PAGE_COUNT) {
-        strcpy(response, CLI_ERROR("Page number is out of range"));
+        sprintf(response, CLI_ERROR("Page number (%u) is out of range, it should be less %d"), page, CONFIG_SECTION_PAGE_COUNT);
         return false;
     }
 
     // Update checksum
     if (config_update_checksum(page) == false) {
-        strcpy(response, CLI_ERROR("Can't update checksum"));
+        strcpy(response, CLI_ERROR("Can't update checksum value"));
         return false;
     }
     return true;

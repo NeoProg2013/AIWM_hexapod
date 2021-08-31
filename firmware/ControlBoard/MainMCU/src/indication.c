@@ -18,13 +18,21 @@
 #define BUZZER_TURN_ON()            gpio_set  (BUZZER_PIN)
 
 
-static bool is_cli_control_enabled = false;
+static bool is_external_control = false;
 
 
 static void blink_red_led_with_buzzer(uint32_t period);
 static void blink_red_led(uint32_t period);
 static void blink_blue_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
+
+CLI_CMD_HANDLER(config_cli_cmd_ext_ctrl);
+CLI_CMD_HANDLER(config_cli_cmd_set);
+
+static const cli_cmd_t cli_cmd_list[] = {
+    { .cmd = "ext-ctrl",  .handler = config_cli_cmd_ext_ctrl },
+    { .cmd = "set",       .handler = config_cli_cmd_set      }
+};
 
 
 //  ***************************************************************************
@@ -72,9 +80,7 @@ void indication_init(void) {
 /// @return none
 //  ***************************************************************************
 void indication_process(void) {
-    if (is_cli_control_enabled) {
-        return;
-    }
+    if (is_external_control) return;
     
     if (sysmon_is_error_set(SYSMON_ANY_ERROR) == false) {
         LED_TURN_OFF(LED_R_PIN);
@@ -84,67 +90,24 @@ void indication_process(void) {
     } else {
         if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
              blink_red_led_with_buzzer(500);
-        }
-        else if (sysmon_is_error_set(SYSMON_FATAL_ERROR | SYSMON_CONFIG_ERROR | SYSMON_MEMORY_ERROR | SYSMON_MATH_ERROR) == true) {
+        } else if (sysmon_is_error_set(SYSMON_FATAL_ERROR | SYSMON_CONFIG_ERROR | SYSMON_MEMORY_ERROR | SYSMON_MATH_ERROR) == true) {
              blink_red_led(100);
-        }
-        else if (sysmon_is_error_set(SYSMON_SYNC_ERROR | SYSMON_COMM_ERROR) == true) {
+        } else if (sysmon_is_error_set(SYSMON_SYNC_ERROR | SYSMON_COMM_ERROR) == true) {
              blink_yellow_led(500);
-        }
-        else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
+        }  else if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
              blink_blue_led(500);
         }
     }
 }
 
 //  ***************************************************************************
-/// @brief  CLI command process
-/// @param  cmd: command string
-/// @param  argv: argument list
-/// @param  argc: arguments count
-/// @param  response: response
-/// @retval response
-/// @return true - success, false - fail
+/// @brief  Get command list for CLI
+/// @param  cmd_list: pointer to cmd list size
+/// @return command list
 //  ***************************************************************************
-bool indication_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
-
-    if (strcmp(cmd, "ext-ctrl") == 0 && argc == 1) {
-        is_cli_control_enabled = atoi(argv[0]);
-        LED_TURN_OFF(LED_R_PIN);
-        LED_TURN_OFF(LED_G_PIN);
-        LED_TURN_OFF(LED_B_PIN);
-        BUZZER_TURN_OFF();
-        if (is_cli_control_enabled) {
-            strcpy(response, CLI_OK("Indication now is under control by CLI"));
-        }
-        else {
-            strcpy(response, CLI_OK("Indication now is under control by MCU"));
-        }
-    }
-    else if (strcmp(cmd, "set-state") == 0 && argc == 1) {
-        char r = argv[0][0];
-        char g = argv[0][1];
-        char b = argv[0][2];
-        char buzzer = argv[0][3];
-        if (r != '0' && r != '1' || g != '0' && g != '1' || b != '0' && b != '1' || buzzer != '0' && buzzer != '1') {
-            strcpy(response, CLI_ERROR("Wrong argument value. Possible 0 or 1"));
-            return false;
-        }
-        
-        if (r == '1') LED_TURN_ON(LED_R_PIN);
-        else          LED_TURN_OFF(LED_R_PIN);
-        if (g == '1') LED_TURN_ON(LED_G_PIN);
-        else          LED_TURN_OFF(LED_G_PIN);
-        if (b == '1') LED_TURN_ON(LED_B_PIN);
-        else          LED_TURN_OFF(LED_B_PIN);
-        if (buzzer == '1') BUZZER_TURN_ON();
-        else               BUZZER_TURN_OFF();
-    }
-    else {
-        strcpy(response, CLI_ERROR("Unknown command or format for indication"));
-        return false;
-    }
-    return true;
+const cli_cmd_t* indication_get_cmd_list(uint32_t* count) {
+    *count = sizeof(cli_cmd_list) / sizeof(cli_cmd_t);
+    return cli_cmd_list;
 }
 
 
@@ -157,17 +120,14 @@ bool indication_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_
 /// @return none
 //  ***************************************************************************
 static void blink_red_led_with_buzzer(uint32_t period) {
-    
     static uint32_t start_time = 0;
     static bool state = false;
     
     if (get_time_ms() - start_time > period) {
-        
         if (state == false) {
             LED_TURN_ON(LED_R_PIN);
             BUZZER_TURN_ON();
-        }
-        else {
+        } else {
             LED_TURN_OFF(LED_R_PIN);
             BUZZER_TURN_OFF();
         }
@@ -185,16 +145,13 @@ static void blink_red_led_with_buzzer(uint32_t period) {
 /// @return none
 //  ***************************************************************************
 static void blink_red_led(uint32_t period) {
-    
     static uint32_t start_time = 0;
     static bool state = false;
     
     if (get_time_ms() - start_time > period) {
-        
         if (state == false) {
             LED_TURN_ON(LED_R_PIN);
-        }
-        else {
+        } else {
             LED_TURN_OFF(LED_R_PIN);
         }
         LED_TURN_OFF(LED_G_PIN);
@@ -212,17 +169,14 @@ static void blink_red_led(uint32_t period) {
 /// @return none
 //  ***************************************************************************
 static void blink_yellow_led(uint32_t period) {
-    
     static uint32_t start_time = 0;
     static bool state = false;
     
     if (get_time_ms() - start_time > period) {
-        
         if (state == false) {
             LED_TURN_OFF(LED_R_PIN);
             LED_TURN_OFF(LED_G_PIN);
-        }
-        else {
+        } else {
             LED_TURN_ON(LED_R_PIN);
             LED_TURN_ON(LED_G_PIN);
         }
@@ -240,16 +194,13 @@ static void blink_yellow_led(uint32_t period) {
 /// @return none
 //  ***************************************************************************
 static void blink_blue_led(uint32_t period) {
-    
     static uint32_t start_time = 0;
     static bool state = false;
     
     if (get_time_ms() - start_time > period) {
-        
         if (state == false) {
             LED_TURN_OFF(LED_B_PIN);
-        }
-        else {
+        } else {
             LED_TURN_ON(LED_B_PIN);
         }
         LED_TURN_OFF(LED_R_PIN);
@@ -259,4 +210,50 @@ static void blink_blue_led(uint32_t period) {
         state = !state;
         start_time = get_time_ms();
     }
+}
+
+
+
+
+
+// ***************************************************************************
+// CLI SECTION
+// ***************************************************************************
+CLI_CMD_HANDLER(config_cli_cmd_ext_ctrl) {
+    if (argc != 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: indication ext-ctrl <0,1>"));
+        return false;
+    }
+    is_external_control = atoi(argv[0]);
+    LED_TURN_OFF(LED_R_PIN);
+    LED_TURN_OFF(LED_G_PIN);
+    LED_TURN_OFF(LED_B_PIN);
+    BUZZER_TURN_OFF();
+    if (is_external_control) {
+        strcpy(response, CLI_OK("Indication now is under control by CLI"));
+    } else {
+        strcpy(response, CLI_OK("Indication now is under control by MCU"));
+    }
+    return true;
+}
+CLI_CMD_HANDLER(config_cli_cmd_set) {
+    char r = (argc >= 1) ? argv[0][0] : '0';
+    char g = (argc >= 2) ? argv[0][1] : '0';
+    char b = (argc >= 3) ? argv[0][2] : '0';
+    char buzzer = (argc >= 3) ? argv[0][3] : '0';
+    if (r != '0' && r != '1' || g != '0' && g != '1' || b != '0' && b != '1' || buzzer != '0' && buzzer != '1') {
+        strcpy(response, CLI_ERROR("Bad argument value. Possible 0 or 1"));
+        return false;
+    }
+    
+    if (r == '1') LED_TURN_ON(LED_R_PIN);
+    else          LED_TURN_OFF(LED_R_PIN);
+    if (g == '1') LED_TURN_ON(LED_G_PIN);
+    else          LED_TURN_OFF(LED_G_PIN);
+    if (b == '1') LED_TURN_ON(LED_B_PIN);
+    else          LED_TURN_OFF(LED_B_PIN);
+    if (buzzer == '1') BUZZER_TURN_ON();
+    else               BUZZER_TURN_OFF();
+    
+    return true;
 }

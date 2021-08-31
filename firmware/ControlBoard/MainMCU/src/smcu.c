@@ -24,10 +24,6 @@ static uint32_t received_frame_size = 0;
 static int16_t  foot_sensors_data[6] = {0};
 static int32_t  accel_sensor_data[2] = {0}; // 0.0001*
 
-static bool is_enable_all_data_logging   = false;
-static bool is_enable_foot_data_logging  = false;
-static bool is_enable_accel_data_logging = false;
-
 
 static void frame_received_callback(uint32_t frame_size);
 static void frame_error_callback(void);
@@ -57,17 +53,12 @@ void smcu_process(void) {
     
     if (state == STATE_FRAME_RECEIVED) {
         do {
-            uint8_t* rx_buffer = usart3_get_rx_buffer();
-            uint32_t cursor = 0;
-            
             // Check frame
-            if (received_frame_size != SMCU_FRAME_SIZE) {
+            uint8_t* rx_buffer = usart3_get_rx_buffer();
+            if (received_frame_size != SMCU_FRAME_SIZE || rx_buffer[0] != 0xAA || rx_buffer[SMCU_FRAME_SIZE - 1] != 0xAA) {
                 break;
             }
-            if (rx_buffer[0] != 0xAA || rx_buffer[SMCU_FRAME_SIZE - 1] != 0xAA) {
-                break;
-            }
-            ++cursor;
+            uint32_t cursor = 1;
             
             // Read HX711 data
             for (uint32_t i = 0; i < sizeof(foot_sensors_data) / sizeof(foot_sensors_data[0]); ++i) {
@@ -80,28 +71,6 @@ void smcu_process(void) {
                 memcpy(&accel_sensor_data[i], &rx_buffer[cursor], sizeof(accel_sensor_data[i]));
                 cursor += sizeof(accel_sensor_data[i]);
             }
-            
-            
-            
-            if (is_enable_all_data_logging) {
-                void* tx_buffer = cli_get_tx_buffer();
-                sprintf(tx_buffer, "%d,%d,%d,%d,%d,%d %d,%d\r\n", 
-                        foot_sensors_data[0], foot_sensors_data[1], foot_sensors_data[2], foot_sensors_data[3], foot_sensors_data[4], foot_sensors_data[5], 
-                        accel_sensor_data[0], accel_sensor_data[1]);
-                cli_send_data(NULL);
-            } 
-            else if (is_enable_foot_data_logging) {
-                void* tx_buffer = cli_get_tx_buffer();
-                sprintf(tx_buffer, "%d,%d,%d,%d,%d,%d\r\n", foot_sensors_data[0], foot_sensors_data[1], foot_sensors_data[2], foot_sensors_data[3], foot_sensors_data[4], foot_sensors_data[5]);
-                cli_send_data(NULL);
-            } 
-            else if (is_enable_accel_data_logging) {
-                void* tx_buffer = cli_get_tx_buffer();
-                sprintf(tx_buffer, "%d,%d\r\n", accel_sensor_data[0], accel_sensor_data[1]);
-                cli_send_data(NULL);
-            }
-            
-            
             
             // Update frame receive time
             frame_receive_time = get_time_ms(); 
@@ -130,33 +99,6 @@ void smcu_process(void) {
 void smcu_get_sensor_data(int16_t** foot_sensors, int32_t** accel_sensor) {
     *foot_sensors = foot_sensors_data;
     *accel_sensor = accel_sensor_data;
-}
-
-//  ***************************************************************************
-/// @brief  CLI command process
-/// @param  cmd: command string
-/// @param  argv: argument list
-/// @param  argc: arguments count
-/// @param  response: response
-/// @retval response
-/// @return true - success, false - fail
-//  ***************************************************************************
-bool smcu_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
-    if (strcmp(cmd, "logging") == 0) {
-        if (argc == 1) {
-            is_enable_all_data_logging = (argv[0][0] == '1');
-            is_enable_foot_data_logging = false;
-            is_enable_accel_data_logging = false;
-        } else if (argc == 2) {
-            is_enable_all_data_logging = false;
-            is_enable_foot_data_logging = (strcmp(argv[0], "foot") == 0 && argv[1][0] == '1');
-            is_enable_accel_data_logging = (strcmp(argv[0], "accel") == 0 && argv[1][0] == '1');
-        }
-    } else {
-        strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
-        return false;
-    }
-    return true;
 }
 
 

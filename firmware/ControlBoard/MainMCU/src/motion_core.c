@@ -39,6 +39,18 @@ static bool process_advanced_trajectory(float motion_time);
 static bool kinematic_calculate_angles(float* y_offsets);
 static void ground_level_compensation(float x_rotate, float z_rotate, float* offsets);
 
+CLI_CMD_HANDLER(config_cli_cmd_logging);
+CLI_CMD_HANDLER(config_cli_cmd_motion_logging);
+CLI_CMD_HANDLER(config_cli_cmd_gl_logging);
+CLI_CMD_HANDLER(config_cli_cmd_gl);
+
+static const cli_cmd_t cli_cmd_list[] = {
+    { .cmd = "logging",       .handler = config_cli_cmd_logging        },
+    { .cmd = "motion-logging", .handler = config_cli_cmd_motion_logging },
+    { .cmd = "gl-logging",    .handler = config_cli_cmd_gl_logging     },
+    { .cmd = "gl",            .handler = config_cli_cmd_gl             }
+};
+
 
 static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 
@@ -46,10 +58,12 @@ static motion_t g_current_motion = {0};
 static motion_config_t g_current_motion_config = {0};
 static motion_config_t g_next_motion_config = {0};
 static bool is_motion_completed = true;
-static bool is_ground_leveling_enabled = false;
+static bool is_ground_leveling = false;
 
 static bool is_enable_data_logging = false;
+static bool is_enable_motion_data_logging = false;
 static bool is_ground_leveling_logging = false;
+static bool is_ground_leveling_enabled = false;
 
 
 
@@ -163,24 +177,11 @@ void motion_core_process(void) {
                 servo_driver_set_speed(g_current_motion.speed);
             }
         }
-        
-        if (is_enable_data_logging) {
-            void* tx_buffer = cli_get_tx_buffer();
-            sprintf(tx_buffer, "[MOTION CORE]: %lu %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\r\n", (uint32_t)get_time_ms(),
-                    (int16_t)(g_limbs[0].position.x * 100.0f), (int16_t)(g_limbs[0].position.y * 100.0f), (int16_t)(g_limbs[0].position.z * 100.0f), foot_sensors_data[0], 
-                    (int16_t)(g_limbs[1].position.x * 100.0f), (int16_t)(g_limbs[1].position.y * 100.0f), (int16_t)(g_limbs[1].position.z * 100.0f), foot_sensors_data[1], 
-                    (int16_t)(g_limbs[2].position.x * 100.0f), (int16_t)(g_limbs[2].position.y * 100.0f), (int16_t)(g_limbs[2].position.z * 100.0f), foot_sensors_data[2], 
-                    (int16_t)(g_limbs[3].position.x * 100.0f), (int16_t)(g_limbs[3].position.y * 100.0f), (int16_t)(g_limbs[3].position.z * 100.0f), foot_sensors_data[3], 
-                    (int16_t)(g_limbs[4].position.x * 100.0f), (int16_t)(g_limbs[4].position.y * 100.0f), (int16_t)(g_limbs[4].position.z * 100.0f), foot_sensors_data[4], 
-                    (int16_t)(g_limbs[5].position.x * 100.0f), (int16_t)(g_limbs[5].position.y * 100.0f), (int16_t)(g_limbs[5].position.z * 100.0f), foot_sensors_data[5], 
-                    accel_sensor_data[0], accel_sensor_data[1]);
-            cli_send_data(NULL);
-        }
     }
     
     // Ground level compensation
     float y_offsets[SUPPORT_LIMBS_COUNT] = {0};
-    if (is_ground_leveling_enabled) {
+    if (is_ground_leveling_enabled && is_ground_leveling) {
         ground_level_compensation(accel_sensor_data[1] / 10000.0f, accel_sensor_data[0] / 10000.0f, y_offsets);
     }
     
@@ -197,6 +198,27 @@ void motion_core_process(void) {
         servo_driver_move(i * 3 + 1, g_limbs[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
     }
+    
+    // Logging
+    if (is_enable_motion_data_logging && !is_motion_completed || is_enable_data_logging) {
+        sprintf(cli_get_tx_buffer(), "[MOTION CORE]: %d %lu %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d\r\n", 
+                (uint32_t)!is_motion_completed, (uint32_t)get_time_ms(),
+                (int16_t)(g_limbs[0].position.x * 100.0f), (int16_t)(g_limbs[0].position.y * 100.0f), (int16_t)(g_limbs[0].position.z * 100.0f), foot_sensors_data[0], 
+                (int16_t)(g_limbs[1].position.x * 100.0f), (int16_t)(g_limbs[1].position.y * 100.0f), (int16_t)(g_limbs[1].position.z * 100.0f), foot_sensors_data[1], 
+                (int16_t)(g_limbs[2].position.x * 100.0f), (int16_t)(g_limbs[2].position.y * 100.0f), (int16_t)(g_limbs[2].position.z * 100.0f), foot_sensors_data[2], 
+                (int16_t)(g_limbs[3].position.x * 100.0f), (int16_t)(g_limbs[3].position.y * 100.0f), (int16_t)(g_limbs[3].position.z * 100.0f), foot_sensors_data[3], 
+                (int16_t)(g_limbs[4].position.x * 100.0f), (int16_t)(g_limbs[4].position.y * 100.0f), (int16_t)(g_limbs[4].position.z * 100.0f), foot_sensors_data[4], 
+                (int16_t)(g_limbs[5].position.x * 100.0f), (int16_t)(g_limbs[5].position.y * 100.0f), (int16_t)(g_limbs[5].position.z * 100.0f), foot_sensors_data[5], 
+                accel_sensor_data[0], accel_sensor_data[1]);
+        cli_send_data(NULL);
+    } 
+    if (is_ground_leveling_logging) {
+        sprintf(cli_get_tx_buffer(), "[MOTION CORE]: %lu [%d,%d,%d] [%d,%d,%d] [%d,%d]\r\n", (uint32_t)get_time_ms(),
+                (int16_t)(y_offsets[0]), (int16_t)(y_offsets[1]), (int16_t)(y_offsets[2]),  
+                (int16_t)(y_offsets[3]), (int16_t)(y_offsets[4]), (int16_t)(y_offsets[5]),  
+                (int32_t)(accel_sensor_data[1]), (int32_t)(accel_sensor_data[0]));
+        cli_send_data(NULL);
+    }
 }
 
 //  ***************************************************************************
@@ -212,32 +234,17 @@ bool motion_core_is_motion_complete(void) {
 /// @return is_enable: true - enable, false - disable
 //  ***************************************************************************
 void motion_core_set_ground_leveling_state(bool is_enable) {
-    is_ground_leveling_enabled = is_enable;
+    is_ground_leveling = is_enable;
 }
 
 //  ***************************************************************************
-/// @brief  CLI command process
-/// @param  cmd: command string
-/// @param  argv: argument list
-/// @param  argc: arguments count
-/// @param  response: response
-/// @retval response
-/// @return true - success, false - fail
+/// @brief  Get command list for CLI
+/// @param  cmd_list: pointer to cmd list size
+/// @return command list
 //  ***************************************************************************
-bool motion_core_cli_command_process(const char* cmd, const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response) {
-    if (strcmp(cmd, "logging") == 0 && argc == 1) {
-        is_enable_data_logging = (argv[0][0] == '1');
-    } else if (strcmp(cmd, "gl-logging") == 0 && argc == 1) {
-        is_ground_leveling_logging = (argv[0][0] == '1');
-    } else if (strcmp(cmd, "gl-enable") == 0) {
-        is_ground_leveling_enabled = true;
-    } else if (strcmp(cmd, "gl-disable") == 0) {
-        is_ground_leveling_enabled = false;
-    } else {
-        strcpy(response, CLI_ERROR("Unknown command or format for servo driver"));
-        return false;
-    }
-    return true;
+const cli_cmd_t* motion_get_cmd_list(uint32_t* count) {
+    *count = sizeof(cli_cmd_list) / sizeof(cli_cmd_t);
+    return cli_cmd_list;
 }
 
 
@@ -414,7 +421,6 @@ static bool process_advanced_trajectory(float motion_time) {
             g_limbs[i].position.y = g_current_motion.start_positions[i].y + LIMB_STEP_HEIGHT * sinf(relative_motion_time * M_PI);  
         }
     }
-    
     return true;
 }
 
@@ -452,7 +458,6 @@ static void ground_level_compensation(float x_rotate, float z_rotate, float* off
     
     // Rotate normal by axis X
     float x_rotate_rad = DEG_TO_RAD(x_rotate);
-    n.x = n.x;
     n.y = n.y * cosf(x_rotate_rad) + n.z * sinf(x_rotate_rad);
     n.z = n.y * sinf(x_rotate_rad) - n.z * cosf(x_rotate_rad);
     
@@ -460,7 +465,6 @@ static void ground_level_compensation(float x_rotate, float z_rotate, float* off
     float z_rotate_rad = DEG_TO_RAD(z_rotate);
     n.x = n.x * cosf(z_rotate_rad) + n.y * sinf(z_rotate_rad);
     n.y = n.x * sinf(z_rotate_rad) - n.y * cosf(z_rotate_rad);
-    n.z = n.z;
     
     // Calculate Y offsets
     for (int32_t i = 0; i < sizeof(g_limbs) / sizeof(g_limbs[0]); ++i) {
@@ -477,16 +481,6 @@ static void ground_level_compensation(float x_rotate, float z_rotate, float* off
         float x = g_limbs[i].position.x + x_sign * 104.0f;
         
         offsets[i] = (-1) * (-n.z * (z - a.z) - n.x * (x - a.x)) / n.y;
-    }
-    
-
-    if (is_ground_leveling_logging) {
-        void* tx_buffer = cli_get_tx_buffer();
-        sprintf(tx_buffer, "[MOTION CORE]: %lu [%d,%d,%d] [%d,%d,%d] [%d,%d]\r\n", (uint32_t)get_time_ms(),
-                (int16_t)(offsets[0]), (int16_t)(offsets[1]), (int16_t)(offsets[2]),  
-                (int16_t)(offsets[3]), (int16_t)(offsets[4]), (int16_t)(offsets[5]),  
-                (int16_t)(x_rotate * 100), (int16_t)(z_rotate * 100));
-        cli_send_data(NULL);
     }
 }
 
@@ -574,7 +568,7 @@ static bool kinematic_calculate_angles(float* y_offsets) {
         if (g_limbs[i].coxa.angle > g_limbs[i].coxa.prot_max_angle) {
             sprintf(cli_get_tx_buffer(), "[MOTION CORE]: COXA protection from %d to %d\r\n", (int32_t)g_limbs[i].coxa.angle, g_limbs[i].coxa.prot_max_angle);
             cli_send_data(NULL);
-            g_limbs[i].coxa.angle  = g_limbs[i].coxa.prot_max_angle;
+            g_limbs[i].coxa.angle = g_limbs[i].coxa.prot_max_angle;
         }
         if (g_limbs[i].femur.angle < g_limbs[i].femur.prot_min_angle) {
             sprintf(cli_get_tx_buffer(), "[MOTION CORE]: FEMUR protection from %d to %d\r\n", (int32_t)g_limbs[i].femur.angle, g_limbs[i].femur.prot_min_angle);
@@ -599,6 +593,43 @@ static bool kinematic_calculate_angles(float* y_offsets) {
     }
     return true;
 }
-#undef M_PI
-#undef RAD_TO_DEG
-#undef DEG_TO_RAD
+
+
+
+
+
+// ***************************************************************************
+// CLI SECTION
+// ***************************************************************************
+CLI_CMD_HANDLER(config_cli_cmd_logging) {
+    if (argc != 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: motion logging <0,1>"));
+        return false;
+    }
+    is_enable_data_logging = (argv[0][0] == '1');
+    return true;
+}
+CLI_CMD_HANDLER(config_cli_cmd_motion_logging) {
+    if (argc != 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: motion motion-logging <0,1>"));
+        return false;
+    }
+    is_enable_motion_data_logging = (argv[0][0] == '1');
+    return true;
+}
+CLI_CMD_HANDLER(config_cli_cmd_gl_logging) {
+    if (argc != 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: motion gl-logging <0,1>"));
+        return false;
+    }
+    is_ground_leveling_logging = (argv[0][0] == '1');
+    return true;
+}
+CLI_CMD_HANDLER(config_cli_cmd_gl) {
+    if (argc != 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Usage: motion gl <0,1>"));
+        return false;
+    }
+    is_ground_leveling_enabled = (argv[0][0] == '1');
+    return true;
+}
