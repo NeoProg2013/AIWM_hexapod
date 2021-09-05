@@ -21,7 +21,7 @@
 #define CLI_COLOR_WHITE         "\x1B[37m"
 #define CLI_COLOR_RESET         "\x1B[0m"
 
-#define CLI_ARG_COUNT           (3)
+#define CLI_ARG_COUNT           (4)
 #define CLI_ARG_MAX_SIZE        (64)
 
 typedef bool(*cli_cmd_handler_t)(const char (*argv)[CLI_ARG_MAX_SIZE], uint32_t argc, char* response);

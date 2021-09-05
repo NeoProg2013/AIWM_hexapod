@@ -26,12 +26,14 @@ static void blink_red_led(uint32_t period);
 static void blink_blue_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
 
-CLI_CMD_HANDLER(config_cli_cmd_ext_ctrl);
-CLI_CMD_HANDLER(config_cli_cmd_set);
+CLI_CMD_HANDLER(indication_cli_cmd_help);
+CLI_CMD_HANDLER(indication_cli_cmd_ext_ctrl);
+CLI_CMD_HANDLER(indication_cli_cmd_set);
 
 static const cli_cmd_t cli_cmd_list[] = {
-    { .cmd = "ext-ctrl",  .handler = config_cli_cmd_ext_ctrl },
-    { .cmd = "set",       .handler = config_cli_cmd_set      }
+    { .cmd = "help",      .handler = indication_cli_cmd_help     },
+    { .cmd = "ext-ctrl",  .handler = indication_cli_cmd_ext_ctrl },
+    { .cmd = "set",       .handler = indication_cli_cmd_set      }
 };
 
 
@@ -219,9 +221,22 @@ static void blink_blue_led(uint32_t period) {
 // ***************************************************************************
 // CLI SECTION
 // ***************************************************************************
-CLI_CMD_HANDLER(config_cli_cmd_ext_ctrl) {
+CLI_CMD_HANDLER(indication_cli_cmd_help) {
+    const char* help = CLI_HELP(
+        "[INDICATION SUBSYSTEM]\r\n"
+        "Commands: \r\n"
+        "  indication ext-ctrl <0|1> - enable subsystem after error\r\n"
+        "  indication set [0|1] [0|1] [0|1] [0|1] - set state for RGB & BUZZER");
+    if (strlen(response) >= USART1_TX_BUFFER_SIZE) {
+        strcpy(response, CLI_ERROR("Help message size more USART1_TX_BUFFER_SIZE"));
+        return false;
+    }
+    strcpy(response, help);
+    return true;
+}
+CLI_CMD_HANDLER(indication_cli_cmd_ext_ctrl) {
     if (argc != 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: indication ext-ctrl <0,1>"));
+        strcpy(response, CLI_ERROR("Bad usage. Usage \"indication help\" for details"));
         return false;
     }
     is_external_control = atoi(argv[0]);
@@ -236,13 +251,13 @@ CLI_CMD_HANDLER(config_cli_cmd_ext_ctrl) {
     }
     return true;
 }
-CLI_CMD_HANDLER(config_cli_cmd_set) {
+CLI_CMD_HANDLER(indication_cli_cmd_set) {
     char r = (argc >= 1) ? argv[0][0] : '0';
-    char g = (argc >= 2) ? argv[0][1] : '0';
-    char b = (argc >= 3) ? argv[0][2] : '0';
-    char buzzer = (argc >= 3) ? argv[0][3] : '0';
+    char g = (argc >= 2) ? argv[1][0] : '0';
+    char b = (argc >= 3) ? argv[2][0] : '0';
+    char buzzer = (argc >= 4) ? argv[3][0] : '0';
     if (r != '0' && r != '1' || g != '0' && g != '1' || b != '0' && b != '1' || buzzer != '0' && buzzer != '1') {
-        strcpy(response, CLI_ERROR("Bad argument value. Possible 0 or 1"));
+        strcpy(response, CLI_ERROR("Bad usage. Usage \"indication help\" for details"));
         return false;
     }
     

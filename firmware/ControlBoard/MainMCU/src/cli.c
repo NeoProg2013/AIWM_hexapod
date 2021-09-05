@@ -211,7 +211,7 @@ static bool parse_command_line(char* cmd_line, char* module, char* cmd, char (*a
         if (word == NULL) {
             break;
         }
-        if (strlen(word) > CLI_ARG_MAX_SIZE) {
+        if (strlen(word) >= CLI_ARG_MAX_SIZE) {
             return false;
         }
 

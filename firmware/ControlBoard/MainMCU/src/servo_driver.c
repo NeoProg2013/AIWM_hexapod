@@ -46,24 +46,26 @@ typedef struct {
     uint16_t max_physic_angle;
 } servo_t;
 
+CLI_CMD_HANDLER(servo_cli_cmd_help);
 CLI_CMD_HANDLER(servo_cli_cmd_power);
 CLI_CMD_HANDLER(servo_cli_cmd_logging);
 CLI_CMD_HANDLER(servo_cli_cmd_calibration);
 CLI_CMD_HANDLER(servo_cli_cmd_status);
 CLI_CMD_HANDLER(servo_cli_cmd_set);
-CLI_CMD_HANDLER(servo_cli_cmd_move_logic_zero);
-CLI_CMD_HANDLER(servo_cli_cmd_move_physic_zero);
+CLI_CMD_HANDLER(servo_cli_cmd_logic_zero);
+CLI_CMD_HANDLER(servo_cli_cmd_physic_zero);
 CLI_CMD_HANDLER(servo_cli_cmd_reset);
 
 static const cli_cmd_t cli_cmd_list[] = {
-    { .cmd = "power",            .handler = servo_cli_cmd_power            },
-    { .cmd = "logging",          .handler = servo_cli_cmd_logging          },
-    { .cmd = "calibration",      .handler = servo_cli_cmd_calibration      },
-    { .cmd = "status",           .handler = servo_cli_cmd_status           },
-    { .cmd = "set",              .handler = servo_cli_cmd_set              },
-    { .cmd = "move-logic-zero",  .handler = servo_cli_cmd_move_logic_zero  },
-    { .cmd = "move-physic-zero", .handler = servo_cli_cmd_move_physic_zero },
-    { .cmd = "reset",            .handler = servo_cli_cmd_reset            }
+    { .cmd = "help",        .handler = servo_cli_cmd_help             },
+    { .cmd = "power",       .handler = servo_cli_cmd_power            },
+    { .cmd = "logging",     .handler = servo_cli_cmd_logging          },
+    { .cmd = "calibration", .handler = servo_cli_cmd_calibration      },
+    { .cmd = "status",      .handler = servo_cli_cmd_status           },
+    { .cmd = "set",         .handler = servo_cli_cmd_set              },
+    { .cmd = "logic-zero",  .handler = servo_cli_cmd_logic_zero       },
+    { .cmd = "physic-zero", .handler = servo_cli_cmd_physic_zero      },
+    { .cmd = "reset",       .handler = servo_cli_cmd_reset            }
 };
 
 
@@ -303,6 +305,25 @@ static float calculate_physic_angle(float logic_angle, const servo_t* servo) {
 // ***************************************************************************
 // CLI SECTION
 // ***************************************************************************
+CLI_CMD_HANDLER(servo_cli_cmd_help) {
+    const char* help = CLI_HELP(
+        "[SERVO SUBSYSTEM]\r\n"
+        "Commands: \r\n"
+        "  servo power <0|1> - enable/disable servo power\r\n"
+        "  servo logging <0|1> - enable/disable logging\r\n"
+        "  servo calibration - move all servos to logic zero\r\n"
+        "  servo status <servo idx> - print servo status\r\n"
+        "  servo set <servo idx> <zero-trim|logic|physic|pulse> <value> - move servo\r\n"
+        "  servo logic-zero <servo idx> - move servo to logic zero\r\n"
+        "  servo physic-zero <servo idx> move servo to physic zero\r\n"
+        "  servo reset <servo idx> return servo to subsystem control");
+    if (strlen(response) >= USART1_TX_BUFFER_SIZE) {
+        strcpy(response, CLI_ERROR("Help message size more USART1_TX_BUFFER_SIZE"));
+        return false;
+    }
+    strcpy(response, help);
+    return true;
+}
 CLI_CMD_HANDLER(servo_cli_cmd_power) {
     if (argc >= 1 && argv[0][0] == '1') {
         servo_driver_power_on();
@@ -343,7 +364,7 @@ CLI_CMD_HANDLER(servo_cli_cmd_status) {
 }
 CLI_CMD_HANDLER(servo_cli_cmd_set) {
     if (argc != 3) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: servo set <servo> <zero-trim,logic,physic,pulse> <value>"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"servo help\" for details"));
         return false;
     }
     
@@ -370,14 +391,12 @@ CLI_CMD_HANDLER(servo_cli_cmd_set) {
         sprintf(response, CLI_OK("[%u] has new override level %d"), servo_index, servo->override_level);
     } 
     else {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: servo set <servo index> <zero-trim,logic,physic,pulse> <value>"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"servo help\" for details"));
         return false;
     }
-    
-    
     return true;
 }
-CLI_CMD_HANDLER(servo_cli_cmd_move_logic_zero) {
+CLI_CMD_HANDLER(servo_cli_cmd_logic_zero) {
     uint32_t servo_index = (argc >= 1) ? atoi(argv[0]) : 0;
     servo_t* servo = &servo_list[(servo_index < SUPPORT_SERVO_COUNT) ? servo_index : SUPPORT_SERVO_COUNT - 1];
     servo->override_level = OVERRIDE_LOGIC_ANGLE;
@@ -385,7 +404,7 @@ CLI_CMD_HANDLER(servo_cli_cmd_move_logic_zero) {
     sprintf(response, CLI_OK("[%lu] moved to logic zero"), servo_index);
     return true;
 }
-CLI_CMD_HANDLER(servo_cli_cmd_move_physic_zero) {
+CLI_CMD_HANDLER(servo_cli_cmd_physic_zero) {
     uint32_t servo_index = (argc >= 1) ? atoi(argv[0]) : 0;
     servo_t* servo = &servo_list[(servo_index < SUPPORT_SERVO_COUNT) ? servo_index : SUPPORT_SERVO_COUNT - 1];
     servo->override_level = OVERRIDE_PHYSIC_ANGLE;

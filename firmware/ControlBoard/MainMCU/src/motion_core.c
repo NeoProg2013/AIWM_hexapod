@@ -39,16 +39,16 @@ static bool process_advanced_trajectory(float motion_time);
 static bool kinematic_calculate_angles(float* y_offsets);
 static void ground_level_compensation(float x_rotate, float z_rotate, float* offsets);
 
-CLI_CMD_HANDLER(config_cli_cmd_logging);
-CLI_CMD_HANDLER(config_cli_cmd_motion_logging);
-CLI_CMD_HANDLER(config_cli_cmd_gl_logging);
-CLI_CMD_HANDLER(config_cli_cmd_gl);
+CLI_CMD_HANDLER(motion_cli_cmd_help);
+CLI_CMD_HANDLER(motion_cli_cmd_logging);
+CLI_CMD_HANDLER(motion_cli_cmd_gl_logging);
+CLI_CMD_HANDLER(motion_cli_cmd_gl);
 
 static const cli_cmd_t cli_cmd_list[] = {
-    { .cmd = "logging",       .handler = config_cli_cmd_logging        },
-    { .cmd = "motion-logging", .handler = config_cli_cmd_motion_logging },
-    { .cmd = "gl-logging",    .handler = config_cli_cmd_gl_logging     },
-    { .cmd = "gl",            .handler = config_cli_cmd_gl             }
+    { .cmd = "help",           .handler = motion_cli_cmd_help           },
+    { .cmd = "logging",        .handler = motion_cli_cmd_logging        },
+    { .cmd = "gl-logging",     .handler = motion_cli_cmd_gl_logging     },
+    { .cmd = "gl",             .handler = motion_cli_cmd_gl             }
 };
 
 
@@ -201,7 +201,7 @@ void motion_core_process(void) {
     
     // Logging
     if (is_enable_motion_data_logging && !is_motion_completed || is_enable_data_logging) {
-        sprintf(cli_get_tx_buffer(), "[MOTION CORE]: %d %lu %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d,%d, %d,%d\r\n", 
+        sprintf(cli_get_tx_buffer(), "[MOTION CORE]: %d %lu %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d\r\n", 
                 (uint32_t)!is_motion_completed, (uint32_t)get_time_ms(),
                 (int16_t)(g_limbs[0].position.x * 100.0f), (int16_t)(g_limbs[0].position.y * 100.0f), (int16_t)(g_limbs[0].position.z * 100.0f), foot_sensors_data[0], 
                 (int16_t)(g_limbs[1].position.x * 100.0f), (int16_t)(g_limbs[1].position.y * 100.0f), (int16_t)(g_limbs[1].position.z * 100.0f), foot_sensors_data[1], 
@@ -601,33 +601,49 @@ static bool kinematic_calculate_angles(float* y_offsets) {
 // ***************************************************************************
 // CLI SECTION
 // ***************************************************************************
-CLI_CMD_HANDLER(config_cli_cmd_logging) {
-    if (argc != 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: motion logging <0,1>"));
+CLI_CMD_HANDLER(motion_cli_cmd_help) {
+    const char* help = CLI_HELP(
+        "[MOTION SUBSYSTEM]\r\n"
+        "Commands: \r\n"
+        "  motion logging <0|1> [m] - enable data logging, m - for motion\r\n"
+        "  motion gl-logging <0|1> - enable logging for ground leveling\r\n"
+        "  motion gl <0|1> - enable ground leveling feature");
+    if (strlen(response) >= USART1_TX_BUFFER_SIZE) {
+        strcpy(response, CLI_ERROR("Help message size more USART1_TX_BUFFER_SIZE"));
         return false;
     }
-    is_enable_data_logging = (argv[0][0] == '1');
+    strcpy(response, help);
     return true;
 }
-CLI_CMD_HANDLER(config_cli_cmd_motion_logging) {
-    if (argc != 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: motion motion-logging <0,1>"));
+CLI_CMD_HANDLER(motion_cli_cmd_logging) {
+    if (argc < 1) {
+        strcpy(response, CLI_ERROR("Bad usage. Use \"motion help\" for details"));
         return false;
     }
-    is_enable_motion_data_logging = (argv[0][0] == '1');
+    
+    if (argv[0][0] == '1') {
+        is_enable_data_logging = true;
+        if (argc >= 2 && argv[1][0] == 'm') {
+            is_enable_motion_data_logging = true;
+            is_enable_data_logging = false;
+        }
+    } else {
+        is_enable_data_logging = false;
+        is_enable_motion_data_logging = false;
+    }
     return true;
 }
-CLI_CMD_HANDLER(config_cli_cmd_gl_logging) {
+CLI_CMD_HANDLER(motion_cli_cmd_gl_logging) {
     if (argc != 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: motion gl-logging <0,1>"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"motion help\" for details"));
         return false;
     }
     is_ground_leveling_logging = (argv[0][0] == '1');
     return true;
 }
-CLI_CMD_HANDLER(config_cli_cmd_gl) {
+CLI_CMD_HANDLER(motion_cli_cmd_gl) {
     if (argc != 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: motion gl <0,1>"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"motion help\" for details"));
         return false;
     }
     is_ground_leveling_enabled = (argv[0][0] == '1');

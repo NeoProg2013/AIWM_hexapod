@@ -26,22 +26,21 @@ static bool config_write_32(uint32_t address, uint32_t data);
 static bool config_calc_checksum(uint32_t page, uint16_t *checksum);
 static bool config_check_page_integrity(uint32_t page);
 static bool config_update_checksum(uint32_t page);
-static bool config_erase(void);
 
+CLI_CMD_HANDLER(config_cli_cmd_help);
 CLI_CMD_HANDLER(config_cli_cmd_enable);
 CLI_CMD_HANDLER(config_cli_cmd_read_page);
 CLI_CMD_HANDLER(config_cli_cmd_read);
 CLI_CMD_HANDLER(config_cli_cmd_write);
-CLI_CMD_HANDLER(config_cli_cmd_erase);
 CLI_CMD_HANDLER(config_cli_cmd_check);
 CLI_CMD_HANDLER(config_cli_cmd_update);
 
 static const cli_cmd_t cli_cmd_list[] = {
+    { .cmd = "help",      .handler = config_cli_cmd_help      },
     { .cmd = "enable",    .handler = config_cli_cmd_enable    },
     { .cmd = "read-page", .handler = config_cli_cmd_read_page },
     { .cmd = "read",      .handler = config_cli_cmd_read      },
     { .cmd = "write",     .handler = config_cli_cmd_write     },
-    { .cmd = "erase",     .handler = config_cli_cmd_erase     },
     { .cmd = "check",     .handler = config_cli_cmd_check     },
     { .cmd = "update",    .handler = config_cli_cmd_update    }
 };
@@ -239,23 +238,6 @@ static bool config_update_checksum(uint32_t page) {
     return config_write_16(page * CONFIG_SECTION_PAGE_SIZE + MM_PAGE_CHECKSUM_OFFSET, checksum);
 }
 
-//  ***************************************************************************
-/// @brief  Erase EEPROM
-/// @param  none
-/// @return true - success, false - error
-//  ***************************************************************************
-static bool config_erase(void) {
-    uint8_t clear_data[CONFIG_SECTION_MAX_WRITE_SIZE] = {0};
-    memset(clear_data, 0xFF, sizeof(clear_data));
-
-    for (uint32_t address = 0; address < CONFIG_SECTION_SIZE; address += CONFIG_SECTION_MAX_WRITE_SIZE) {
-        if (config_write(address, clear_data, sizeof(clear_data)) == false) {
-            return false;
-        }
-    }
-    return true;
-}
-
 
 
 
@@ -265,20 +247,37 @@ static bool config_erase(void) {
 // ***************************************************************************
 static uint8_t cli_buffer[CONFIG_SECTION_PAGE_SIZE] = {0};
 
+CLI_CMD_HANDLER(config_cli_cmd_help) {
+    const char* help = CLI_HELP(
+        "[CONFIG SUBSYSTEM]\r\n"
+        "Commands: \r\n"
+        "  config enable - enable subsystem after error\r\n"
+        "  config read-page <page idx> [raw] - read page data\r\n"
+        "  config read <hex address> <8|16|32> - read cell value\r\n"
+        "  config write <hex address> <8|16|32|hex array> <value>\r\n"
+        "  config check <page idx> - check page integrity\r\n"
+        "  config update <page idx> - update page checksum");
+    if (strlen(response) >= USART1_TX_BUFFER_SIZE) {
+        strcpy(response, CLI_ERROR("Help message size more USART1_TX_BUFFER_SIZE"));
+        return false;
+    }
+    strcpy(response, help);
+    return true;
+}
 CLI_CMD_HANDLER(config_cli_cmd_enable) {
     sysmon_enable_module(SYSMON_MODULE_CONFIGURATOR);
     return true;
 }
 CLI_CMD_HANDLER(config_cli_cmd_read_page) {
     if (argc < 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: config read-page <page number> [raw]"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"config help\" for details"));
         return false;
     }
     
     // Read data: argv[0] - page number
     uint32_t page = atoi(argv[0]);
     if (config_read(page * CONFIG_SECTION_PAGE_SIZE, cli_buffer, CONFIG_SECTION_PAGE_SIZE) == false) {
-        sprintf(response, CLI_ERROR("Can't read data by address %X"), page * CONFIG_SECTION_PAGE_SIZE);
+        sprintf(response, CLI_ERROR("Can't read data by address 0x%04X"), page * CONFIG_SECTION_PAGE_SIZE);
         return false;
     }
 
@@ -306,7 +305,7 @@ CLI_CMD_HANDLER(config_cli_cmd_read_page) {
 }
 CLI_CMD_HANDLER(config_cli_cmd_read) {
     if (argc < 2) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: config read <hex address> [8,16,32]"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"config help\" for details"));
         return false;
     }
     
@@ -314,7 +313,7 @@ CLI_CMD_HANDLER(config_cli_cmd_read) {
     if (strcmp(argv[1], "8") == 0) {
         uint8_t data = 0;
         if (!config_read_8(address, &data)) {
-            sprintf(response, CLI_ERROR("Can't read data by address %X"), address);
+            sprintf(response, CLI_ERROR("Can't read data by address 0x%04X"), address);
             return false;
         }
         sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int8_t)data, (uint8_t)data);
@@ -322,7 +321,7 @@ CLI_CMD_HANDLER(config_cli_cmd_read) {
     else if (strcmp(argv[1], "16") == 0) {
         uint16_t data = 0;
         if (!config_read_16(address, &data)) {
-            sprintf(response, CLI_ERROR("Can't read data by address %X"), address);
+            sprintf(response, CLI_ERROR("Can't read data by address 0x%04X"), address);
             return false;
         }
         sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int16_t)data, (uint16_t)data);
@@ -330,7 +329,7 @@ CLI_CMD_HANDLER(config_cli_cmd_read) {
     else if (strcmp(argv[1], "32") == 0) {
         uint32_t data = 0;
         if (!config_read_32(address, &data)) {
-            sprintf(response, CLI_ERROR("Can't read data by address %X"), address);
+            sprintf(response, CLI_ERROR("Can't read data by address 0x%04X"), address);
             return false;
         }
         sprintf(response, CLI_OK("value = %d(s) %u(u)"), (int32_t)data, (uint32_t)data);
@@ -339,7 +338,7 @@ CLI_CMD_HANDLER(config_cli_cmd_read) {
 }
 CLI_CMD_HANDLER(config_cli_cmd_write) {
     if (argc < 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: config write <hex address> [8,16,32,hex bytes array]"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"config help\" for details"));
         return false;
     }
     
@@ -355,7 +354,7 @@ CLI_CMD_HANDLER(config_cli_cmd_write) {
         result = config_write_32(address, (uint32_t)atoi(argv[2]));
     } 
     else {
-        uint32_t data_len = strlen(argv[2]); // Get bytes count
+        uint32_t data_len = strlen(argv[1]); // Get bytes count
         if (data_len & 0x01) {
             strcpy(response, CLI_ERROR("Wrong data array - bytes count value should be even"));
             return false;
@@ -374,20 +373,13 @@ CLI_CMD_HANDLER(config_cli_cmd_write) {
     }
     
     if (!result) {
-        sprintf(response, CLI_ERROR("Can't write data by address %X"), address);
+        sprintf(response, CLI_ERROR("Can't write data by address 0x%04X"), address);
     }
     return result;
 }
-CLI_CMD_HANDLER(config_cli_cmd_erase) {
-    if (config_erase() == false) {
-        strcpy(response, CLI_ERROR("Can't erase memory"));
-        return false;
-    }
-    return true;
-}
 CLI_CMD_HANDLER(config_cli_cmd_check) {
     if (argc != 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: config check <page number>"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"config help\" for details"));
         return false;
     }
     
@@ -405,7 +397,7 @@ CLI_CMD_HANDLER(config_cli_cmd_check) {
 }
 CLI_CMD_HANDLER(config_cli_cmd_update) {
     if (argc != 1) {
-        strcpy(response, CLI_ERROR("Bad usage. Usage: config update <page number>"));
+        strcpy(response, CLI_ERROR("Bad usage. Use \"config help\" for details"));
         return false;
     }
     

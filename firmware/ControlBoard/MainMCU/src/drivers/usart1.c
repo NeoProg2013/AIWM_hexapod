@@ -7,7 +7,7 @@
 #define USART_TX_PIN                    GPIOA, 9
 #define USART_RX_PIN                    GPIOA, 10
 
-static uint8_t  tx_buffer[3072] = {0};
+static uint8_t  tx_buffer[USART1_TX_BUFFER_SIZE] = {0};
 static uint8_t  rx_buffer[512]  = {0};
 static uint8_t* rx_buffer_cursor = NULL;
 static uint32_t rx_bytes_count = 0;

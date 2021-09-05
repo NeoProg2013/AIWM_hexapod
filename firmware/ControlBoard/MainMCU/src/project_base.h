@@ -31,6 +31,7 @@
 #define DEBUG_TP3_PIN_CLR                   gpio_reset(DEBUG_TP3_PIN)
 #define DEBUG_TP3_PIN_TOGGLE                gpio_toggle(DEBUG_TP3_PIN)
 
+#define USART1_TX_BUFFER_SIZE               (3072)
 
 #define TIM17_IRQ_PRIORITY                  (0)        // 18-channels PWM driver
 #define USART2_IRQ_PRIORITY                 (2)        // SWLP communication
