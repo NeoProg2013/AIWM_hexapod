@@ -202,7 +202,7 @@ void motion_core_process(void) {
     // Logging
     if (is_enable_motion_data_logging && !is_motion_completed || is_enable_data_logging) {
         sprintf(cli_get_tx_buffer(), "[MOTION CORE]: %d %lu %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d\r\n", 
-                (uint32_t)!is_motion_completed, (uint32_t)get_time_ms(),
+                (uint32_t)is_motion_completed, (uint32_t)get_time_ms(),
                 (int16_t)(g_limbs[0].position.x * 100.0f), (int16_t)(g_limbs[0].position.y * 100.0f), (int16_t)(g_limbs[0].position.z * 100.0f), foot_sensors_data[0], 
                 (int16_t)(g_limbs[1].position.x * 100.0f), (int16_t)(g_limbs[1].position.y * 100.0f), (int16_t)(g_limbs[1].position.z * 100.0f), foot_sensors_data[1], 
                 (int16_t)(g_limbs[2].position.x * 100.0f), (int16_t)(g_limbs[2].position.y * 100.0f), (int16_t)(g_limbs[2].position.z * 100.0f), foot_sensors_data[2], 
