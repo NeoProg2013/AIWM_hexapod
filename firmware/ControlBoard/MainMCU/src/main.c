@@ -35,18 +35,18 @@ void main() {
     systimer_init();
     debug_gpio_init();
     
-    // Initialation and check EEPROM intergity
-    config_init();
-    if (config_check_intergity() == false) {
-        emergency_loop();
-    }
-    
     // Base module initialation
+    config_init();
     sysmon_init();
     swlp_init();
     cli_init();
     indication_init();
     display_init();
+    
+    // Check EEPROM intergity
+    if (config_check_intergity() == false) {
+        emergency_loop();
+    }
     
     // Initializaion submodules
     smcu_init();    
