@@ -102,7 +102,7 @@ int main() {
             
             // Write HX711 data
             for (uint32_t i = 0; i < 6; ++i) {
-                int16_t data = (int16_t)mpu6050_flt_data[i];
+                int16_t data = (int16_t)hx711_flt_data[i];
                 if (!hx711_is_ok) {
                     data = 0;
                 }
