@@ -72,7 +72,7 @@ void display_init(void) {
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }
-    oled_gl_draw_hex16(2, 18, 0x0000);
+    oled_gl_draw_hex(2, 18, 0x0000, 4);
     
     // Draw module status (dynamic)
     if (!oled_gl_draw_bitmap(4, 0, MODULE_BITMAP_WIDTH, MODULE_BITMAP_HEIGHT, module_bitmap)) {
@@ -80,10 +80,10 @@ void display_init(void) {
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }
-    oled_gl_draw_hex16(4, 18, 0x0000);
+    oled_gl_draw_hex(4, 18, 0x0000, 4);
 
     // Draw horizontal separator (static)
-    oled_gl_draw_horizontal_line(5, 0, 7, 128);
+    oled_gl_draw_rect(5, 0, 7, 128, 1);
     
     // Draw firmware version (static) 
     // Example: 1.0.200825 100773
@@ -105,7 +105,7 @@ void display_init(void) {
     // Draw system active indicator (dynamic)
     oled_gl_draw_rect(0, 120, 0, 8, 8);
     
-    if (!oled_gl_sync_display_update()) {
+    if (!oled_gl_sync_update()) {
         sysmon_set_error(SYSMON_COMM_ERROR);
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
@@ -128,25 +128,25 @@ void display_process(void) {
     switch (module_state) {
         
         case STATE_UPDATE_BATTERY_CHARGE:
-            oled_gl_clear_row_fragment(0, 18, 0, 17, 8);
+            oled_gl_clear_fragment(0, 18, 0, 17, 8);
             oled_gl_draw_dec_number(0, 18, sysmon_battery_charge);
             module_state = STATE_UPDATE_SYSTEM_STATUS;
             break;
         
         case STATE_UPDATE_SYSTEM_STATUS:
-            oled_gl_draw_hex16(2, 18, sysmon_system_status);
+            oled_gl_draw_hex(2, 18, sysmon_system_status, 4);
             module_state = STATE_UPDATE_MODULE_STATUS;
             break;
             
         case STATE_UPDATE_MODULE_STATUS:
-            oled_gl_draw_hex16(4, 18, sysmon_module_status);
+            oled_gl_draw_hex(4, 18, sysmon_module_status, 4);
             module_state = STATE_UPDATE_SYSTEM_MODE;
             break;
             
         case STATE_UPDATE_SYSTEM_MODE:
-            oled_gl_clear_row_fragment(0, 67, 0, 50, 8);
-            oled_gl_clear_row_fragment(2, 67, 0, 67, 8);
-            oled_gl_clear_row_fragment(4, 67, 0, 67, 8);
+            oled_gl_clear_fragment(0, 67, 0, 50, 8);
+            oled_gl_clear_fragment(2, 67, 0, 67, 8);
+            oled_gl_clear_fragment(4, 67, 0, 67, 8);
             if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
                 if (is_system_active_indicator_visible == true) {
                     oled_gl_draw_string(0, 67, "SYSTEM");
@@ -169,17 +169,15 @@ void display_process(void) {
             
         case STATE_UPDATE_DISPLAY:
             if (get_time_ms() - prev_update_time >= DISPLAY_UPDATE_PERIOD) {
-                
-                // Blink system active indicator
-                if (is_system_active_indicator_visible == true) {
-                    oled_gl_clear_row_fragment(0, 120, 0, 8, 8);
+                if (is_system_active_indicator_visible) {
+                    oled_gl_clear_fragment(0, 120, 0, 8, 8);
                 } else {
                     oled_gl_draw_rect(0, 120, 0, 8, 8);
                 }
                 is_system_active_indicator_visible = !is_system_active_indicator_visible;
                 
                 // Start display update
-                oled_gl_start_async_display_update();
+                oled_gl_async_update();
                 prev_update_time = get_time_ms();
                 
                 module_state = STATE_UPDATE_BATTERY_CHARGE;
@@ -193,7 +191,7 @@ void display_process(void) {
             break;
     }
     
-    if (!oled_gl_process()) {
+    if (!oled_gl_async_process()) {
         sysmon_set_error(SYSMON_COMM_ERROR);
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;

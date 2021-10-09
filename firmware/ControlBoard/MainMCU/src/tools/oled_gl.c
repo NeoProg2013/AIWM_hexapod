@@ -26,7 +26,6 @@ static driver_state_t driver_state = STATE_NOINIT;
 
 //  ***************************************************************************
 /// @brief  Graphic library initialization
-/// @return none
 //  ***************************************************************************
 bool oled_gl_init(void) {
     if (!ssd1306_128x64_init())             return false;
@@ -39,45 +38,13 @@ bool oled_gl_init(void) {
 }
 
 //  ***************************************************************************
-/// @brief  Graphic library process
-/// @return none
+/// @brief  Clear display
 //  ***************************************************************************
-bool oled_gl_process(void) {
-    static uint32_t current_row = 0;
-    
-    switch (driver_state) {
-        case STATE_IDLE:
-            break;
-            
-        case STATE_UPDATE_ROW:
-            if (ssd1306_128x64_start_async_update_row(current_row) == false) {
-                return false;
-            }
-            
-            ++current_row;
-            if (current_row >= DISPLAY_MAX_ROW_COUNT) {
-                current_row = 0;
-                driver_state = STATE_IDLE;
-                break;
-            }
-            
-            driver_state = STATE_WAIT;
-            break;
-            
-        case STATE_WAIT:
-            if (ssd1306_128x64_is_async_operation_complete() == true) {
-                if (ssd1306_128x64_is_async_operation_success() == false) {
-                    return false;
-                }
-                driver_state = STATE_UPDATE_ROW;
-            }
-            break;
-            
-        case STATE_NOINIT:
-        default:
-            return false;
+void oled_gl_clear_display(void) {
+    for (uint32_t i = 0; i < 8; ++i) {
+        uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(i, 0);
+        memset(frame_buffer, 0x00, 128);
     }
-    return true;
 }
 
 //  ***************************************************************************
@@ -85,9 +52,8 @@ bool oled_gl_process(void) {
 /// @param  row: display row [0; 7]
 /// @param  x, y: left top angle of rectangle (relative row)
 /// @param  width, height: rectangle size (relative row)
-/// @return none
 //  ***************************************************************************
-void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+void oled_gl_clear_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
     uint8_t mask = 0;
     int32_t cursor = height - 1;
     while (cursor >= 0) {
@@ -102,23 +68,10 @@ void oled_gl_clear_row_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t w
 }
 
 //  ***************************************************************************
-/// @brief  Clear display
-/// @param  none
-/// @return none
-//  ***************************************************************************
-void oled_gl_clear_display(void) {
-    for (uint32_t i = 0; i < 8; ++i) {
-        uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(i, 0);
-        memset(frame_buffer, 0x00, 128);
-    }
-}
-
-//  ***************************************************************************
 /// @brief  Draw float number in format XX.X or X.XX
 /// @param  row: display row [0; 7]
 /// @param  x: first symbol position
 /// @param  number: number for draw
-/// @return none
 //  ***************************************************************************
 void oled_gl_draw_float_number(uint32_t row, uint32_t x, float number) {
     char buffer[12] = {0};
@@ -131,7 +84,6 @@ void oled_gl_draw_float_number(uint32_t row, uint32_t x, float number) {
 /// @param  row: display row [0; 7]
 /// @param  x: first symbol position
 /// @param  number: number for draw
-/// @return none
 //  ***************************************************************************
 void oled_gl_draw_dec_number(uint32_t row, uint32_t x, int32_t number) {
     char buffer[12] = {0};
@@ -144,24 +96,15 @@ void oled_gl_draw_dec_number(uint32_t row, uint32_t x, int32_t number) {
 /// @param  row: display row [0; 7]
 /// @param  x: first symbol position
 /// @param  number: number for draw
-/// @return none
+/// @param  digit_count: 4 = 0xXXXX, 8 = 0xXXXXXXXX
 //  ***************************************************************************
-void oled_gl_draw_hex16(uint32_t row, uint32_t x, uint32_t number) {
+void oled_gl_draw_hex(uint32_t row, uint32_t x, uint32_t number, uint8_t digit_count) {
     char buffer[32] = {0};
-    sprintf(buffer, "0x%04X", (int)number);
-    oled_gl_draw_string(row, x, buffer);
-}
-
-//  ***************************************************************************
-/// @brief  Draw number in HEX format (0xXXXXXXXX)
-/// @param  row: display row [0; 7]
-/// @param  x: first symbol position
-/// @param  number: number for draw
-/// @return none
-//  ***************************************************************************
-void oled_gl_draw_hex32(uint32_t row, uint32_t x, uint32_t number) {
-    char buffer[32] = {0};
-    sprintf(buffer, "0x%08X", (int)number);
+    if (digit_count == 4) {
+        sprintf(buffer, "0x%04X", (int)number);
+    } else {
+        sprintf(buffer, "0x%08X", (int)number);
+    }
     oled_gl_draw_string(row, x, buffer);
 }
 
@@ -170,7 +113,6 @@ void oled_gl_draw_hex32(uint32_t row, uint32_t x, uint32_t number) {
 /// @param  row: display row [0; 7]
 /// @param  x: first symbol position
 /// @param  str: string for draw
-/// @return none
 //  ***************************************************************************
 void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
@@ -180,31 +122,10 @@ void oled_gl_draw_string(uint32_t row, uint32_t x, const char* str) {
 }
 
 //  ***************************************************************************
-/// @brief  Draw horizontal line
-/// @param  row: display row [0; 7]
-/// @param  x, y: line begin position (relative row)
-/// @param  width: line width
-/// @return none
-//  ***************************************************************************
-void oled_gl_draw_horizontal_line(uint32_t row, uint32_t x, uint32_t y, uint32_t width) {
-    uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
-    uint8_t mask = (1 << y);
-    
-    if (x + width > DISPLAY_WIDTH) {
-        width -= DISPLAY_WIDTH - (x + width);
-    }
-    
-    for (uint32_t i = 0; i < width; ++i) {
-        frame_buffer[i] |= mask;
-    }
-}
-
-//  ***************************************************************************
 /// @brief  Draw rectangle
 /// @param  row: display row [0; 7]
 /// @param  x, y: left top angle of rectangle (relative row)
 /// @param  width, height: rectangle size (relative row)
-/// @return none
 //  ***************************************************************************
 void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
     uint8_t mask = 0;
@@ -227,7 +148,6 @@ void oled_gl_draw_rect(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uin
 /// @param  x: bitmap position
 /// @param  bitmap_width, bitmap_height: bitmap size
 /// @param  bitmap: bitmap data
-/// @return none
 //  ***************************************************************************
 bool oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32_t bitmap_height, const uint8_t* bitmap) {
     if ((bitmap_height % 8) != 0) {
@@ -243,21 +163,55 @@ bool oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width, uint32
 
 //  ***************************************************************************
 /// @brief  Synchronous display update
-/// @param  none
-/// @return none
 //  ***************************************************************************
-bool oled_gl_sync_display_update(void) {
+bool oled_gl_sync_update(void) {
     return ssd1306_128x64_full_update();
 }
 
 //  ***************************************************************************
 /// @brief  Start asynchronous display update
-/// @param  none
-/// @return none
 //  ***************************************************************************
-void oled_gl_start_async_display_update(void) {
+void oled_gl_async_update(void) {
     if (driver_state != STATE_IDLE) {
         return;
     }   
     driver_state = STATE_UPDATE_ROW;
+}
+
+//  ***************************************************************************
+/// @brief  Graphic library async update process
+//  ***************************************************************************
+bool oled_gl_async_process(void) {
+    static uint32_t current_row = 0;
+    
+    switch (driver_state) {
+        case STATE_IDLE:
+            break;
+            
+        case STATE_UPDATE_ROW:
+            if (!ssd1306_128x64_start_async_update_row(current_row)) {
+                return false;
+            }
+            if (++current_row >= DISPLAY_MAX_ROW_COUNT) {
+                current_row = 0;
+                driver_state = STATE_IDLE;
+                break;
+            }
+            driver_state = STATE_WAIT;
+            break;
+            
+        case STATE_WAIT:
+            if (ssd1306_128x64_is_async_operation_complete()) {
+                if (!ssd1306_128x64_is_async_operation_success()) {
+                    return false;
+                }
+                driver_state = STATE_UPDATE_ROW;
+            }
+            break;
+            
+        case STATE_NOINIT:
+        default:
+            return false;
+    }
+    return true;
 }
