@@ -23,10 +23,10 @@
 
 
 typedef enum {
-    TRAJECTORY_XYZ_LINEAR,
-    TRAJECTORY_XZ_ADV_Y_CONST,
-    TRAJECTORY_XZ_ADV_Y_SINUS
-} trajectory_t;
+    TRAJ_XYZ_LINEAR,
+    TRAJ_XZ_ADV_Y_CONST,
+    TRAJ_XZ_ADV_Y_SIN
+} traj_t;
 
 typedef enum {
     TIME_DIR_REVERSE = -1,
@@ -40,26 +40,26 @@ typedef struct {
 } point_3d_t;
 
 typedef struct {
-    point_3d_t   dest_positions[SUPPORT_LIMBS_COUNT];     // Destination point for each limb
-    trajectory_t trajectories[SUPPORT_LIMBS_COUNT];       // Motion trajectory
-    time_dir_t   time_directions[SUPPORT_LIMBS_COUNT];    // Motion time direction for each limb
-    point_3d_t   start_positions[SUPPORT_LIMBS_COUNT];    // Initialize auto when motion started
-    int32_t      motion_time;                             // Trajectory motion time. Can use for set start motion time value
-    int32_t      time_stop;                               // Trajectory stop time
-    int32_t      time_update;                             // Motion time value for motion configuration update
-    uint8_t      speed;                                   // Override external speed in persents (0 - no override)  
+    point_3d_t dst_pos[SUPPORT_LIMBS_COUNT];   // Destination point for each limb
+    traj_t     traj[SUPPORT_LIMBS_COUNT];      // Motion trajectory
+    time_dir_t time_dir[SUPPORT_LIMBS_COUNT];  // Motion time direction for each limb
+    point_3d_t start_pos[SUPPORT_LIMBS_COUNT]; // Initialize auto when motion started
+    int32_t    motion_time;                    // Trajectory motion time. Can use for set start motion time value
+    int32_t    time_stop;                      // Trajectory stop time
+    int32_t    time_update;                    // Motion time value for motion configuration update
+    uint8_t    speed;                          // Override external speed in persents (0 - no override)  
 } motion_t;
 
 typedef struct {
     int32_t speed;
     int32_t curvature;
     int32_t distance;
-} motion_config_t;
+} user_motion_cfg_t;
 
 
 extern void motion_core_init(const point_3d_t* start_points);
-extern void motion_core_start_motion(const motion_t* motion, const motion_config_t* motion_config);
-extern void motion_core_update_motion_config(const motion_config_t* motion_config);
+extern void motion_core_start_motion(const motion_t* motion, const user_motion_cfg_t* user_motion_cfg);
+extern void motion_core_update_motion_config(const user_motion_cfg_t* user_motion_cfg);
 extern void motion_core_process(void);
 extern bool motion_core_is_motion_complete(void);
 extern void motion_core_set_ground_leveling_state(bool is_enable);

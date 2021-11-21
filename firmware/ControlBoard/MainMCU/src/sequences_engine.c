@@ -35,7 +35,7 @@ typedef enum {
 
 static engine_state_t engine_state = STATE_NOINIT;
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
-static motion_config_t sequence_motion_config;
+static user_motion_cfg_t user_motion_cfg;
 
 static sequence_id_t current_sequence = SEQUENCE_NONE;
 static const sequence_info_t* current_sequence_info = NULL;
@@ -60,7 +60,7 @@ void sequences_engine_init(void) {
     
     // Initialize motion driver
     uint32_t last_motion_index = sequence_down.total_motions_count - 1;
-    motion_core_init(sequence_down.motions[last_motion_index].dest_positions);
+    motion_core_init(sequence_down.motions[last_motion_index].dst_pos);
     
     // Initialization engine state
     engine_state = STATE_IDLE;
@@ -91,7 +91,7 @@ void sequences_engine_process(void) {
             break;
         
         case STATE_MOVE:
-            motion_core_start_motion(&current_sequence_info->motions[current_motion], &sequence_motion_config);
+            motion_core_start_motion(&current_sequence_info->motions[current_motion], &user_motion_cfg);
             engine_state = STATE_WAIT;
             break;
         
@@ -190,9 +190,9 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             case SEQUENCE_UP:
                 next_sequence = SEQUENCE_UP;
                 next_sequence_info = &sequence_up;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
         }
     } 
@@ -201,78 +201,78 @@ void sequences_engine_select_sequence(sequence_id_t sequence, int32_t speed, int
             case SEQUENCE_DOWN:
                 next_sequence = SEQUENCE_DOWN;
                 next_sequence_info = &sequence_down;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
 
             case SEQUENCE_MOVE:
                 next_sequence = SEQUENCE_MOVE;
                 next_sequence_info = &sequence_move;
-                sequence_motion_config.curvature = curvature;
-                sequence_motion_config.distance = distance;
-                sequence_motion_config.speed = speed;
+                user_motion_cfg.curvature = curvature;
+                user_motion_cfg.distance = distance;
+                user_motion_cfg.speed = speed;
                 break;
         
             case SEQUENCE_UP_DOWN: 
                 next_sequence = SEQUENCE_UP_DOWN;
                 next_sequence_info = &sequence_up_down;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
 
             case SEQUENCE_PUSH_PULL: 
                 next_sequence = SEQUENCE_PUSH_PULL;
                 next_sequence_info = &sequence_push_pull;
-                sequence_motion_config.curvature = 10;
-                sequence_motion_config.distance = 100;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 10;
+                user_motion_cfg.distance = 100;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
                 
             case SEQUENCE_ATTACK_LEFT: 
                 next_sequence = SEQUENCE_ATTACK_LEFT;
                 next_sequence_info = &sequence_attack_left;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
                 
             case SEQUENCE_ATTACK_RIGHT: 
                 next_sequence = SEQUENCE_ATTACK_RIGHT;
                 next_sequence_info = &sequence_attack_right;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
                 
             case SEQUENCE_DANCE: 
                 next_sequence = SEQUENCE_DANCE;
                 next_sequence_info = &sequence_dance;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
                 
             case SEQUENCE_ROTATE_X: 
                 next_sequence = SEQUENCE_ROTATE_X;
                 next_sequence_info = &sequence_rotate_x;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
            
             case SEQUENCE_ROTATE_Z: 
                 next_sequence = SEQUENCE_ROTATE_Z;
                 next_sequence_info = &sequence_rotate_z;
-                sequence_motion_config.curvature = 0;
-                sequence_motion_config.distance = 0;
-                sequence_motion_config.speed = MOTION_DEFAULT_SPEED;
+                user_motion_cfg.curvature = 0;
+                user_motion_cfg.distance = 0;
+                user_motion_cfg.speed = MOTION_DEFAULT_SPEED;
                 break;
         }
     }
     
     if (current_sequence == next_sequence) {
-        motion_core_update_motion_config(&sequence_motion_config);
+        motion_core_update_motion_config(&user_motion_cfg);
     }
 }
