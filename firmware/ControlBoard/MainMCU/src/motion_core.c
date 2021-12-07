@@ -249,7 +249,7 @@ const cli_cmd_t* motion_get_cmd_list(uint32_t* count) {
 //  ***************************************************************************
 static bool read_configuration(void) {
     uint32_t base_address = MM_LIMB_CONFIG_BASE_EE_ADDRESS;
-    
+
     // Read length
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         if (config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &g_limbs[i].coxa.length)  == false) return false;
@@ -340,13 +340,12 @@ static bool process_advanced_traj(float motion_time) {
     // Check curvature value
     float curvature = g_current_user_motion_cfg.curvature;
     if      ((int32_t)curvature == 0)    curvature = +0.001f;
-    else if ((int32_t)curvature > 1999)  curvature = +1.999f;
-    else if ((int32_t)curvature < -1999) curvature = -1.999f;
-    else                                 curvature = curvature / 1000.0f;
+    else if ((int32_t)curvature > 1000)  curvature = +1000.0f;
+    else if ((int32_t)curvature < -1000) curvature = -1000.0f;
     
     // Calculation radius of curvature
     float distance = (float)g_current_user_motion_cfg.distance;
-    float curvature_radius = tanf((2.0f - curvature) * M_PI / 4.0f) * fabs(distance);
+    float curvature_radius = expf((1000.0f - fabs(curvature)) / 115.0f) * (curvature / fabs(curvature));
 
     // Common calculations
     float traj_radius[SUPPORT_LIMBS_COUNT] = {0};

@@ -126,18 +126,9 @@ Item {
                             CppSwlpService.sendStopMoveCommand()
                         }
                         onPositionChanged: {
-
                             var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2)
-
-                            var factor = 25
-                            var scaled_x = Math.abs(x / factor)
-                            var scaled_max_x = (drag.maximumX / 2) / factor
-
-                            var curvature = Math.exp(scaled_x) / Math.exp(scaled_max_x) * 1999
-                            curvature = Math.round(curvature)
-                            if (x < 0) {
-                                curvature = -curvature
-                            }
+                            var k = (joystickItem.width - dragItem.width) / 2000
+                            var curvature = Math.round(x / k)
 
                             var deadZoneHeight = 20
                             var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2

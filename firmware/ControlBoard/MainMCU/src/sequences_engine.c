@@ -8,7 +8,6 @@
 #include "gait_sequences.h"
 #include "system_monitor.h"
 #include "systimer.h"
-
 #define AUTO_SELECT_DOWN_SEQUENCE_TIME              (20000) // 20s
 
 
@@ -96,7 +95,7 @@ void sequences_engine_process(void) {
             break;
         
         case STATE_WAIT:
-            if (motion_core_is_motion_complete() == true) {
+            if (motion_core_is_motion_complete()) {
                 engine_state = STATE_NEXT_MOTION;
             }
             break;
@@ -114,7 +113,7 @@ void sequences_engine_process(void) {
                     sequence_stage = STAGE_FINALIZE;
                 }
                 else {   
-                    if (current_sequence_info->is_sequence_looped == true) {
+                    if (current_sequence_info->is_sequence_looped) {
                         current_motion = current_sequence_info->main_motions_begin;
                     } else { // Not looped sequence completed and new sequence not selected
                         sequence_stage = STAGE_FINALIZE;
