@@ -122,7 +122,7 @@ void motion_core_start_motion(const motion_t* motion, const user_motion_cfg_t* u
     g_next_user_motion_cfg = *user_motion_cfg;
     g_current_user_motion_cfg = *user_motion_cfg;
     
-    servo_driver_set_speed((motion->speed == 0) ? user_motion_cfg->speed : motion->speed);
+    servo_driver_set_speed((motion->speed == MOTION_USER_SPEED) ? user_motion_cfg->speed : motion->speed);
 }
 
 //  ***************************************************************************

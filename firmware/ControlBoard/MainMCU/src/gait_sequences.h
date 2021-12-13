@@ -115,14 +115,14 @@ static const sequence_info_t sequence_move = {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_UP_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_UP_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_UP_Y, -70}},
             { TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MAX_VALUE, .speed = 0
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MAX_VALUE, .speed = MOTION_USER_SPEED
         },
         {
             {0}, // Destination points is not use for TRAJ_XZ_ADV_Y_CONST
             { TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN},
             { TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE },
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
-            .motion_time = MTIME_MID_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .speed = 0
+            .motion_time = MTIME_MID_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .speed = MOTION_USER_SPEED
         },
         
         //
@@ -133,14 +133,14 @@ static const sequence_info_t sequence_move = {
             { TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST},
             { TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT },
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
-            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .speed = 0
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .speed = MOTION_USER_SPEED
         },
         {
             {0}, // Destination points is not use for TRAJ_XZ_ADV_Y_CONST
             { TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN},
             { TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE },
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
-            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .speed = 0
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_MID_VALUE, .speed = MOTION_USER_SPEED
         },
         
         //
@@ -151,13 +151,13 @@ static const sequence_info_t sequence_move = {
             { TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST, TRAJ_XZ_ADV_Y_SIN, TRAJ_XZ_ADV_Y_CONST},
             { TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT, TIME_DIR_REVERSE, TIME_DIR_DIRECT },
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
-            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MID_VALUE, .time_update = MTIME_NO_UPDATE, .speed = 0
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MID_VALUE, .time_update = MTIME_NO_UPDATE, .speed = MOTION_USER_SPEED
         },
         {
             {{-115, LIMB_DOWN_Y, 70}, {-135, LIMB_DOWN_Y, 0}, {-115, LIMB_DOWN_Y, -70}, {115, LIMB_DOWN_Y, 70}, {135, LIMB_DOWN_Y, 0}, {115, LIMB_DOWN_Y, -70}},
             { TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR, TRAJ_XYZ_LINEAR},
             { TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT, TIME_DIR_DIRECT },
-            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .speed = 0
+            .motion_time = MTIME_MIN_VALUE, .time_stop = MTIME_MAX_VALUE, .time_update = MTIME_NO_UPDATE, .speed = MOTION_USER_SPEED
         },
     }
 };

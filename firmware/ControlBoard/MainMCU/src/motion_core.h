@@ -12,6 +12,8 @@
 #define SUPPORT_LIMBS_COUNT                 (6)
 
 #define MOTION_DEFAULT_SPEED                (87)
+#define MOTION_USER_SPEED                   (0)
+
 #define LIMB_STEP_HEIGHT                    (30)
 
 #define MTIME_SCALE                         (1000u)
