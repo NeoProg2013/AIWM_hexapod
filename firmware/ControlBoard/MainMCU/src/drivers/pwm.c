@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    pwm.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "pwm.h"
 #include "stm32f373xc.h"
 #include "project_base.h"
@@ -57,11 +57,11 @@ static uint32_t pwm_next_frequency = PWM_START_FREQUENCY_HZ;
 uint64_t synchro = 0;
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  PWM driver initialization
 /// @param  frequency: frequency [Hz]
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void pwm_init(uint32_t frequency) {
     pwm_current_frequency = frequency;
     pwm_next_frequency = frequency;
@@ -72,10 +72,7 @@ void pwm_init(uint32_t frequency) {
         active_buffer_ptr[i] = &active_buffer[i];
     }
 
-    
-    //
     // Setup GPIO
-    //
     for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT; ++i) {
         gpio_reset           (active_buffer[i].gpio_port, active_buffer[i].gpio_pin);
         gpio_set_mode        (active_buffer[i].gpio_port, active_buffer[i].gpio_pin, GPIO_MODE_OUTPUT);
@@ -84,14 +81,9 @@ void pwm_init(uint32_t frequency) {
         gpio_set_pull        (active_buffer[i].gpio_port, active_buffer[i].gpio_pin, GPIO_PULL_NO);
     }
 
-    
-    //
-    // Setup PWM timer
-    //
+    // Setup PWM timer: one pulse mode
     RCC->APB2RSTR |= RCC_APB2RSTR_TIM17RST;
     RCC->APB2RSTR &= ~RCC_APB2RSTR_TIM17RST;
-
-    // Configure PWM timer: one pulse mode
     TIM17->CR1  = TIM_CR1_OPM | TIM_CR1_URS; 
     TIM17->DIER = TIM_DIER_CC1IE | TIM_DIER_UIE;
     TIM17->PSC  = APB2_CLOCK_FREQUENCY / 1000000 - 1; // 1 tick = 1 us
@@ -100,11 +92,11 @@ void pwm_init(uint32_t frequency) {
     NVIC_SetPriority(TIM17_IRQn, TIM17_IRQ_PRIORITY);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  PWM enable
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void pwm_enable(void) {
     pwm_disable_is_requested = false;
 
@@ -115,21 +107,21 @@ void pwm_enable(void) {
     }
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  PWM disable
 /// @note   PWM will be disable on next PWM period
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void pwm_disable(void) {
     pwm_disable_is_requested = true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Set PWM frequency
 /// @param  frequency: frequency [Hz]
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void pwm_set_frequency(uint32_t frequency) {
     if (frequency < PWM_MIN_FREQUENCY_HZ) {
         frequency = PWM_MIN_FREQUENCY_HZ;
@@ -140,22 +132,22 @@ void pwm_set_frequency(uint32_t frequency) {
     pwm_next_frequency = frequency;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Lock shadow buffer
 /// @note   If buffer is lock, then data from shadow buffer not load to active
 /// @param  is_locked: true - buffer is lock, false - buffer is unlock
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void pwm_set_shadow_buffer_lock_state(bool is_locked) {
     shadow_buffer_is_lock = is_locked;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Set PWM channel pulse width
 /// @param  channel: PWM channel index
 /// @param  width: pulse width
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void pwm_set_width(uint32_t channel, uint32_t width) {
     int32_t ticks = (int32_t)width - PWM_CHANNEL_PULSE_TRIM;
     if (ticks < 0) {
@@ -168,11 +160,11 @@ void pwm_set_width(uint32_t channel, uint32_t width) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  PWM timer ISR
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void TIM17_IRQHandler(void) {
     
     static uint32_t ch_cursor = 0;
@@ -182,9 +174,7 @@ void TIM17_IRQHandler(void) {
     TIM17->SR = 0;
 
     if (status & TIM_SR_CC1IF) {
-
         while (ch_cursor < SUPPORT_PWM_CHANNELS_COUNT) {
-
             // Find equal time for PWM outputs. First iteration not should be pass this check
             if (TIM17->CCR1 != active_buffer_ptr[ch_cursor]->ticks) {
                 TIM17->CCR1 = active_buffer_ptr[ch_cursor]->ticks; // Load time for next PWM output
@@ -199,7 +189,6 @@ void TIM17_IRQHandler(void) {
         }
     }
     if (status & TIM_SR_UIF) {  // We are reached end of PWM period
-        
         // Check disable PWM request
         if (pwm_disable_is_requested == true) {
             return;
@@ -214,9 +203,9 @@ void TIM17_IRQHandler(void) {
         for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT - 1; ++i) {
             for (uint32_t j = 0; j < SUPPORT_PWM_CHANNELS_COUNT - i - 1; ++j) {
                 if (active_buffer_ptr[j]->ticks > active_buffer_ptr[j + 1]->ticks) {
-                    pwm_channel_t* temp = active_buffer_ptr[j];
+                    pwm_channel_t* tmp = active_buffer_ptr[j];
                     active_buffer_ptr[j] = active_buffer_ptr[j + 1];
-                    active_buffer_ptr[j + 1] = temp;
+                    active_buffer_ptr[j + 1] = tmp;
                 }
             }
         }

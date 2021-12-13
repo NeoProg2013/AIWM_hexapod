@@ -147,14 +147,14 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                 return cmd_list[i].handler(argv, argc, response);
             }
         }
-    } else if (strcmp(module, "motion") == 0) {
+    } /*else if (strcmp(module, "motion") == 0) {
         const cli_cmd_t* cmd_list = motion_get_cmd_list(&cmd_list_size);
         for (uint32_t i = 0; i < cmd_list_size; ++i) {
             if (strcmp(cmd, cmd_list[i].cmd) == 0) {
                 return cmd_list[i].handler(argv, argc, response);
             }
         }
-    } else if (strcmp(module, "config") == 0) {
+    }*/ else if (strcmp(module, "config") == 0) {
         const cli_cmd_t* cmd_list = config_get_cmd_list(&cmd_list_size);
         for (uint32_t i = 0; i < cmd_list_size; ++i) {
             if (strcmp(cmd, cmd_list[i].cmd) == 0) {

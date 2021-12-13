@@ -6,7 +6,6 @@
 #include "project_base.h"
 #include "swlp_protocol.h"
 #include "usart2.h"
-#include "sequences_engine.h"
 #include "indication.h"
 #include "system_monitor.h"
 #include "servo_driver.h"
@@ -90,37 +89,37 @@ void swlp_process(void) {
             case SWLP_CMD_NONE:
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP:
-                sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
-                sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_MOVE:
-                sequences_engine_select_sequence(SEQUENCE_MOVE, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_MOVE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
-                sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL:
-                sequences_engine_select_sequence(SEQUENCE_PUSH_PULL, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_PUSH_PULL, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
-                sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
-                sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DANCE:
-                sequences_engine_select_sequence(SEQUENCE_DANCE, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_DANCE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:
-                sequences_engine_select_sequence(SEQUENCE_ROTATE_X, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_ROTATE_X, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:
-                sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_NONE:
-                sequences_engine_select_sequence(SEQUENCE_NONE, request->motion_speed, request->curvature, request->distance);
+                //sequences_engine_select_sequence(SEQUENCE_NONE, request->motion_speed, request->curvature, request->distance);
                 break;
                 
             default:

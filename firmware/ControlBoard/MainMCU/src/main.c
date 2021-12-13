@@ -9,7 +9,6 @@
 #include "cli.h"
 #include "servo_driver.h"
 #include "motion_core.h"
-#include "sequences_engine.h"
 #include "indication.h"
 #include "display.h"
 #include "smcu.h"
@@ -50,7 +49,7 @@ void main() {
     
     // Initializaion submodules
     smcu_init();    
-    sequences_engine_init();
+    motion_core_init();
     
     delay_ms(100);
     while (true) {
@@ -66,13 +65,13 @@ void main() {
             sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
         }*/
         // Disable servo power if low supply voltage
-        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
+        /*if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
             sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
             servo_driver_power_off();
-        }
+        }*/
         
         smcu_process();
-        sequences_engine_process();
+        //sequences_engine_process();
         
         // Motion process
         // This 2 functions should be call in this sequence
