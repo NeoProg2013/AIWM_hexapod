@@ -11,6 +11,7 @@
 #include "pwm.h"
 #include "system_monitor.h"
 #include <math.h>
+#include <float.h>
 #define LIMBS_COUNT             (6)
 
 
@@ -21,8 +22,8 @@ static bool process_advanced_traj(float motion_time);*/
 
 
 static const v3d_t limbs_init_pos[] = {
-    {-140, -15, 83}, {-162, -15, 0}, {-140, -15, -83}, // Left side
-    { 140, -15, 83}, { 162, -15, 0}, { 140, -15, -83}  // Right side
+        {-115, 0, 70}, {-135, 0, 0}, {-115, 0, -70}, // Left side
+        { 115, 0, 70}, { 135, 0, 0}, { 115, 0, -70}  // Right side
 };
 
 
@@ -75,10 +76,9 @@ void motion_core_init() {
     servo_driver_power_on();
 
     // Make motion surface
-    g_cur_motion.surface.n.x = 0;
-    g_cur_motion.surface.n.y = 1;
-    g_cur_motion.surface.n.z = 0;
-    g_cur_motion.surface.y = g_limbs->pos.y;
+    g_cur_motion.surface_point.x = 0;
+    g_cur_motion.surface_point.y = -15;
+    g_cur_motion.surface_point.z = 0;
     g_dst_motion = g_cur_motion;
 }
 
@@ -86,11 +86,11 @@ void motion_core_init() {
 /// @brief  Start motion
 /// @param  motion: motion description. @ref motion_t
 /// ***************************************************************************
+void motion_core_get_current_motion(motion_t* motion) {
+    *motion = g_cur_motion;
+}
 void motion_core_start_motion(const motion_t* motion) {
-    /*if (!is_motion_started) {
-        g_current_motion = *motion;
-        is_motion_started = true;
-    }*/
+    g_dst_motion = *motion;
 }
 
 void motion_core_stop_motion(void) {
@@ -105,21 +105,31 @@ void motion_core_update_motion(const motion_t* motion) {
 /// @brief  Motion core process
 /// @note   Call each PWM period
 /// ***************************************************************************
-#define CHANGE_HEIGHT_MAX_STEP                  (0.1f)
+#define CHANGE_HEIGHT_MAX_STEP                  (0.25f)
 void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
 
     // Change height process
-    float diff = fabs(g_dst_motion.surface.y) - fabs(g_cur_motion.surface.y);
-    if (diff > CHANGE_HEIGHT_MAX_STEP) {
+    float diff = fabs(g_cur_motion.surface_point.y) - fabs(g_dst_motion.surface_point.y);
+    if (diff > 0 && diff > CHANGE_HEIGHT_MAX_STEP) {
         diff = CHANGE_HEIGHT_MAX_STEP; // Constrain speed
     }
-    if (g_dst_motion.surface.y > g_cur_motion.surface.y) {
-        diff = -diff; // Increase height (surface moving down)
+    if (diff < 0 && diff < -CHANGE_HEIGHT_MAX_STEP) {
+        diff = -CHANGE_HEIGHT_MAX_STEP; // Constrain speed
     }
-    g_cur_motion.surface.y += diff;
+    g_cur_motion.surface_point.y += diff;
+    
+    if (fabs(diff) > FLT_EPSILON) {
+        sprintf(cli_get_tx_buffer(), "[MOTION CORE]: %lu diff=%d, surfaceY=%d\r\n", (uint32_t)get_time_ms(), (int16_t)(diff * 100), (int16_t)g_cur_motion.surface_point.y);
+        cli_send_data(NULL);
+    }
 
-
+    // Calculate limbs height
+    if (!surface_calculate_offset(g_limbs, LIMBS_COUNT, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
+        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        return;
+    }
 
     // Calculate servo logic angles
     if (kinematic_calculate_angles(g_limbs, LIMBS_COUNT) == false) {

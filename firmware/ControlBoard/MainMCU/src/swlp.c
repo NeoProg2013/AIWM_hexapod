@@ -9,6 +9,7 @@
 #include "indication.h"
 #include "system_monitor.h"
 #include "servo_driver.h"
+#include "motion_core.h"
 #include "systimer.h"
 
 #define COMMUNICATION_BAUD_RATE                     (115200)
@@ -59,6 +60,14 @@ void swlp_init(void) {
 /// @retval tx_buffer
 /// @return bytes for transmit from tx_buffer
 //  ***************************************************************************
+motion_t motion = {
+    {0, -15, 0},
+    {0, 0, 0},
+    .speed = 0,
+    .curvature = 0,
+    .distance = 0
+};
+
 void swlp_process(void) {
     
     // We are start with SYSMON_CONN_LOST_ERROR error
@@ -89,9 +98,13 @@ void swlp_process(void) {
             case SWLP_CMD_NONE:
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP:
+                motion.surface_point.y -= 20;
+                motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
+                motion.surface_point.y += 20;
+                motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_MOVE:

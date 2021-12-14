@@ -18,14 +18,14 @@ typedef struct {
 
 typedef struct {
     v3d_t  pos;
+    float  surface_y_offset;
     link_t coxa;
     link_t femur;
     link_t tibia;
-    float  surface_comp;
 } limb_t;
 
 
-extern void surface_compensation(limb_t* limbs, int32_t limbs_cnt, float surface_x_rotate, float surface_z_rotate);
+extern bool surface_calculate_offset(limb_t* limbs, int32_t limbs_cnt, const p3d_t* surface_point, const r3d_t* surface_rotate);
 extern bool kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt);
 
 

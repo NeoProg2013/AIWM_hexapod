@@ -95,9 +95,13 @@ static inline void gpio_reset(GPIO_TypeDef* port, uint32_t pin) {
 static inline void gpio_toggle(GPIO_TypeDef* port, uint32_t pin) {
     port->ODR ^= 0x01u << pin;
 }
-static inline bool gpio_read(GPIO_TypeDef* port, uint32_t pin) {
-    return port->IDR & 0x01u << pin;
+static inline bool gpio_read_input(GPIO_TypeDef* port, uint32_t pin) {
+    return port->IDR & (0x01u << pin);
 }
+static inline bool gpio_read_output(GPIO_TypeDef* port, uint32_t pin) {
+    return port->ODR & (0x01u << pin);
+}
+
 
 
 #endif // _PROJECT_BASE_H_

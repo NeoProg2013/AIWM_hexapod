@@ -8,9 +8,9 @@
 #include "math-structs.h"
 
 
-
 typedef struct {
-    s3d_t   surface;
+    p3d_t   surface_point;
+    r3d_t   surface_rotate;
     int16_t speed;
     int16_t curvature;
     int16_t distance;
@@ -18,6 +18,7 @@ typedef struct {
 
 
 extern void motion_core_init(void);
+extern void motion_core_get_current_motion(motion_t* motion);
 extern void motion_core_start_motion(const motion_t* motion);
 extern void motion_core_stop_motion(void);
 extern void motion_core_update_motion(const motion_t* motion);

@@ -47,7 +47,7 @@ static pwm_channel_t shadow_buffer[SUPPORT_PWM_CHANNELS_COUNT] = {   // Not sort
     { .gpio_port = GPIOA, .gpio_pin =  7, .ticks = PWM_CHANNEL_DISABLE_VALUE },
     { .gpio_port = GPIOC, .gpio_pin =  4, .ticks = PWM_CHANNEL_DISABLE_VALUE },
 };
-static bool shadow_buffer_is_lock = false;
+static bool shadow_buffer_is_locked = false;
 static bool pwm_disable_is_requested = false;
 
 // Next value load to current value each PWM period
@@ -139,7 +139,7 @@ void pwm_set_frequency(uint32_t frequency) {
 /// @return none
 /// ***************************************************************************
 void pwm_set_shadow_buffer_lock_state(bool is_locked) {
-    shadow_buffer_is_lock = is_locked;
+    shadow_buffer_is_locked = is_locked;
 }
 
 /// ***************************************************************************
@@ -172,30 +172,35 @@ void TIM17_IRQHandler(void) {
     // Read and clear status register
     uint32_t status = TIM17->SR;
     TIM17->SR = 0;
-
+    
     if (status & TIM_SR_CC1IF) {
+        TIM17->CR1 &= ~TIM_CR1_CEN;
         while (ch_cursor < SUPPORT_PWM_CHANNELS_COUNT) {
             // Find equal time for PWM outputs. First iteration not should be pass this check
-            if (TIM17->CCR1 != active_buffer_ptr[ch_cursor]->ticks) {
+            if (active_buffer_ptr[ch_cursor]->ticks > TIM17->CCR1) {
                 TIM17->CCR1 = active_buffer_ptr[ch_cursor]->ticks; // Load time for next PWM output
                 break;
             }
-
+            
             // Set LOW level for PWM output
             gpio_reset(active_buffer_ptr[ch_cursor]->gpio_port, active_buffer_ptr[ch_cursor]->gpio_pin);
             
             // Go to next PWM channel
             ++ch_cursor;
         }
+        TIM17->CR1 |= TIM_CR1_CEN;
     }
     if (status & TIM_SR_UIF) {  // We are reached end of PWM period
+        
+        DEBUG_TP3_PIN_TOGGLE;
+            
         // Check disable PWM request
         if (pwm_disable_is_requested == true) {
             return;
         }
 
         // Sync shadow buffer with active buffer if it unlock
-        if (shadow_buffer_is_lock == false) {
+        if (shadow_buffer_is_locked == false) {
             memcpy(active_buffer, shadow_buffer, sizeof(active_buffer));
         }
 
