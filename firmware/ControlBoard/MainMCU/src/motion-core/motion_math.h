@@ -17,16 +17,17 @@ typedef struct {
 } link_t;
 
 typedef struct {
-    v3d_t  pos;
-    float  surface_y_offset;
+    v3d_t  pos; // Limb position on flat surface with (0; 0; 0) coords and normal vector (0; 1; 0)
+    v3d_t  surface_offset;
     link_t coxa;
     link_t femur;
     link_t tibia;
 } limb_t;
 
 
-extern bool surface_calculate_offset(limb_t* limbs, int32_t limbs_cnt, const p3d_t* surface_point, const r3d_t* surface_rotate);
-extern bool kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt);
+extern float mm_calc_step(float src, float dst, float max_step);
+extern bool  mm_surface_calculate_offsets(limb_t* limbs, int32_t limbs_cnt, const p3d_t* surface_point, const r3d_t* surface_rotate);
+extern bool  mm_kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt);
 
 
 #endif // _MOTION_MATH_H_

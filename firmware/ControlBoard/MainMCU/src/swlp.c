@@ -111,6 +111,8 @@ void swlp_process(void) {
                 //sequences_engine_select_sequence(SEQUENCE_MOVE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
+                motion.distance = 1;
+                motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL:

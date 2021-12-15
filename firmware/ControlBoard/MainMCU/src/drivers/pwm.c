@@ -166,7 +166,6 @@ void pwm_set_width(uint32_t channel, uint32_t width) {
 /// @return none
 /// ***************************************************************************
 void TIM17_IRQHandler(void) {
-    
     static uint32_t ch_cursor = 0;
 
     // Read and clear status register
@@ -191,9 +190,6 @@ void TIM17_IRQHandler(void) {
         TIM17->CR1 |= TIM_CR1_CEN;
     }
     if (status & TIM_SR_UIF) {  // We are reached end of PWM period
-        
-        DEBUG_TP3_PIN_TOGGLE;
-            
         // Check disable PWM request
         if (pwm_disable_is_requested == true) {
             return;

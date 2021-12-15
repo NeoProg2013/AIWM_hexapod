@@ -11,6 +11,14 @@
 
 
 
+float mm_calc_step(float src, float dst, float max_step) {
+    float diff = dst - src;
+    if (fabs(diff) > max_step) {
+        diff = max_step * (fabs(diff) / diff); // Constrain speed
+    }
+    return diff;
+}
+
 /// ***************************************************************************
 /// @brief  Surface compensation
 /// @param  limbs, limbs_cnt: hexapod limbs
@@ -18,7 +26,7 @@
 /// @param  rotate: surface rotate
 /// @return true - calculation success, false - no
 /// ***************************************************************************
-bool surface_calculate_offset(limb_t* limbs, int32_t limbs_cnt, const p3d_t* surface_point, const r3d_t* surface_rotate) {
+bool mm_surface_calculate_offsets(limb_t* limbs, int32_t limbs_cnt, const p3d_t* surface_point, const r3d_t* surface_rotate) {
     v3d_t n = {0, 1, 0};
 
     // Rotate normal by axis X
@@ -40,7 +48,9 @@ bool surface_calculate_offset(limb_t* limbs, int32_t limbs_cnt, const p3d_t* sur
     // Nx(x - x0) + Ny(y - y0) + Nz(z - 0z) = 0
     // y = (-Nx(x - x0) - Nz(z - z0)) / Ny + y0
     for (int32_t i = 0; i < limbs_cnt; ++i) {
-        limbs[i].surface_y_offset = (-n.z * (surface_point->z - limbs[i].pos.z) - n.x * (surface_point->x - limbs[i].pos.x)) / n.y + surface_point->y;
+        limbs[i].surface_offset.x = 0;
+        limbs[i].surface_offset.y = (-n.z * (surface_point->z - limbs[i].pos.z) - n.x * (surface_point->x - limbs[i].pos.x)) / n.y + surface_point->y;
+        limbs[i].surface_offset.z = 0;
     }
     return true;
 }
@@ -51,7 +61,7 @@ bool surface_calculate_offset(limb_t* limbs, int32_t limbs_cnt, const p3d_t* sur
 /// @retval limb_t::link_t::servo_angle
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-bool kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt) {
+bool mm_kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt) {
     for (int32_t i = 0; i < limbs_cnt; ++i) {
         float coxa_zero_rotate_deg  = limbs[i].coxa.zero_rotate;
         float femur_zero_rotate_deg = limbs[i].femur.zero_rotate;
@@ -60,10 +70,9 @@ bool kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt) {
         float femur_length = limbs[i].femur.length;
         float tibia_length = limbs[i].tibia.length;
 
-        float x = limbs[i].pos.x;
-        float y = limbs[i].pos.y + limbs[i].surface_y_offset;
-        float z = limbs[i].pos.z;
-
+        float x = limbs[i].pos.x + limbs[i].surface_offset.x;
+        float y = limbs[i].pos.y + limbs[i].surface_offset.y;
+        float z = limbs[i].pos.z + limbs[i].surface_offset.z;
 
         // Move to (X*, Y*, Z*) coordinate system - rotate
         float coxa_zero_rotate_rad = DEG_TO_RAD(coxa_zero_rotate_deg);
