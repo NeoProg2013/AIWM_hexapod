@@ -12,14 +12,18 @@
 #include "system_monitor.h"
 #include <math.h>
 #include <float.h>
-#define LIMBS_COUNT                             (6)
-#define CHANGE_HEIGHT_MAX_STEP                  (0.25f)
+#define CHANGE_HEIGHT_MAX_STEP                  (0.5f)
 #define HEXAPOD_UP_HEIGHT_THRESHOLD             (-85)
+#define MOTION_STEP_HEIGHT                      (30)
+
+#define MOTION_LIMBS_DOWN_TIMEOUT               (300)
+
+#define MOTION_TIME_MIN_VALUE                   (0)
+#define MOTION_TIME_MID_VALUE                   (500)
+#define MOTION_TIME_MAX_VALUE                   (1000)
 
 
 static bool load_config(void);
-/*static bool process_linear_traj(float motion_time);
-static bool process_advanced_traj(float motion_time);*/
 
 
 
@@ -33,7 +37,7 @@ static const int16_t surface_up_y = -85;
 static const int16_t limbs_up_y = -55;
 
 
-static limb_t g_limbs[LIMBS_COUNT] = {0};
+static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 static motion_t g_cur_motion = {0};
 static motion_t g_dst_motion = {0};
 
@@ -41,8 +45,9 @@ static motion_t g_dst_motion = {0};
 typedef enum {
     HEXAPOD_STATE_DOWN,
     HEXAPOD_STATE_RDY,
-    HEXAPOD_STATE_PREPARE,
+    HEXAPOD_STATE_INIT,
     HEXAPOD_STATE_MOVE,
+    HEXAPOD_STATE_DEINIT
 } hexapod_state_t;
 
 hexapod_state_t hexapod_state = HEXAPOD_STATE_RDY;//HEXAPOD_STATE_DOWN;
@@ -64,7 +69,7 @@ void motion_core_init() {
     }
     
     // Load start points
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         g_limbs[i].pos = limbs_base_pos[i];
     }
 
@@ -75,28 +80,26 @@ void motion_core_init() {
     g_dst_motion = g_cur_motion;
 
     // Calculate limbs offset by regarding surface
-    if (!mm_surface_calculate_offsets(g_limbs, LIMBS_COUNT, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
+    if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         return;
     }
 
     // Set servo start angles
-    if (!mm_kinematic_calculate_angles(g_limbs, LIMBS_COUNT)) {
+    if (!mm_kinematic_calculate_angles(g_limbs)) {
         sysmon_set_error(SYSMON_CONFIG_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         return;
     }
 
     // Load start angles and turn servo power ON
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         servo_driver_move(i * 3 + 0, g_limbs[i].coxa.angle);
         servo_driver_move(i * 3 + 1, g_limbs[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
     }
     servo_driver_power_on();
-
-
 }
 
 /// ***************************************************************************
@@ -139,47 +142,91 @@ void motion_core_process(void) {
     //
     // Main motion process
     //
-    static float motion_time = 0;
+    static int32_t motion_time = MOTION_TIME_MIN_VALUE;
+    static int32_t motion_loop = 0;
+    static uint64_t start_time = 0;
     if (hexapod_state == HEXAPOD_STATE_RDY) {
         if (g_dst_motion.distance) {
-            hexapod_state = HEXAPOD_STATE_PREPARE;
+            hexapod_state = HEXAPOD_STATE_INIT;
+        } else if (get_time_ms() - start_time > MOTION_LIMBS_DOWN_TIMEOUT) {
+            hexapod_state = HEXAPOD_STATE_DEINIT;
         }
-    } else if (hexapod_state == HEXAPOD_STATE_PREPARE) {
+    } else if (hexapod_state == HEXAPOD_STATE_INIT) {
         bool is_completed = true;
-        for (int32_t i = 0; i < LIMBS_COUNT; i += 2) { // Move limbs 0, 2, 4 to up state
-            float diff = mm_calc_step(g_limbs[i].pos.y, 30, CHANGE_HEIGHT_MAX_STEP);
+        // Move limbs 0, 2, 4 to up state for even loop
+        // Move limbs 1, 3, 5 to up state for odd loop
+        for (int32_t i = motion_loop & 0x01; i < SUPPORT_LIMBS_COUNT; i += 2) { 
+            float diff = mm_calc_step(g_limbs[i].pos.y, MOTION_STEP_HEIGHT, CHANGE_HEIGHT_MAX_STEP);
             if (fabs(diff) > FLT_EPSILON) {
                 is_completed = false;
             }
             g_limbs[i].pos.y += diff;
         }
         if (is_completed) {
-            motion_time = 0.5f;
+            motion_time = MOTION_TIME_MID_VALUE;
             hexapod_state = HEXAPOD_STATE_MOVE;
         }
     } else if (hexapod_state == HEXAPOD_STATE_MOVE) {
-
+        if (motion_time == MOTION_TIME_MID_VALUE) {
+            g_cur_motion.curvature = g_dst_motion.curvature;
+            g_cur_motion.distance  = g_dst_motion.distance;
+            g_cur_motion.speed     = g_dst_motion.speed;
+        }
+        if (g_cur_motion.distance) {
+            if (!mm_process_advanced_traj(g_limbs, limbs_base_pos, motion_time / 1000.0f, motion_loop, g_cur_motion.curvature, g_cur_motion.distance, MOTION_STEP_HEIGHT)) {
+                sysmon_set_error(SYSMON_MATH_ERROR);
+                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+                return;
+            }
+            motion_time += 5;
+            if (motion_time > MOTION_TIME_MAX_VALUE) {
+                motion_time = MOTION_TIME_MIN_VALUE;
+                ++motion_loop;
+            }
+        } else {
+            hexapod_state = HEXAPOD_STATE_RDY;
+            start_time = get_time_ms();
+        }
+    } else if (hexapod_state == HEXAPOD_STATE_DEINIT) {
+        if (g_dst_motion.distance == 0) {
+            bool is_completed = true;
+            // Move all limbs to down state
+            for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) { 
+                float diff = mm_calc_step(g_limbs[i].pos.y, 0, CHANGE_HEIGHT_MAX_STEP);
+                if (fabs(diff) > FLT_EPSILON) {
+                    is_completed = false;
+                }
+                g_limbs[i].pos.y += diff;
+            }
+            if (is_completed) {
+                motion_time = MOTION_TIME_MIN_VALUE;
+                motion_loop = 0;
+                hexapod_state = HEXAPOD_STATE_RDY;
+            }
+        } else {
+            hexapod_state = HEXAPOD_STATE_RDY;
+        }
     }
     
     // Change height process
     g_cur_motion.surface_point.y += mm_calc_step(g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_HEIGHT_MAX_STEP);
 
-    // Calculate limbs offset by regarding surface
-    if (!mm_surface_calculate_offsets(g_limbs, LIMBS_COUNT, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
+    // Calculate limbs offset by relatively surface
+    if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         return;
     }
 
     // Calculate servo logic angles
-    if (mm_kinematic_calculate_angles(g_limbs, LIMBS_COUNT) == false) {
+    if (mm_kinematic_calculate_angles(g_limbs) == false) {
         sysmon_set_error(SYSMON_MATH_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
         return;
     }
 
     // Load new angles to servo driver
-    for (int32_t i = 0; i < LIMBS_COUNT; ++i) {
+    for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         servo_driver_move(i * 3 + 0, g_limbs[i].coxa.angle);
         servo_driver_move(i * 3 + 1, g_limbs[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
@@ -282,14 +329,14 @@ static bool load_config(void) {
     uint32_t base_address = MM_LIMB_CONFIG_BASE_EE_ADDRESS;
 
     // Read length
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         if (!config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &g_limbs[i].coxa.length))  return false;
         if (!config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &g_limbs[i].femur.length)) return false;
         if (!config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &g_limbs[i].tibia.length)) return false;
     }
     
     // Read zero rotate
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         if (!config_read_16(base_address + MM_LIMB_COXA_ZERO_ROTATE_OFFSET + i * sizeof(uint16_t), (uint16_t*)&g_limbs[i].coxa.zero_rotate)) return false;
         if (!config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&g_limbs[i].femur.zero_rotate)) return false;
         if (!config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&g_limbs[i].tibia.zero_rotate)) return false;
@@ -299,7 +346,7 @@ static bool load_config(void) {
     }
     
     // Read protection
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
+    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         if (!config_read_16(base_address + MM_LIMB_PROTECTION_COXA_MIN_ANGLE_OFFSET,  (uint16_t*)&g_limbs[i].coxa.prot_min_angle))  return false;
         if (!config_read_16(base_address + MM_LIMB_PROTECTION_COXA_MAX_ANGLE_OFFSET,  (uint16_t*)&g_limbs[i].coxa.prot_max_angle))  return false;
         if (!config_read_16(base_address + MM_LIMB_PROTECTION_FEMUR_MIN_ANGLE_OFFSET, (uint16_t*)&g_limbs[i].femur.prot_min_angle)) return false;
@@ -347,100 +394,7 @@ static bool load_config(void) {
     return true;
 }*/
 
-/// ***************************************************************************
-/// @brief  Process advanced trajectory
-/// @param  motion_time: current motion time [0; 1]
-/// @retval modify g_limbs
-/// @return true - calculation success, false - no
-/// ***************************************************************************
-/*static bool process_advanced_traj(float motion_time) {
-    // Check need process advanced trajectory
-    // TODO: need remote it!
-    bool is_need_process = false;
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
-        if (g_current_motion.traj[i] == TRAJ_XZ_ADV_Y_CONST || g_current_motion.traj[i] == TRAJ_XZ_ADV_Y_SIN) {
-            is_need_process = true;
-            break;
-        }
-    }
-    if (is_need_process == false) {
-        return true;
-    }
-    
-    // Check curvature value
-    float curvature = g_current_user_motion_cfg.curvature;
-    if      ((int32_t)curvature == 0)    curvature = +0.001f;
-    else if ((int32_t)curvature > 1000)  curvature = +1000.0f;
-    else if ((int32_t)curvature < -1000) curvature = -1000.0f;
-    
-    // Calculation radius of curvature
-    float distance = (float)g_current_user_motion_cfg.distance;
-    float curvature_radius = expf((1000.0f - fabs(curvature)) / 115.0f) * (curvature / fabs(curvature));
 
-    // Common calculations
-    float traj_radius[LIMBS_COUNT] = {0};
-    float start_angle_rad[LIMBS_COUNT] = {0};
-    float max_traj_radius = 0;
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
-        
-        // Skip limbs which not use advanced trajectory
-        if (g_current_motion.traj[i] != TRAJ_XZ_ADV_Y_CONST && g_current_motion.traj[i] != TRAJ_XZ_ADV_Y_SIN) {
-            continue;
-        }
-
-        // Save start point to separate variables for short code
-        float x0 = g_current_motion.start_pos[i].x;
-        float z0 = g_current_motion.start_pos[i].z;
-
-        // Calculation trajectory radius
-        traj_radius[i] = sqrtf((curvature_radius - x0) * (curvature_radius - x0) + z0 * z0);
-
-        // Search max trajectory radius
-        if (traj_radius[i] > max_traj_radius) {
-            max_traj_radius = traj_radius[i];
-        }
-
-        // Calculation limb start angle
-        start_angle_rad[i] = atan2f(z0, -(curvature_radius - x0));
-    }
-    if (max_traj_radius == 0) {
-        return false; // Avoid division by zero
-    }
-
-    // Calculation max angle of arc
-    int32_t curvature_radius_sign = (curvature_radius >= 0) ? 1 : -1;
-    float max_arc_angle = curvature_radius_sign * distance / max_traj_radius;
-
-    // Calculation points by time
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
-        
-        // Skip limbs which not use advanced trajectory
-        if (g_current_motion.traj[i] != TRAJ_XZ_ADV_Y_CONST && g_current_motion.traj[i] != TRAJ_XZ_ADV_Y_SIN) {
-            continue;
-        }
-        
-        // Inversion motion time if need
-        float relative_motion_time = motion_time;
-        if (g_current_motion.time_dir[i] == TIME_DIR_REVERSE) {
-            relative_motion_time = 1.0f - relative_motion_time;
-        }
-        
-        // Calculation arc angle for current time
-        float arc_angle_rad = (relative_motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
-
-        // Calculation XZ points by time
-        g_limbs[i].pos.x = curvature_radius + traj_radius[i] * cosf(arc_angle_rad);
-        g_limbs[i].pos.z =                    traj_radius[i] * sinf(arc_angle_rad);
-        
-        // Calculation Y points by time
-        if (g_current_motion.traj[i] == TRAJ_XZ_ADV_Y_CONST) {
-            g_limbs[i].pos.y = g_current_motion.start_pos[i].y + 0;
-        } else { // TRAJECTORY_XZ_ADV_Y_SINUS
-            g_limbs[i].pos.y = g_current_motion.start_pos[i].y + LIMB_STEP_HEIGHT * sinf(relative_motion_time * M_PI);  
-        }
-    }
-    return true;
-}*/
 
 
 

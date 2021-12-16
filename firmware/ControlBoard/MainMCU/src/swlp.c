@@ -98,12 +98,12 @@ void swlp_process(void) {
             case SWLP_CMD_NONE:
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP:
-                motion.surface_point.y -= 20;
+                motion.surface_point.y -= 60;
                 motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
-                motion.surface_point.y += 20;
+                motion.surface_point.y += 60;
                 motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
@@ -111,20 +111,28 @@ void swlp_process(void) {
                 //sequences_engine_select_sequence(SEQUENCE_MOVE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
-                motion.distance = 1;
-                motion_core_start_motion(&motion);
+
                 //sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL:
                 //sequences_engine_select_sequence(SEQUENCE_PUSH_PULL, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
+                motion.distance = 50;
+                motion.curvature = 1;
+                motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
+                motion.distance = -50;
+                motion.curvature = 1;
+                motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DANCE:
+                motion.distance = 0;
+                motion.curvature = 1;
+                motion_core_start_motion(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_DANCE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:

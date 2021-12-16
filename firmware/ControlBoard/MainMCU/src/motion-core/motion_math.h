@@ -7,6 +7,8 @@
 #define _MOTION_MATH_H_
 #include "math-structs.h"
 
+#define SUPPORT_LIMBS_COUNT                 (6)
+
 
 typedef struct {
     float    angle;
@@ -26,8 +28,9 @@ typedef struct {
 
 
 extern float mm_calc_step(float src, float dst, float max_step);
-extern bool  mm_surface_calculate_offsets(limb_t* limbs, int32_t limbs_cnt, const p3d_t* surface_point, const r3d_t* surface_rotate);
-extern bool  mm_kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt);
+extern bool  mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate);
+extern bool  mm_kinematic_calculate_angles(limb_t* limbs);
+extern bool  mm_process_advanced_traj(limb_t* limbs, const v3d_t* limbs_base_pos, float time, int32_t loop, float curvature, float distance, float step_height);
 
 
 #endif // _MOTION_MATH_H_

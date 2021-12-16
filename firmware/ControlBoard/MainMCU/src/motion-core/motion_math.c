@@ -21,12 +21,12 @@ float mm_calc_step(float src, float dst, float max_step) {
 
 /// ***************************************************************************
 /// @brief  Surface compensation
-/// @param  limbs, limbs_cnt: hexapod limbs
+/// @param  limbs: hexapod limbs
 /// @param  surface_point: surface point
 /// @param  rotate: surface rotate
 /// @return true - calculation success, false - no
 /// ***************************************************************************
-bool mm_surface_calculate_offsets(limb_t* limbs, int32_t limbs_cnt, const p3d_t* surface_point, const r3d_t* surface_rotate) {
+bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate) {
     v3d_t n = {0, 1, 0};
 
     // Rotate normal by axis X
@@ -47,7 +47,7 @@ bool mm_surface_calculate_offsets(limb_t* limbs, int32_t limbs_cnt, const p3d_t*
     // Calculate Y using surface equation. X and Z always is zero
     // Nx(x - x0) + Ny(y - y0) + Nz(z - 0z) = 0
     // y = (-Nx(x - x0) - Nz(z - z0)) / Ny + y0
-    for (int32_t i = 0; i < limbs_cnt; ++i) {
+    for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         limbs[i].surface_offset.x = 0;
         limbs[i].surface_offset.y = (-n.z * (surface_point->z - limbs[i].pos.z) - n.x * (surface_point->x - limbs[i].pos.x)) / n.y + surface_point->y;
         limbs[i].surface_offset.z = 0;
@@ -61,8 +61,8 @@ bool mm_surface_calculate_offsets(limb_t* limbs, int32_t limbs_cnt, const p3d_t*
 /// @retval limb_t::link_t::servo_angle
 /// @return true - calculation success, false - no
 //  ***************************************************************************
-bool mm_kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt) {
-    for (int32_t i = 0; i < limbs_cnt; ++i) {
+bool mm_kinematic_calculate_angles(limb_t* limbs) {
+    for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         float coxa_zero_rotate_deg  = limbs[i].coxa.zero_rotate;
         float femur_zero_rotate_deg = limbs[i].femur.zero_rotate;
         float tibia_zero_rotate_deg = limbs[i].tibia.zero_rotate;
@@ -123,6 +123,98 @@ bool mm_kinematic_calculate_angles(limb_t* limbs, int32_t limbs_cnt) {
         if (limbs[i].femur.angle > limbs[i].femur.prot_max_angle) limbs[i].femur.angle = limbs[i].femur.prot_max_angle;
         if (limbs[i].tibia.angle < limbs[i].tibia.prot_min_angle) limbs[i].tibia.angle = limbs[i].tibia.prot_min_angle;
         if (limbs[i].tibia.angle > limbs[i].tibia.prot_max_angle) limbs[i].tibia.angle = limbs[i].tibia.prot_max_angle;
+    }
+    return true;
+}
+
+/// ***************************************************************************
+/// @brief  Process advanced trajectory
+/// @param  motion_time: current motion time [0; 1]
+/// @retval modify g_limbs::pos
+/// @return true - calculation success, false - no
+/// ***************************************************************************
+bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* limbs_base_pos, float time, int32_t loop, float curvature, float distance, float step_height) {
+    // Check need process advanced trajectory
+    // TODO: need remote it!
+   /* bool is_need_process = false;
+    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
+        if (g_current_motion.traj[i] == TRAJ_XZ_ADV_Y_CONST || g_current_motion.traj[i] == TRAJ_XZ_ADV_Y_SIN) {
+            is_need_process = true;
+            break;
+        }
+    }
+    if (is_need_process == false) {
+        return true;
+    }*/
+
+
+    // Check curvature value
+    if      ((int32_t)curvature == 0)    curvature = +0.001f;
+    else if ((int32_t)curvature > 1000)  curvature = +1000.0f;
+    else if ((int32_t)curvature < -1000) curvature = -1000.0f;
+    
+    // Calculation radius of curvature
+    float curvature_radius = expf((1000.0f - fabs(curvature)) / 115.0f) * (curvature / fabs(curvature));
+
+    // Common calculations
+    float traj_radius[SUPPORT_LIMBS_COUNT];
+    float start_angle_rad[SUPPORT_LIMBS_COUNT];
+    float max_traj_radius = 0;
+    for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+        // Calculation trajectory radius
+        float x0 = limbs_base_pos[i].x;
+        float z0 = limbs_base_pos[i].z;
+        traj_radius[i] = sqrtf((curvature_radius - x0) * (curvature_radius - x0) + z0 * z0);
+
+        // Search max trajectory radius
+        if (traj_radius[i] > max_traj_radius) {
+            max_traj_radius = traj_radius[i];
+        }
+
+        // Calculation limb start angle
+        start_angle_rad[i] = atan2f(z0, -(curvature_radius - x0));
+    }
+    if (max_traj_radius == 0) {
+        return false; // Avoid division by zero
+    }
+
+    // Calculation max angle of arc
+    int32_t curvature_radius_sign = (curvature_radius >= 0) ? 1 : -1;
+    float max_arc_angle = curvature_radius_sign * distance / max_traj_radius;
+
+    // Calculation points by time
+    for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
+
+        // Inversion motion time if needed
+        float relative_motion_time = time;
+        if ((loop & 0x01) == 0) {
+            if ((i & 0x01) == 0) { // Even?
+                relative_motion_time = 1.0f - relative_motion_time;
+            }
+        } else {
+            if ((i & 0x01) != 0) { // Odd?
+                relative_motion_time = 1.0f - relative_motion_time;
+            }
+        }
+        
+        
+        // Calculation arc angle for current time
+        float arc_angle_rad = (relative_motion_time - 0.5f) * max_arc_angle + start_angle_rad[i];
+
+        // Calculation XZ points by time
+        limbs[i].pos.x = curvature_radius + traj_radius[i] * cosf(arc_angle_rad);
+        limbs[i].pos.z =                    traj_radius[i] * sinf(arc_angle_rad);
+        
+        // Calculation Y points by time
+        if ((loop & 0x01) == 0) {
+            if ((i & 0x01) == 0) { // Odd?
+                limbs[i].pos.y = step_height * sinf(relative_motion_time * M_PI);
+            }
+        } else {
+            if ((i & 0x01) != 0) { // Even?
+                limbs[i].pos.y = step_height * sinf(relative_motion_time * M_PI);
+            }
+        }
     }
     return true;
 }

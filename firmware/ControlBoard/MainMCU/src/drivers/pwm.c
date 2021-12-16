@@ -175,7 +175,6 @@ void TIM17_IRQHandler(void) {
     if (status & TIM_SR_CC1IF) {
         TIM17->CR1 &= ~TIM_CR1_CEN;
         while (ch_cursor < SUPPORT_PWM_CHANNELS_COUNT) {
-            // Find equal time for PWM outputs. First iteration not should be pass this check
             if (active_buffer_ptr[ch_cursor]->ticks > TIM17->CCR1) {
                 TIM17->CCR1 = active_buffer_ptr[ch_cursor]->ticks; // Load time for next PWM output
                 break;
@@ -191,7 +190,7 @@ void TIM17_IRQHandler(void) {
     }
     if (status & TIM_SR_UIF) {  // We are reached end of PWM period
         // Check disable PWM request
-        if (pwm_disable_is_requested == true) {
+        if (pwm_disable_is_requested) {
             return;
         }
 
