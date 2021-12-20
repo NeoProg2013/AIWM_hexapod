@@ -31,13 +31,18 @@ bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, con
 
     // Rotate normal by axis X
     float surface_x_rotate_rad = DEG_TO_RAD(surface_rotate->x);
-    n.y = n.y * cosf(surface_x_rotate_rad) + n.z * sinf(surface_x_rotate_rad);
-    n.z = n.y * sinf(surface_x_rotate_rad) - n.z * cosf(surface_x_rotate_rad);
+    n.y = n.y * cosf(surface_x_rotate_rad) - n.z * sinf(surface_x_rotate_rad);
+    n.z = n.y * sinf(surface_x_rotate_rad) + n.z * cosf(surface_x_rotate_rad);
 
     // Rotate normal by axis Z
     float surface_z_rotate_rad = DEG_TO_RAD(surface_rotate->z);
-    n.x = n.x * cosf(surface_z_rotate_rad) + n.y * sinf(surface_z_rotate_rad);
-    n.y = n.x * sinf(surface_z_rotate_rad) - n.y * cosf(surface_z_rotate_rad);
+    n.x = n.x * cosf(surface_z_rotate_rad) - n.y * sinf(surface_z_rotate_rad);
+    n.y = n.x * sinf(surface_z_rotate_rad) + n.y * cosf(surface_z_rotate_rad);
+
+    // Rotate normal by axis Y
+    float surface_y_rotate_rad = DEG_TO_RAD(surface_rotate->y);
+    n.x =  n.x * cosf(surface_y_rotate_rad) + n.z * sinf(surface_y_rotate_rad);
+    n.z = -n.x * sinf(surface_y_rotate_rad) + n.z * cosf(surface_y_rotate_rad);
 
     // For avoid divide by zero
     if (n.y == 0) {
@@ -129,24 +134,13 @@ bool mm_kinematic_calculate_angles(limb_t* limbs) {
 
 /// ***************************************************************************
 /// @brief  Process advanced trajectory
-/// @param  motion_time: current motion time [0; 1]
+/// @param  time: current motion time [0; 1000]
 /// @retval modify g_limbs::pos
 /// @return true - calculation success, false - no
 /// ***************************************************************************
 bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* limbs_base_pos, float time, int32_t loop, float curvature, float distance, float step_height) {
-    // Check need process advanced trajectory
-    // TODO: need remote it!
-   /* bool is_need_process = false;
-    for (uint32_t i = 0; i < LIMBS_COUNT; ++i) {
-        if (g_current_motion.traj[i] == TRAJ_XZ_ADV_Y_CONST || g_current_motion.traj[i] == TRAJ_XZ_ADV_Y_SIN) {
-            is_need_process = true;
-            break;
-        }
-    }
-    if (is_need_process == false) {
-        return true;
-    }*/
-
+    // Scale motion time
+    time /= 1000.0f;
 
     // Check curvature value
     if      ((int32_t)curvature == 0)    curvature = +0.001f;
