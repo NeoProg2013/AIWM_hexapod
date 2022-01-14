@@ -109,23 +109,6 @@ GenerateClassCluster=0
 DocumentUniqueId=KLVFYAHK
 
 [Document5]
-DocumentPath=Wireless.SchDoc
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=4
-DoLibraryUpdate=0
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=0
-ClassGenCCAutoRoomEnabled=0
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=UMGGIWPU
-
-[Document6]
 DocumentPath=Power.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -142,7 +125,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=NWMYTUAH
 
-[Document7]
+[Document6]
 DocumentPath=lib\active.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -159,7 +142,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=MXNPYIAN
 
-[Document8]
+[Document7]
 DocumentPath=lib\analog.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -176,7 +159,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=IDRYCPGF
 
-[Document9]
+[Document8]
 DocumentPath=lib\connectors.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -193,7 +176,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=BRQCUDBK
 
-[Document10]
+[Document9]
 DocumentPath=lib\connectors.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -210,7 +193,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=HDTYIAJC
 
-[Document11]
+[Document10]
 DocumentPath=lib\devices.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -227,7 +210,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=DWXCPVJH
 
-[Document12]
+[Document11]
 DocumentPath=lib\devices.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -244,7 +227,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=VAMSQOIS
 
-[Document13]
+[Document12]
 DocumentPath=lib\digital.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -261,7 +244,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=TDCFNQPU
 
-[Document14]
+[Document13]
 DocumentPath=lib\indication.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -278,7 +261,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document15]
+[Document14]
 DocumentPath=lib\indication.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -295,7 +278,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=AFAWQLOI
 
-[Document16]
+[Document15]
 DocumentPath=lib\MCU and memory.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -312,7 +295,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=KKSLMOKA
 
-[Document17]
+[Document16]
 DocumentPath=lib\packages.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -329,7 +312,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=UBISUNGW
 
-[Document18]
+[Document17]
 DocumentPath=lib\passive.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -346,7 +329,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=HPYAELMU
 
-[Document19]
+[Document18]
 DocumentPath=lib\passive.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -363,7 +346,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=OQYFMPNE
 
-[Document20]
+[Document19]
 DocumentPath=lib\power.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -380,7 +363,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=ABVCJEBG
 
-[Document21]
+[Document20]
 DocumentPath=lib\controls.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -397,7 +380,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=FUUNXJWR
 
-[Document22]
+[Document21]
 DocumentPath=lib\controls.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -414,7 +397,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=DQRDSCKG
 
-[Document23]
+[Document22]
 DocumentPath=lib\Documentation.OutJob
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -431,7 +414,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document24]
+[Document23]
 DocumentPath=lib\PCBWayGerbers.OutJob
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -448,24 +431,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document25]
-DocumentPath=SecondaryMCU.SchDoc
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=5
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=0
-ClassGenCCAutoRoomEnabled=0
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=FRFQDXJG
-
-[Document26]
+[Document24]
 DocumentPath=lib\heatsink.PcbLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -482,7 +448,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=DWXCPVJH
 
-[Document27]
+[Document25]
 DocumentPath=lib\heatsink.SchLib
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -653,9 +619,9 @@ OutputName9=Schematic Prints
 OutputDocumentPath9=
 OutputVariantName9=
 OutputDefault9=0
-PageOptions9=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=1.00|XCorrection=1.00|YCorrection=1.00|PrintKind=1|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-3|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=A4|PaperIndex=9
+PageOptions9=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=1.00|XCorrection=1.00|YCorrection=1.00|PrintKind=1|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-3|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=A3|PaperIndex=8
 Configuration9_Name1=OutputConfigurationParameter1
-Configuration9_Item1=Record=SchPrintView|ShowNoERC=True|ShowParamSet=True|ShowProbe=True|ShowBlanket=True|NoERCSymbolsToShow="Thin Cross","Thick Cross","Small Cross",Checkbox,Triangle|ShowNote=True|ShowNoteCollapsed=True|ShowOpenEnds=True|ExpandDesignator=True|ExpandNetLabel=False|ExpandPort=False|ExpandSheetNum=False|ExpandDocNum=False|PrintArea=0|PrintAreaRect.X1=0|PrintAreaRect.Y1=0|PrintAreaRect.X2=0|PrintAreaRect.Y2=0
+Configuration9_Item1=Record=SchPrintView|ShowNoERC=True|ShowParamSet=True|ShowProbe=True|ShowBlanket=True|NoERCSymbolsToShow="Thin Cross","Thick Cross","Small Cross",Checkbox,Triangle|ShowNote=True|ShowNoteCollapsed=True|ShowOpenEnds=True|ExpandDesignator=True|ExpandNetLabel=False|ExpandPort=False|ExpandSheetNum=False|ExpandDocNum=False|PrintArea=0|PrintAreaRect.X1=0|PrintAreaRect.Y1=0|PrintAreaRect.X2=0|PrintAreaRect.Y2=0|DocumentPath=D:\Projects\AIWM_hexapod\hardware\ControlBoard\MainMCU.SchDoc
 OutputType10=SimView Print
 OutputName10=SimView Prints
 OutputDocumentPath10=
@@ -1430,7 +1396,7 @@ ComponentLibIdentifierKind0=Library Name And Type
 ComponentLibraryIdentifier0=active.SchLib
 ComponentDesignItemID0=MOSFET N
 ComponentSymbolReference0=MOSFET N
-ComponentUpdate0=1
+ComponentUpdate0=0
 ComponentIsDeviceSheet0=0
 ComponentLibIdentifierKind1=Library Name And Type
 ComponentLibraryIdentifier1=connectors.SchLib
@@ -1476,94 +1442,82 @@ ComponentUpdate7=0
 ComponentIsDeviceSheet7=0
 ComponentLibIdentifierKind8=Library Name And Type
 ComponentLibraryIdentifier8=devices.SchLib
-ComponentDesignItemID8=Buzzer
-ComponentSymbolReference8=Buzzer
+ComponentDesignItemID8=HLK-RM04
+ComponentSymbolReference8=HLK-RM04
 ComponentUpdate8=0
 ComponentIsDeviceSheet8=0
 ComponentLibIdentifierKind9=Library Name And Type
-ComponentLibraryIdentifier9=devices.SchLib
-ComponentDesignItemID9=HLK-RM04
-ComponentSymbolReference9=HLK-RM04
+ComponentLibraryIdentifier9=digital.SchLib
+ComponentDesignItemID9=74LVC4245APW
+ComponentSymbolReference9=74LVC4245APW
 ComponentUpdate9=0
 ComponentIsDeviceSheet9=0
 ComponentLibIdentifierKind10=Library Name And Type
 ComponentLibraryIdentifier10=digital.SchLib
-ComponentDesignItemID10=74LVC4245APW
-ComponentSymbolReference10=74LVC4245APW
-ComponentUpdate10=0
+ComponentDesignItemID10=PCA9555PW
+ComponentSymbolReference10=PCA9555PW
+ComponentUpdate10=1
 ComponentIsDeviceSheet10=0
 ComponentLibIdentifierKind11=Library Name And Type
-ComponentLibraryIdentifier11=digital.SchLib
-ComponentDesignItemID11=SN74LVC1T45
-ComponentSymbolReference11=SN74LVC1T45
+ComponentLibraryIdentifier11=heatsink.SchLib
+ComponentDesignItemID11=HEATSINK
+ComponentSymbolReference11=HEATSINK
 ComponentUpdate11=0
 ComponentIsDeviceSheet11=0
 ComponentLibIdentifierKind12=Library Name And Type
-ComponentLibraryIdentifier12=heatsink.SchLib
-ComponentDesignItemID12=HEATSINK
-ComponentSymbolReference12=HEATSINK
+ComponentLibraryIdentifier12=indication.SchLib
+ComponentDesignItemID12=LED
+ComponentSymbolReference12=LED
 ComponentUpdate12=0
 ComponentIsDeviceSheet12=0
 ComponentLibIdentifierKind13=Library Name And Type
-ComponentLibraryIdentifier13=indication.SchLib
-ComponentDesignItemID13=LED
-ComponentSymbolReference13=LED
+ComponentLibraryIdentifier13=MCU and memory.SchLib
+ComponentDesignItemID13=STM32F030F
+ComponentSymbolReference13=STM32F030F
 ComponentUpdate13=0
 ComponentIsDeviceSheet13=0
 ComponentLibIdentifierKind14=Library Name And Type
 ComponentLibraryIdentifier14=MCU and memory.SchLib
-ComponentDesignItemID14=I2C EEPROM
-ComponentSymbolReference14=I2C EEPROM
+ComponentDesignItemID14=STM32F373R
+ComponentSymbolReference14=STM32F373R
 ComponentUpdate14=0
 ComponentIsDeviceSheet14=0
 ComponentLibIdentifierKind15=Library Name And Type
-ComponentLibraryIdentifier15=MCU and memory.SchLib
-ComponentDesignItemID15=STM32F030F
-ComponentSymbolReference15=STM32F030F
+ComponentLibraryIdentifier15=passive.SchLib
+ComponentDesignItemID15=Capacitor polar
+ComponentSymbolReference15=Capacitor polar
 ComponentUpdate15=0
 ComponentIsDeviceSheet15=0
 ComponentLibIdentifierKind16=Library Name And Type
-ComponentLibraryIdentifier16=MCU and memory.SchLib
-ComponentDesignItemID16=STM32F373R
-ComponentSymbolReference16=STM32F373R
+ComponentLibraryIdentifier16=passive.SchLib
+ComponentDesignItemID16=Capacitor
+ComponentSymbolReference16=Capacitor
 ComponentUpdate16=0
 ComponentIsDeviceSheet16=0
 ComponentLibIdentifierKind17=Library Name And Type
 ComponentLibraryIdentifier17=passive.SchLib
-ComponentDesignItemID17=Capacitor polar
-ComponentSymbolReference17=Capacitor polar
+ComponentDesignItemID17=Crystal oscillator
+ComponentSymbolReference17=Crystal oscillator
 ComponentUpdate17=0
 ComponentIsDeviceSheet17=0
 ComponentLibIdentifierKind18=Library Name And Type
 ComponentLibraryIdentifier18=passive.SchLib
-ComponentDesignItemID18=Capacitor
-ComponentSymbolReference18=Capacitor
+ComponentDesignItemID18=Resistor variable
+ComponentSymbolReference18=Resistor variable
 ComponentUpdate18=0
 ComponentIsDeviceSheet18=0
 ComponentLibIdentifierKind19=Library Name And Type
 ComponentLibraryIdentifier19=passive.SchLib
-ComponentDesignItemID19=Crystal oscillator
-ComponentSymbolReference19=Crystal oscillator
+ComponentDesignItemID19=Resistor
+ComponentSymbolReference19=Resistor
 ComponentUpdate19=0
 ComponentIsDeviceSheet19=0
 ComponentLibIdentifierKind20=Library Name And Type
-ComponentLibraryIdentifier20=passive.SchLib
-ComponentDesignItemID20=Resistor variable
-ComponentSymbolReference20=Resistor variable
+ComponentLibraryIdentifier20=power.SchLib
+ComponentDesignItemID20=LM1117
+ComponentSymbolReference20=LM1117
 ComponentUpdate20=0
 ComponentIsDeviceSheet20=0
-ComponentLibIdentifierKind21=Library Name And Type
-ComponentLibraryIdentifier21=passive.SchLib
-ComponentDesignItemID21=Resistor
-ComponentSymbolReference21=Resistor
-ComponentUpdate21=0
-ComponentIsDeviceSheet21=0
-ComponentLibIdentifierKind22=Library Name And Type
-ComponentLibraryIdentifier22=power.SchLib
-ComponentDesignItemID22=LM1117
-ComponentSymbolReference22=LM1117
-ComponentUpdate22=0
-ComponentIsDeviceSheet22=0
 FullReplace=0
 UpdateDesignatorLock=1
 UpdatePartIDLock=1
@@ -1603,218 +1557,209 @@ ModelType2=PCBLIB
 ModelName2=BUTTON_SMD_6x6
 ModelUpdate2=1
 ModelType3=PCBLIB
-ModelName3=BUZZER 12mm
+ModelName3=C_0402/1005
 ModelUpdate3=1
 ModelType4=PCBLIB
-ModelName4=C_0402/1005
+ModelName4=C_0603/1608
 ModelUpdate4=1
 ModelType5=PCBLIB
-ModelName5=C_0603/1608
+ModelName5=C_0805/2012
 ModelUpdate5=1
 ModelType6=PCBLIB
-ModelName6=C_0805/2012
+ModelName6=C_1206/3216
 ModelUpdate6=1
 ModelType7=PCBLIB
-ModelName7=C_1206/3216
+ModelName7=C_ELECTROLYTIC_6x35
 ModelUpdate7=1
 ModelType8=PCBLIB
-ModelName8=C_ELECTROLYTIC_6x35
+ModelName8=CWF-2
 ModelUpdate8=1
 ModelType9=PCBLIB
-ModelName9=CWF-2
+ModelName9=CWF-2R
 ModelUpdate9=1
 ModelType10=PCBLIB
-ModelName10=CWF-2R
+ModelName10=CWF-3
 ModelUpdate10=1
 ModelType11=PCBLIB
-ModelName11=CWF-3
+ModelName11=CWF-3R
 ModelUpdate11=1
 ModelType12=PCBLIB
-ModelName12=CWF-3R
+ModelName12=CWF-4
 ModelUpdate12=1
 ModelType13=PCBLIB
-ModelName13=CWF-4
+ModelName13=CWF-4R
 ModelUpdate13=1
 ModelType14=PCBLIB
-ModelName14=CWF-4R
+ModelName14=ECAP_D10.0x10.5
 ModelUpdate14=1
 ModelType15=PCBLIB
-ModelName15=ECAP_D10.0x10.5
+ModelName15=ECAP_D4.0x5.4
 ModelUpdate15=1
 ModelType16=PCBLIB
-ModelName16=ECAP_D4.0x5.4
+ModelName16=ECAP_D5.0x5.4
 ModelUpdate16=1
 ModelType17=PCBLIB
-ModelName17=ECAP_D5.0x5.4
+ModelName17=ECAP_D6.3x5.4
 ModelUpdate17=1
 ModelType18=PCBLIB
-ModelName18=ECAP_D6.3x5.4
+ModelName18=ECAP_D8.0x10.5
 ModelUpdate18=1
 ModelType19=PCBLIB
-ModelName19=ECAP_D8.0x10.5
+ModelName19=ECAP_D8.0x6.5
 ModelUpdate19=1
 ModelType20=PCBLIB
-ModelName20=ECAP_D8.0x6.5
+ModelName20=ECH381R-02P
 ModelUpdate20=1
 ModelType21=PCBLIB
-ModelName21=ECH381R-02P
+ModelName21=HDR_SMD_1X2_1.50
 ModelUpdate21=1
 ModelType22=PCBLIB
-ModelName22=HDR_SMD_1X2_1.50
+ModelName22=HDR_SMD_1X3_1.50
 ModelUpdate22=1
 ModelType23=PCBLIB
-ModelName23=HDR_SMD_1X3_1.50
+ModelName23=HDR_SMD_1X4_1.50
 ModelUpdate23=1
 ModelType24=PCBLIB
-ModelName24=HDR_SMD_1X4_1.50
+ModelName24=HEATSINK 20x14x6
 ModelUpdate24=1
 ModelType25=PCBLIB
-ModelName25=HEATSINK 20x14x6
+ModelName25=HLK-RM04
 ModelUpdate25=1
 ModelType26=PCBLIB
-ModelName26=HLK-RM04
+ModelName26=HOLE_M2_D4.0/2.5
 ModelUpdate26=1
 ModelType27=PCBLIB
-ModelName27=HOLE_M2_D4.0/2.5
+ModelName27=HOLE_M3_D6.0/3.5
 ModelUpdate27=1
 ModelType28=PCBLIB
-ModelName28=HOLE_M3_D6.0/3.5
+ModelName28=HOLE_M4_D8.0/4.5
 ModelUpdate28=1
 ModelType29=PCBLIB
-ModelName29=HOLE_M4_D8.0/4.5
+ModelName29=IDC-20
 ModelUpdate29=1
 ModelType30=PCBLIB
-ModelName30=IDC-20
+ModelName30=IDC-20 OUTLINE
 ModelUpdate30=1
 ModelType31=PCBLIB
-ModelName31=IDC-20 OUTLINE
+ModelName31=LED_0603/1608
 ModelUpdate31=1
 ModelType32=PCBLIB
-ModelName32=LED_0603/1608
+ModelName32=LED_0805/2012
 ModelUpdate32=1
 ModelType33=PCBLIB
-ModelName33=LED_0805/2012
+ModelName33=LED_1206/3216
 ModelUpdate33=1
 ModelType34=PCBLIB
-ModelName34=LED_1206/3216
+ModelName34=LQFP64
 ModelUpdate34=1
 ModelType35=PCBLIB
-ModelName35=LQFP64
+ModelName35=OSC_2PIN
 ModelUpdate35=1
 ModelType36=PCBLIB
-ModelName36=OSC_2PIN
+ModelName36=OSC_2PINS SMD
 ModelUpdate36=1
 ModelType37=PCBLIB
-ModelName37=OSC_2PINS SMD
+ModelName37=PBD-20 2.00
 ModelUpdate37=1
 ModelType38=PCBLIB
-ModelName38=PBD-20 2.00
+ModelName38=PBD-20 2.00 OUTLINE
 ModelUpdate38=1
 ModelType39=PCBLIB
-ModelName39=PBD-20 2.00 OUTLINE
+ModelName39=PBD-20 2.54
 ModelUpdate39=1
 ModelType40=PCBLIB
-ModelName40=PBD-20 2.54
+ModelName40=PBS-2 2.54
 ModelUpdate40=1
 ModelType41=PCBLIB
-ModelName41=PBS-2 2.54
+ModelName41=PBS-3 2.54
 ModelUpdate41=1
 ModelType42=PCBLIB
-ModelName42=PBS-3 2.54
+ModelName42=PBS-4 2.54
 ModelUpdate42=1
 ModelType43=PCBLIB
-ModelName43=PBS-4 2.54
+ModelName43=PLD-20 2.54
 ModelUpdate43=1
 ModelType44=PCBLIB
-ModelName44=PLD-20 2.54
+ModelName44=PLD-20 2.54 OUTLINE
 ModelUpdate44=1
 ModelType45=PCBLIB
-ModelName45=PLD-20 2.54 OUTLINE
+ModelName45=PLS-2 2.54
 ModelUpdate45=1
 ModelType46=PCBLIB
-ModelName46=PLS-2 2.54
+ModelName46=PLS-2 2.54 OUTLINE
 ModelUpdate46=1
 ModelType47=PCBLIB
-ModelName47=PLS-2 2.54 OUTLINE
+ModelName47=PLS-2R 2.54
 ModelUpdate47=1
 ModelType48=PCBLIB
-ModelName48=PLS-2R 2.54
+ModelName48=PLS-3 2.54
 ModelUpdate48=1
 ModelType49=PCBLIB
-ModelName49=PLS-3 2.54
+ModelName49=PLS-3 2.54 OUTLINE
 ModelUpdate49=1
 ModelType50=PCBLIB
-ModelName50=PLS-3 2.54 OUTLINE
+ModelName50=PLS-3R 2.54
 ModelUpdate50=1
 ModelType51=PCBLIB
-ModelName51=PLS-3R 2.54
+ModelName51=PLS-4 2.54
 ModelUpdate51=1
 ModelType52=PCBLIB
-ModelName52=PLS-4 2.54
+ModelName52=PLS-4R 2.54
 ModelUpdate52=1
 ModelType53=PCBLIB
-ModelName53=PLS-4R 2.54
+ModelName53=R_0402/1005
 ModelUpdate53=1
 ModelType54=PCBLIB
-ModelName54=R_0402/1005
+ModelName54=R_0603/1608
 ModelUpdate54=1
 ModelType55=PCBLIB
-ModelName55=R_0603/1608
+ModelName55=R_0805/2012
 ModelUpdate55=1
 ModelType56=PCBLIB
-ModelName56=R_0805/2012
+ModelName56=R_1206/3216
 ModelUpdate56=1
 ModelType57=PCBLIB
-ModelName57=R_1206/3216
+ModelName57=R_2512/6332
 ModelUpdate57=1
 ModelType58=PCBLIB
-ModelName58=R_2512/6332
+ModelName58=R_VAR_3.2x3.2_SMD
 ModelUpdate58=1
 ModelType59=PCBLIB
-ModelName59=R_VAR_3.2x3.2_SMD
+ModelName59=SO20_0.65
 ModelUpdate59=1
 ModelType60=PCBLIB
-ModelName60=SO20_0.65
+ModelName60=SO24_0.65
 ModelUpdate60=1
 ModelType61=PCBLIB
-ModelName61=SO24_0.65
+ModelName61=SOT223
 ModelUpdate61=1
 ModelType62=PCBLIB
-ModelName62=SO8_1.27
+ModelName62=SOT23-3
 ModelUpdate62=1
 ModelType63=PCBLIB
-ModelName63=SOT223
+ModelName63=TECAP_TYPE_A
 ModelUpdate63=1
 ModelType64=PCBLIB
-ModelName64=SOT23-3
+ModelName64=TECAP_TYPE_B
 ModelUpdate64=1
 ModelType65=PCBLIB
-ModelName65=SOT23-6
+ModelName65=TECAP_TYPE_C
 ModelUpdate65=1
 ModelType66=PCBLIB
-ModelName66=TECAP_TYPE_A
+ModelName66=TECAP_TYPE_D
 ModelUpdate66=1
 ModelType67=PCBLIB
-ModelName67=TECAP_TYPE_B
+ModelName67=TO252AA/DPAK
 ModelUpdate67=1
 ModelType68=PCBLIB
-ModelName68=TECAP_TYPE_C
+ModelName68=TO263-2/D2PAK-2
 ModelUpdate68=1
 ModelType69=PCBLIB
-ModelName69=TECAP_TYPE_D
+ModelName69=TP_SMD_D1.00
 ModelUpdate69=1
 ModelType70=PCBLIB
-ModelName70=TO252AA/DPAK
+ModelName70=TP_SMD_D1.50
 ModelUpdate70=1
-ModelType71=PCBLIB
-ModelName71=TO263-2/D2PAK-2
-ModelUpdate71=1
-ModelType72=PCBLIB
-ModelName72=TP_SMD_D1.00
-ModelUpdate72=1
-ModelType73=PCBLIB
-ModelName73=TP_SMD_D1.50
-ModelUpdate73=1
 
 [DatabaseUpdateOptions]
 SelectedOnly=0
