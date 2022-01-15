@@ -12,15 +12,15 @@
 
 typedef struct {
     float    angle;
-    uint16_t length;
-    int16_t  zero_rotate;
-    int16_t  prot_min_angle; // Protection min angle, [degree]
-    int16_t  prot_max_angle; // Protection max angle, [degree]
+    uint16_t length;         // [CFG]
+    int16_t  zero_rotate;    // [CFG]
+    int16_t  prot_min_angle; // [CFG] Protection min angle, [degree]
+    int16_t  prot_max_angle; // [CFG] Protection max angle, [degree]
 } link_t;
 
 typedef struct {
-    v3d_t  pos; // Limb position on flat surface with (0; 0; 0) coords and normal vector (0; 1; 0)
-    v3d_t  surface_offset;
+    v3d_t  pos;              // Limb position on flat surface with (0; 0; 0) coords and normal vector (0; 1; 0)
+    v3d_t  surface_offsets;  // Limb position relatively surface height from (0; 0; 0) and rotate
     link_t coxa;
     link_t femur;
     link_t tibia;
@@ -30,7 +30,7 @@ typedef struct {
 extern float mm_calc_step(float src, float dst, float max_step);
 extern bool  mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate);
 extern bool  mm_kinematic_calculate_angles(limb_t* limbs);
-extern bool  mm_process_advanced_traj(limb_t* limbs, const v3d_t* limbs_base_pos, float time, int32_t loop, float curvature, float distance, float step_height);
+extern bool  mm_process_advanced_traj(limb_t* limbs, const v3d_t* base_pos, float time, int32_t loop, float curvature, float distance, float step_height);
 
 
 #endif // _MOTION_MATH_H_

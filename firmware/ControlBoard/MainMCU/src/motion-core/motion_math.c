@@ -53,9 +53,9 @@ bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, con
     // Nx(x - x0) + Ny(y - y0) + Nz(z - 0z) = 0
     // y = (-Nx(x - x0) - Nz(z - z0)) / Ny + y0
     for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        limbs[i].surface_offset.x = 0;
-        limbs[i].surface_offset.y = (-n.z * (surface_point->z - limbs[i].pos.z) - n.x * (surface_point->x - limbs[i].pos.x)) / n.y + surface_point->y;
-        limbs[i].surface_offset.z = 0;
+        limbs[i].surface_offsets.x = 0;
+        limbs[i].surface_offsets.y = (-n.z * (surface_point->z - limbs[i].pos.z) - n.x * (surface_point->x - limbs[i].pos.x)) / n.y + surface_point->y;
+        limbs[i].surface_offsets.z = 0;
     }
     return true;
 }
@@ -75,9 +75,9 @@ bool mm_kinematic_calculate_angles(limb_t* limbs) {
         float femur_length = limbs[i].femur.length;
         float tibia_length = limbs[i].tibia.length;
 
-        float x = limbs[i].pos.x + limbs[i].surface_offset.x;
-        float y = limbs[i].pos.y + limbs[i].surface_offset.y;
-        float z = limbs[i].pos.z + limbs[i].surface_offset.z;
+        float x = limbs[i].pos.x + limbs[i].surface_offsets.x;
+        float y = limbs[i].pos.y + limbs[i].surface_offsets.y;
+        float z = limbs[i].pos.z + limbs[i].surface_offsets.z;
 
         // Move to (X*, Y*, Z*) coordinate system - rotate
         float coxa_zero_rotate_rad = DEG_TO_RAD(coxa_zero_rotate_deg);
@@ -138,7 +138,7 @@ bool mm_kinematic_calculate_angles(limb_t* limbs) {
 /// @retval modify g_limbs::pos
 /// @return true - calculation success, false - no
 /// ***************************************************************************
-bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* limbs_base_pos, float time, int32_t loop, float curvature, float distance, float step_height) {
+bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* base_pos, float time, int32_t loop, float curvature, float distance, float step_height) {
     // Scale motion time
     time /= 1000.0f;
 
@@ -156,8 +156,8 @@ bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* limbs_base_pos, float 
     float max_traj_radius = 0;
     for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         // Calculation trajectory radius
-        float x0 = limbs_base_pos[i].x;
-        float z0 = limbs_base_pos[i].z;
+        float x0 = base_pos[i].x;
+        float z0 = base_pos[i].z;
         traj_radius[i] = sqrtf((curvature_radius - x0) * (curvature_radius - x0) + z0 * z0);
 
         // Search max trajectory radius

@@ -62,9 +62,9 @@ void swlp_init(void) {
 /// @return bytes for transmit from tx_buffer
 //  ***************************************************************************
 motion_t motion = {
-    {0, -15, 0},
     {0, 0, 0},
-    {.speed = 0, .curvature = 0, .distance = 0}
+    {0, 0, 0},
+    {.speed = 0, .curvature = 0, .distance = 0, .step_height = 0}
 };
 
 void swlp_process(void) {
@@ -91,23 +91,18 @@ void swlp_process(void) {
         swlp_status_payload_t* response = (swlp_status_payload_t*)swlp_tx_frame->payload;
         memset(swlp_tx_frame, 0, sizeof(swlp_frame_t));
         
-        
-        
-        static float time = 0.1f;
-        
-
         // Process command
         response->command_status = SWLP_CMD_STATUS_OK;
         switch (request->command) {
             case SWLP_CMD_NONE:
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP:
-                motion.surface_point.y -= 60;
+                motion.surface_point.y -= 85;
                 motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
-                motion.surface_point.y += 60;
+                motion.surface_point.y += 85;
                 motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
@@ -130,12 +125,14 @@ void swlp_process(void) {
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
                 motion.cfg.distance = 50;
                 motion.cfg.curvature = 1;
+                motion.cfg.step_height = 30;
                 motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
                 motion.cfg.distance = -50;
                 motion.cfg.curvature = 1;
+                motion.cfg.step_height = 30;
                 motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, request->motion_speed, request->curvature, request->distance);
                 break;
@@ -160,10 +157,11 @@ void swlp_process(void) {
                 //sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_NONE:
-                time = 0.1f;
                 motion.surface_rotate.x = 0;
                 motion.surface_rotate.y = 0;
                 motion.surface_rotate.z = 0;
+                motion.cfg.distance = 0;
+                motion.cfg.curvature = 0;
                 motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_NONE, request->motion_speed, request->curvature, request->distance);
                 break;

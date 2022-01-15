@@ -13,9 +13,9 @@
 #include <math.h>
 #include <float.h>
 #define CHANGE_HEIGHT_MAX_STEP                  (0.5f)
-#define MOTION_STEP_HEIGHT                      (30)
+#define MOTION_DEFAULT_STEP_HEIGHT              (30)
 
-#define MOTION_SURFACE_INIT_HEIGHT              (-15)
+#define MOTION_SURFACE_MIN_HEIGHT               (-15)
 #define MOTION_SURFACE_UP_HEIGHT_THRESHOLD      (-85)
 
 #define MOTION_LIMBS_DOWN_TIMEOUT               (300)
@@ -30,8 +30,8 @@ static bool load_config(void);
 
 
 static const v3d_t limbs_base_pos[] = {
-        {-115, 0, 70}, {-135, 0, 0}, {-115, 0, -70}, // Left side
-        { 115, 0, 70}, { 135, 0, 0}, { 115, 0, -70}  // Right side
+    {-115, 0, 70}, {-135, 0, 0}, {-115, 0, -70}, // Left side
+    { 115, 0, 70}, { 135, 0, 0}, { 115, 0, -70}  // Right side
 };
 
 
@@ -73,7 +73,7 @@ void motion_core_init() {
 
     // Make motion surface
     g_cur_motion.surface_point.x = 0;
-    g_cur_motion.surface_point.y = MOTION_SURFACE_INIT_HEIGHT;
+    g_cur_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
     g_cur_motion.surface_point.z = 0;
     g_dst_motion = g_cur_motion;
 
@@ -106,6 +106,12 @@ void motion_core_init() {
 /// ***************************************************************************
 void motion_core_move(const motion_t* motion) {
     g_dst_motion = *motion;
+    if (g_dst_motion.cfg.step_height == 0) {
+        g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
+    }
+    if (g_dst_motion.surface_point.y > MOTION_SURFACE_MIN_HEIGHT) {
+        g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
+    }
     /*if (hexapod_state == HEXAPOD_STATE_DOWN) {
         g_dst_motion.curvature = 0;
         g_dst_motion.distance = 0;
@@ -124,11 +130,12 @@ void motion_core_stop(void) {
     g_dst_motion.surface_rotate.y = 0;
     g_dst_motion.surface_rotate.z = 0;
     g_dst_motion.surface_point.x = 0;
-    g_dst_motion.surface_point.y = MOTION_SURFACE_INIT_HEIGHT;
+    g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
     g_dst_motion.surface_point.z = 0;
     g_dst_motion.cfg.curvature = 0;
     g_dst_motion.cfg.distance = 0;
     g_dst_motion.cfg.speed = 0;
+    g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
 }
 
 /// ***************************************************************************
@@ -150,12 +157,13 @@ void motion_core_process(void) {
         } else if (get_time_ms() - start_time > MOTION_LIMBS_DOWN_TIMEOUT) {
             hexapod_state = HEXAPOD_STATE_DEINIT;
         }
-    } else if (hexapod_state == HEXAPOD_STATE_INIT) {
+    } 
+    else if (hexapod_state == HEXAPOD_STATE_INIT) {
         bool is_completed = true;
         // Move limbs 0, 2, 4 to up state for even loop
         // Move limbs 1, 3, 5 to up state for odd loop
         for (int32_t i = motion_loop & 0x01; i < SUPPORT_LIMBS_COUNT; i += 2) { 
-            float diff = mm_calc_step(g_limbs[i].pos.y, MOTION_STEP_HEIGHT, CHANGE_HEIGHT_MAX_STEP);
+            float diff = mm_calc_step(g_limbs[i].pos.y, g_dst_motion.cfg.step_height, CHANGE_HEIGHT_MAX_STEP);
             if (fabs(diff) > FLT_EPSILON) {
                 is_completed = false;
             }
@@ -165,9 +173,9 @@ void motion_core_process(void) {
             motion_time = MOTION_TIME_MID_VALUE;
             hexapod_state = HEXAPOD_STATE_MOVE;
         }
-    } else if (hexapod_state == HEXAPOD_STATE_MOVE) {
-        if (motion_time == MOTION_TIME_MID_VALUE) {
-            // Update motion configuration
+    } 
+    else if (hexapod_state == HEXAPOD_STATE_MOVE) {
+        if (motion_time == MOTION_TIME_MID_VALUE) { // Update motion configuration
             g_cur_motion.cfg = g_dst_motion.cfg;
         }
         if (g_cur_motion.cfg.distance) {
@@ -186,7 +194,8 @@ void motion_core_process(void) {
             hexapod_state = HEXAPOD_STATE_RDY;
             start_time = get_time_ms();
         }
-    } else if (hexapod_state == HEXAPOD_STATE_DEINIT) {
+    } 
+    else if (hexapod_state == HEXAPOD_STATE_DEINIT) {
         if (g_dst_motion.cfg.distance == 0) {
             bool is_completed = true;
             // Move all limbs to down state
@@ -214,9 +223,9 @@ void motion_core_process(void) {
 
     // Change height process
     g_cur_motion.surface_point.y += mm_calc_step(g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_HEIGHT_MAX_STEP);
-    if (hexapod_state == HEXAPOD_STATE_MOVE && g_cur_motion.surface_point.y > MOTION_SURFACE_UP_HEIGHT_THRESHOLD) {
+    /*if (hexapod_state == HEXAPOD_STATE_MOVE && g_cur_motion.surface_point.y > MOTION_SURFACE_UP_HEIGHT_THRESHOLD) {
         g_cur_motion.surface_point.y = MOTION_SURFACE_UP_HEIGHT_THRESHOLD; // Avoid move body to down while motion is process
-    }
+    }*/
 
     // Calculate limbs offset by relatively surface
     if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
