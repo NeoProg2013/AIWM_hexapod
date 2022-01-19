@@ -153,6 +153,7 @@ void motion_core_process(void) {
     static uint64_t start_time = 0;
     if (hexapod_state == HEXAPOD_STATE_RDY) {
         if (g_dst_motion.cfg.distance) {
+            g_cur_motion.cfg = g_dst_motion.cfg;
             hexapod_state = HEXAPOD_STATE_INIT;
         } else if (get_time_ms() - start_time > MOTION_LIMBS_DOWN_TIMEOUT) {
             hexapod_state = HEXAPOD_STATE_DEINIT;
@@ -163,7 +164,7 @@ void motion_core_process(void) {
         // Move limbs 0, 2, 4 to up state for even loop
         // Move limbs 1, 3, 5 to up state for odd loop
         for (int32_t i = motion_loop & 0x01; i < SUPPORT_LIMBS_COUNT; i += 2) { 
-            float diff = mm_calc_step(g_limbs[i].pos.y, g_dst_motion.cfg.step_height, CHANGE_HEIGHT_MAX_STEP);
+            float diff = mm_calc_step(g_limbs[i].pos.y, g_cur_motion.cfg.step_height, CHANGE_HEIGHT_MAX_STEP);
             if (fabs(diff) > FLT_EPSILON) {
                 is_completed = false;
             }
@@ -247,6 +248,14 @@ void motion_core_process(void) {
         servo_driver_move(i * 3 + 1, g_limbs[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
     }
+    
+    void* tx_buffer = cli_get_tx_buffer();
+    sprintf(tx_buffer, "[MCORE]: %d %d,%d,%d,%d,%d,%d   %d,%d,%d\r\n", 
+            (int32_t)get_time_ms(),
+            (int32_t)(g_limbs[0].pos.y * 100), (int32_t)(g_limbs[1].pos.y * 100),(int32_t)(g_limbs[2].pos.y * 100),
+            (int32_t)(g_limbs[3].pos.y * 100), (int32_t)(g_limbs[4].pos.y * 100),(int32_t)(g_limbs[5].pos.y * 100),
+            (int32_t)g_cur_motion.surface_rotate.x, (int32_t)g_cur_motion.surface_rotate.y, (int32_t)g_cur_motion.surface_rotate.z);
+    cli_send_data(NULL);
 }
 
 
