@@ -20,10 +20,22 @@ typedef struct {
     motion_cfg_t cfg;
 } motion_t;
 
-
+/// ***************************************************************************
+/// @brief  Motion core initialization
+/// ***************************************************************************
 extern void motion_core_init(void);
+
+/// ***************************************************************************
+/// @brief  Start/stop motion
+/// @param  motion: motion description. @ref motion_t
+/// ***************************************************************************
 extern void motion_core_move(const motion_t* motion);
 extern void motion_core_stop(void);
+
+/// ***************************************************************************
+/// @brief  Motion core process
+/// @note   Call each PWM period from main loop
+/// ***************************************************************************
 extern void motion_core_process(void);
 
 

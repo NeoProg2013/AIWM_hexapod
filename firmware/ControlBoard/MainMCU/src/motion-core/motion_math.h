@@ -27,10 +27,55 @@ typedef struct {
 } limb_t;
 
 
-extern float mm_calc_step(float src, float dst, float max_step);
-extern bool  mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate);
-extern bool  mm_kinematic_calculate_angles(limb_t* limbs);
-extern bool  mm_process_advanced_traj(limb_t* limbs, const v3d_t* base_pos, float time, int32_t loop, float curvature, float distance, float step_height);
+/// ***************************************************************************
+/// @brief  Move vector on step
+/// @param  src: source vector pos
+/// @param  dst: destination vector pos
+/// @param  max_step: max step for move
+/// @return true - move success, false - vector already reached destination pos
+/// ***************************************************************************
+extern bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step);
+
+
+/// ***************************************************************************
+/// @brief  Move value on step
+/// @param  src: source value
+/// @param  dst: destination value
+/// @param  max_step: max step for move
+/// @return true - move success, false - value already reached destination value
+/// ***************************************************************************
+extern bool mm_move_value(float* src, float dst, float max_step);
+
+/// ***************************************************************************
+/// @brief  Surface compensation
+/// @param  limbs: hexapod limbs
+/// @param  surface_point: surface point
+/// @param  surface_rotate: surface rotate
+/// @return true - calculation success, false - no
+/// ***************************************************************************
+extern bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate);
+
+//  ***************************************************************************
+/// @brief  Calculate angles
+/// @param  limbs: limb_t structure, @ref limb_t
+/// @retval limb_t::link_t::servo_angle
+/// @return true - calculation success, false - no
+//  ***************************************************************************
+extern bool mm_kinematic_calculate_angles(limb_t* limbs);
+
+/// ***************************************************************************
+/// @brief  Process advanced trajectory
+/// @param  limbs: limb_t structure, @ref limb_t
+/// @param  base_pos: base limbs position
+/// @param  time: current motion time [0; 1000]
+/// @param  loop: current motion loop
+/// @param  curvature: trajectory curvature
+/// @param  distance: trajectory distance
+/// @param  step_height: max step height
+/// @retval modify g_limbs::pos
+/// @return true - calculation success, false - no
+/// ***************************************************************************
+extern bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* base_pos, float time, int32_t loop, float curvature, float distance, float step_height);
 
 
 #endif // _MOTION_MATH_H_

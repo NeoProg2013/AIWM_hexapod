@@ -11,8 +11,8 @@
 #include "pwm.h"
 #include "system_monitor.h"
 #include <math.h>
-#include <float.h>
 #define CHANGE_HEIGHT_MAX_STEP                  (0.5f)
+#define CHANGE_ANGLE_MAX_STEP                   (0.5f)
 #define MOTION_DEFAULT_STEP_HEIGHT              (30)
 
 #define MOTION_SURFACE_MIN_HEIGHT               (-15)
@@ -25,20 +25,6 @@
 #define MOTION_TIME_MAX_VALUE                   (1000)
 
 
-static bool load_config(void);
-
-
-
-static const v3d_t limbs_base_pos[] = {
-    {-115, 0, 70}, {-135, 0, 0}, {-115, 0, -70}, // Left side
-    { 115, 0, 70}, { 135, 0, 0}, { 115, 0, -70}  // Right side
-};
-
-
-static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
-static motion_t g_cur_motion = {0};
-static motion_t g_dst_motion = {0};
-
 
 typedef enum {
     HEXAPOD_STATE_DOWN,
@@ -48,13 +34,23 @@ typedef enum {
     HEXAPOD_STATE_DEINIT
 } hexapod_state_t;
 
-hexapod_state_t hexapod_state = HEXAPOD_STATE_RDY;//HEXAPOD_STATE_DOWN;
 
 
-/// ***************************************************************************
-/// @brief  Motion core initialization
-/// @param  start_points: limbs start points list
-/// ***************************************************************************
+static bool load_config(void);
+
+
+
+static const v3d_t limbs_base_pos[] = {
+    {-115, 0, 70}, {-135, 0, 0}, {-115, 0, -70}, // Left side
+    { 115, 0, 70}, { 135, 0, 0}, { 115, 0, -70}  // Right side
+};
+static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
+static motion_t g_cur_motion = {0};
+static motion_t g_dst_motion = {0};
+static hexapod_state_t hexapod_state = HEXAPOD_STATE_RDY;//HEXAPOD_STATE_DOWN;
+
+
+
 void motion_core_init() {
     // Initialize servo driver
     servo_driver_init();
@@ -100,10 +96,6 @@ void motion_core_init() {
     servo_driver_power_on();
 }
 
-/// ***************************************************************************
-/// @brief  Start motion
-/// @param  motion: motion description. @ref motion_t
-/// ***************************************************************************
 void motion_core_move(const motion_t* motion) {
     g_dst_motion = *motion;
     if (g_dst_motion.cfg.step_height == 0) {
@@ -138,10 +130,6 @@ void motion_core_stop(void) {
     g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
 }
 
-/// ***************************************************************************
-/// @brief  Motion core process
-/// @note   Call each PWM period
-/// ***************************************************************************
 void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
 
@@ -153,22 +141,20 @@ void motion_core_process(void) {
     static uint64_t start_time = 0;
     if (hexapod_state == HEXAPOD_STATE_RDY) {
         if (g_dst_motion.cfg.distance) {
-            g_cur_motion.cfg = g_dst_motion.cfg;
+            g_cur_motion.cfg = g_dst_motion.cfg; // Update motion configuration
             hexapod_state = HEXAPOD_STATE_INIT;
         } else if (get_time_ms() - start_time > MOTION_LIMBS_DOWN_TIMEOUT) {
             hexapod_state = HEXAPOD_STATE_DEINIT;
         }
     } 
     else if (hexapod_state == HEXAPOD_STATE_INIT) {
-        bool is_completed = true;
         // Move limbs 0, 2, 4 to up state for even loop
         // Move limbs 1, 3, 5 to up state for odd loop
+        bool is_completed = true;
         for (int32_t i = motion_loop & 0x01; i < SUPPORT_LIMBS_COUNT; i += 2) { 
-            float diff = mm_calc_step(g_limbs[i].pos.y, g_cur_motion.cfg.step_height, CHANGE_HEIGHT_MAX_STEP);
-            if (fabs(diff) > FLT_EPSILON) {
+            if (mm_move_value(&g_limbs[i].pos.y, g_cur_motion.cfg.step_height, CHANGE_HEIGHT_MAX_STEP)) {
                 is_completed = false;
             }
-            g_limbs[i].pos.y += diff;
         }
         if (is_completed) {
             motion_time = MOTION_TIME_MID_VALUE;
@@ -198,14 +184,12 @@ void motion_core_process(void) {
     } 
     else if (hexapod_state == HEXAPOD_STATE_DEINIT) {
         if (g_dst_motion.cfg.distance == 0) {
-            bool is_completed = true;
             // Move all limbs to down state
+            bool is_completed = true;
             for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) { 
-                float diff = mm_calc_step(g_limbs[i].pos.y, 0, CHANGE_HEIGHT_MAX_STEP);
-                if (fabs(diff) > FLT_EPSILON) {
+                if (mm_move_value(&g_limbs[i].pos.y, 0.0f, CHANGE_HEIGHT_MAX_STEP)) {
                     is_completed = false;
                 }
-                g_limbs[i].pos.y += diff;
             }
             if (is_completed) {
                 motion_time = MOTION_TIME_MIN_VALUE;
@@ -218,17 +202,15 @@ void motion_core_process(void) {
     }
 
     // Surface rotate process
-    g_cur_motion.surface_rotate.x += mm_calc_step(g_cur_motion.surface_rotate.x, g_dst_motion.surface_rotate.x, 0.5f);
-    g_cur_motion.surface_rotate.y += mm_calc_step(g_cur_motion.surface_rotate.y, g_dst_motion.surface_rotate.y, 0.5f);
-    g_cur_motion.surface_rotate.z += mm_calc_step(g_cur_motion.surface_rotate.z, g_dst_motion.surface_rotate.z, 0.5f);
+    mm_move_vector(&g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_ANGLE_MAX_STEP);
 
     // Change height process
-    g_cur_motion.surface_point.y += mm_calc_step(g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_HEIGHT_MAX_STEP);
+    mm_move_value(&g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_HEIGHT_MAX_STEP);
     /*if (hexapod_state == HEXAPOD_STATE_MOVE && g_cur_motion.surface_point.y > MOTION_SURFACE_UP_HEIGHT_THRESHOLD) {
         g_cur_motion.surface_point.y = MOTION_SURFACE_UP_HEIGHT_THRESHOLD; // Avoid move body to down while motion is process
     }*/
 
-    // Calculate limbs offset by relatively surface
+    // Calculate limbs offset relatively surface
     if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);

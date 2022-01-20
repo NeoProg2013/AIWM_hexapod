@@ -5,27 +5,69 @@
 #include "project_base.h"
 #include "motion_math.h"
 #include <math.h>
+#include <float.h>
 #define M_PI                                (3.14159265f)
 #define RAD_TO_DEG(rad)                     ((rad) * 180.0f / M_PI)
 #define DEG_TO_RAD(deg)                     ((deg) * M_PI / 180.0f)
+#define IS_EVEN(v)                          ((v & 0x01) == 0)
+#define IS_ODD(v)                           ((v & 0x01) != 0)
 
 
 
-float mm_calc_step(float src, float dst, float max_step) {
-    float diff = dst - src;
-    if (fabs(diff) > max_step) {
-        diff = max_step * (fabs(diff) / diff); // Constrain speed
+bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step) {
+	float x_diff = dst->x - src->x;
+	float y_diff = dst->y - src->y;
+	float z_diff = dst->z - src->z;
+
+    // Search max diff
+	float max_diff_abs = fabs(x_diff);
+	if (max_diff_abs < fabs(y_diff)) {
+		max_diff_abs = fabs(y_diff);
+	}
+	if (max_diff_abs < fabs(z_diff)) {
+		max_diff_abs = fabs(z_diff);
+	}
+    
+    // Move completed?
+    if (max_diff_abs < FLT_EPSILON) {
+        return false;
     }
-    return diff;
+
+    // Constrain step for add remainder
+	if (max_diff_abs < max_step) {
+		max_step = max_diff_abs;
+	}
+
+    // Add step
+    float kx = x_diff / max_diff_abs;
+    float ky = y_diff / max_diff_abs;
+    float kz = z_diff / max_diff_abs;
+    src->x += max_step * kx;
+    src->y += max_step * ky;
+    src->z += max_step * kz;
+    return true;
 }
 
-/// ***************************************************************************
-/// @brief  Surface compensation
-/// @param  limbs: hexapod limbs
-/// @param  surface_point: surface point
-/// @param  rotate: surface rotate
-/// @return true - calculation success, false - no
-/// ***************************************************************************
+bool mm_move_value(float* src, float dst, float max_step) {
+	float diff = dst - *src;
+	float diff_abs = fabs(diff);
+    
+    // Move completed?
+    if (diff_abs < FLT_EPSILON) {
+        return false;
+    }
+
+    // Constrain step for add remainder
+	if (diff_abs < max_step) {
+		max_step = diff_abs;
+	}
+
+    // Add step
+    float k = diff / diff_abs;
+    *src += max_step * k;
+    return true;
+}
+
 bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate) {
     v3d_t n = {0, 1, 0};
 
@@ -60,12 +102,6 @@ bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, con
     return true;
 }
 
-//  ***************************************************************************
-/// @brief  Calculate angles
-/// @param  limbs: limb_t structure, @ref limb_t
-/// @retval limb_t::link_t::servo_angle
-/// @return true - calculation success, false - no
-//  ***************************************************************************
 bool mm_kinematic_calculate_angles(limb_t* limbs) {
     for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         float coxa_zero_rotate_deg  = limbs[i].coxa.zero_rotate;
@@ -109,7 +145,6 @@ bool mm_kinematic_calculate_angles(limb_t* limbs) {
             return false; // Point not attainable
         }
 
-
         // Calculate triangle angles
         float a = tibia_length;
         float b = femur_length;
@@ -132,12 +167,6 @@ bool mm_kinematic_calculate_angles(limb_t* limbs) {
     return true;
 }
 
-/// ***************************************************************************
-/// @brief  Process advanced trajectory
-/// @param  time: current motion time [0; 1000]
-/// @retval modify g_limbs::pos
-/// @return true - calculation success, false - no
-/// ***************************************************************************
 bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* base_pos, float time, int32_t loop, float curvature, float distance, float step_height) {
     // Scale motion time
     time /= 1000.0f;
