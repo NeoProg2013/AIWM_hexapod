@@ -11,14 +11,14 @@
 #include "pwm.h"
 #include "system_monitor.h"
 #include <math.h>
-#define CHANGE_HEIGHT_MAX_STEP                  (0.5f)
-#define CHANGE_ANGLE_MAX_STEP                   (0.5f)
+#define CHANGE_HEIGHT_MAX_STEP                  (1.0f)
+#define CHANGE_ANGLE_MAX_STEP                   (1.5f)
 #define MOTION_DEFAULT_STEP_HEIGHT              (30)
 
 #define MOTION_SURFACE_MIN_HEIGHT               (-15)
 #define MOTION_SURFACE_UP_HEIGHT_THRESHOLD      (-85)
 
-#define MOTION_LIMBS_DOWN_TIMEOUT               (300)
+#define MOTION_LIMBS_DOWN_TIMEOUT               (100)
 
 #define MOTION_TIME_MIN_VALUE                   (0)
 #define MOTION_TIME_MID_VALUE                   (500)
@@ -48,6 +48,7 @@ static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 static motion_t g_cur_motion = {0};
 static motion_t g_dst_motion = {0};
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_RDY;//HEXAPOD_STATE_DOWN;
+static bool is_surface_rotate_completed = false;
 
 
 
@@ -104,6 +105,7 @@ void motion_core_move(const motion_t* motion) {
     if (g_dst_motion.surface_point.y > MOTION_SURFACE_MIN_HEIGHT) {
         g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
     }
+    servo_driver_set_speed(g_dst_motion.cfg.speed);
     /*if (hexapod_state == HEXAPOD_STATE_DOWN) {
         g_dst_motion.curvature = 0;
         g_dst_motion.distance = 0;
@@ -117,17 +119,27 @@ void motion_core_move(const motion_t* motion) {
     }*/
 }
 
-void motion_core_stop(void) {
-    g_dst_motion.surface_rotate.x = 0;
-    g_dst_motion.surface_rotate.y = 0;
-    g_dst_motion.surface_rotate.z = 0;
-    g_dst_motion.surface_point.x = 0;
-    g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
-    g_dst_motion.surface_point.z = 0;
-    g_dst_motion.cfg.curvature = 0;
-    g_dst_motion.cfg.distance = 0;
-    g_dst_motion.cfg.speed = 0;
-    g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
+bool motion_core_is_rotate_completed(void) {
+    return is_surface_rotate_completed;
+}
+
+motion_t motion_core_get_current_motion(void) {
+    return g_dst_motion;
+}
+
+motion_t motion_core_get_stop_motion(void) {
+    motion_t stop_motion = {0};
+    stop_motion.surface_rotate.x = 0;
+    stop_motion.surface_rotate.y = 0;
+    stop_motion.surface_rotate.z = 0;
+    stop_motion.surface_point.x = 0;
+    stop_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
+    stop_motion.surface_point.z = 0;
+    stop_motion.cfg.curvature = 0;
+    stop_motion.cfg.distance = 0;
+    stop_motion.cfg.speed = 0;
+    stop_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
+    return stop_motion;
 }
 
 void motion_core_process(void) {
@@ -172,7 +184,7 @@ void motion_core_process(void) {
                 sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
                 return;
             }
-            motion_time += 5;
+            motion_time += 20;
             if (motion_time > MOTION_TIME_MAX_VALUE) {
                 motion_time = MOTION_TIME_MIN_VALUE;
                 ++motion_loop;
@@ -202,7 +214,7 @@ void motion_core_process(void) {
     }
 
     // Surface rotate process
-    mm_move_vector(&g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_ANGLE_MAX_STEP);
+    is_surface_rotate_completed = !mm_move_vector(&g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_ANGLE_MAX_STEP);
 
     // Change height process
     mm_move_value(&g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_HEIGHT_MAX_STEP);
@@ -234,8 +246,8 @@ void motion_core_process(void) {
     void* tx_buffer = cli_get_tx_buffer();
     sprintf(tx_buffer, "[MCORE]: %d %d,%d,%d,%d,%d,%d   %d,%d,%d\r\n", 
             (int32_t)get_time_ms(),
-            (int32_t)(g_limbs[0].pos.y * 100), (int32_t)(g_limbs[1].pos.y * 100),(int32_t)(g_limbs[2].pos.y * 100),
-            (int32_t)(g_limbs[3].pos.y * 100), (int32_t)(g_limbs[4].pos.y * 100),(int32_t)(g_limbs[5].pos.y * 100),
+            (int32_t)(g_limbs[0].surface_offsets.y), (int32_t)(g_limbs[1].surface_offsets.y),(int32_t)(g_limbs[2].surface_offsets.y),
+            (int32_t)(g_limbs[3].surface_offsets.y), (int32_t)(g_limbs[4].surface_offsets.y),(int32_t)(g_limbs[5].surface_offsets.y),
             (int32_t)g_cur_motion.surface_rotate.x, (int32_t)g_cur_motion.surface_rotate.y, (int32_t)g_cur_motion.surface_rotate.z);
     cli_send_data(NULL);
 }

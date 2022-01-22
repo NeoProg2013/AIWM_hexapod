@@ -30,7 +30,19 @@ extern void motion_core_init(void);
 /// @param  motion: motion description. @ref motion_t
 /// ***************************************************************************
 extern void motion_core_move(const motion_t* motion);
-extern void motion_core_stop(void);
+
+/// ***************************************************************************
+/// @brief  Check surface rotate completed
+/// @return true - rotate completed, false - otherwise
+/// ***************************************************************************
+extern bool motion_core_is_rotate_completed(void);
+
+/// ***************************************************************************
+/// @brief  Get current\stop motion parameters
+/// @return Copy of motion parameters
+/// ***************************************************************************
+extern motion_t motion_core_get_current_motion(void);
+extern motion_t motion_core_get_stop_motion(void);
 
 /// ***************************************************************************
 /// @brief  Motion core process

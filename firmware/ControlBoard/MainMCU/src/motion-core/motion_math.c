@@ -70,21 +70,30 @@ bool mm_move_value(float* src, float dst, float max_step) {
 
 bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate) {
     v3d_t n = {0, 1, 0};
+    float x = 0;
+	float y = 0;
+	float z = 0;
 
-    // Rotate normal by axis X
-    float surface_x_rotate_rad = DEG_TO_RAD(surface_rotate->x);
-    n.y = n.y * cosf(surface_x_rotate_rad) - n.z * sinf(surface_x_rotate_rad);
-    n.z = n.y * sinf(surface_x_rotate_rad) + n.z * cosf(surface_x_rotate_rad);
+	// Rotate normal by axis X
+	float surface_x_rotate_rad = DEG_TO_RAD(surface_rotate->x);
+	y = n.y * cosf(surface_x_rotate_rad) + n.z * sinf(surface_x_rotate_rad);
+	z = n.y * sinf(surface_x_rotate_rad) - n.z * cosf(surface_x_rotate_rad);
+	n.y = y;
+	n.z = z;
 
-    // Rotate normal by axis Z
-    float surface_z_rotate_rad = DEG_TO_RAD(surface_rotate->z);
-    n.x = n.x * cosf(surface_z_rotate_rad) - n.y * sinf(surface_z_rotate_rad);
-    n.y = n.x * sinf(surface_z_rotate_rad) + n.y * cosf(surface_z_rotate_rad);
+	// Rotate normal by axis Z
+	float surface_z_rotate_rad = DEG_TO_RAD(surface_rotate->z);
+	x = n.x * cosf(surface_z_rotate_rad) - n.y * sinf(surface_z_rotate_rad);
+	y = n.x * sinf(surface_z_rotate_rad) + n.y * cosf(surface_z_rotate_rad);
+	n.x = x;
+	n.y = y;
 
-    // Rotate normal by axis Y
-    float surface_y_rotate_rad = DEG_TO_RAD(surface_rotate->y);
-    n.x =  n.x * cosf(surface_y_rotate_rad) + n.z * sinf(surface_y_rotate_rad);
-    n.z = -n.x * sinf(surface_y_rotate_rad) + n.z * cosf(surface_y_rotate_rad);
+	// Rotate normal by axis Y
+	float surface_y_rotate_rad = DEG_TO_RAD(surface_rotate->y);
+	x =  n.x * cosf(surface_y_rotate_rad) + n.z * sinf(surface_y_rotate_rad);
+	z = -n.x * sinf(surface_y_rotate_rad) + n.z * cosf(surface_y_rotate_rad);
+	n.x = x;
+	n.z = z;
 
     // For avoid divide by zero
     if (n.y == 0) {

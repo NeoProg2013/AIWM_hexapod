@@ -61,11 +61,9 @@ void swlp_init(void) {
 /// @retval tx_buffer
 /// @return bytes for transmit from tx_buffer
 //  ***************************************************************************
-motion_t motion = {
-    {0, 0, 0},
-    {0, 0, 0},
-    {.speed = 0, .curvature = 0, .distance = 0, .step_height = 0}
-};
+
+bool direction = true;
+bool is_init = false;
 
 void swlp_process(void) {
     
@@ -92,83 +90,110 @@ void swlp_process(void) {
         memset(swlp_tx_frame, 0, sizeof(swlp_frame_t));
         
         // Process command
+        motion_t motion = motion_core_get_current_motion();
         response->command_status = SWLP_CMD_STATUS_OK;
         switch (request->command) {
             case SWLP_CMD_NONE:
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP:
-                motion.surface_point.y -= 85;
-                motion_core_move(&motion);
+                motion.surface_point.y = -85;
+                motion.cfg.speed = 100;
                 //sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
-                motion.surface_point.y += 85;
-                motion_core_move(&motion);
+                motion.surface_point.y = -15;
+                motion.cfg.speed = 30;
                 //sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_MOVE:
-                //sequences_engine_select_sequence(SEQUENCE_MOVE, request->motion_speed, request->curvature, request->distance);
+                motion.cfg.speed = request->motion_speed;
+                motion.cfg.curvature = request->curvature;
+                motion.cfg.distance = request->distance;
+                motion.cfg.step_height = 50;
+                //sequences_engine_select_sequence(SEQUENCE_MOVE, , request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
 
                 //sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL:
-                motion.surface_rotate.x = 10;
-                motion.surface_rotate.y += 20;
-                motion.surface_rotate.z = 0;
-                motion.cfg.distance = 0;
-                motion.cfg.curvature = 0;
-                motion_core_move(&motion);
+                if (!is_init) {
+                    motion.surface_rotate.x = 15;
+                    motion.cfg.distance = 0;
+                    motion.cfg.curvature = 0;
+                    motion.cfg.speed = 100;
+                    is_init = true;
+                } else {
+                    if (motion_core_is_rotate_completed()) {
+                        if (direction) {
+                            motion.surface_rotate.y = 360 * 10;
+                        } else {
+                            motion.surface_rotate.y = 0;
+                        }
+                      
+                        direction = !direction;
+                    }
+                }
+                /*if (motion_core_is_rotate_completed()) {
+                    if (direction) {
+                        motion.surface_rotate.x = 10;
+                        motion.surface_rotate.y += 20;
+                        motion.surface_rotate.z = 0;
+                        motion.cfg.distance = 0;
+                        motion.cfg.curvature = 0;
+                    } else {
+                        motion.surface_rotate.x = 10;
+                        motion.surface_rotate.y -= 20;
+                        motion.surface_rotate.z = 0;
+                        motion.cfg.distance = 0;
+                        motion.cfg.curvature = 0;
+                    }
+                    motion_core_move(&motion);
+                    
+                    if (motion.surface_rotate.y >= 360 && direction) {
+                        direction = false;
+                    }
+                    if (motion.surface_rotate.y <= 0 && !direction) {
+                        direction = true;
+                    }
+                }*/
                 //sequences_engine_select_sequence(SEQUENCE_PUSH_PULL, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
-                motion.cfg.distance = 50;
-                motion.cfg.curvature = 1;
-                motion.cfg.step_height = 30;
-                motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
-                motion.cfg.distance = -50;
-                motion.cfg.curvature = 1;
-                motion.cfg.step_height = 30;
-                motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DANCE:
-                motion.cfg.distance = 0;
-                motion.cfg.curvature = 1;
-                motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_DANCE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:
                 motion.surface_rotate.x = 15;
                 motion.surface_rotate.y = 0;
                 motion.surface_rotate.z = 0;
-                motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ROTATE_X, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:
                 motion.surface_rotate.x = 15;
                 motion.surface_rotate.y = 45;
                 motion.surface_rotate.z = 0;
-                motion_core_move(&motion);
                 //sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_NONE:
                 motion.surface_rotate.x = 0;
                 motion.surface_rotate.y = 0;
                 motion.surface_rotate.z = 0;
-                motion.cfg.distance = 0;
                 motion.cfg.curvature = 0;
-                motion_core_move(&motion);
+                motion.cfg.distance = 0;
+                is_init = false;
                 //sequences_engine_select_sequence(SEQUENCE_NONE, request->motion_speed, request->curvature, request->distance);
                 break;
                 
             default:
                 response->command_status = SWLP_CMD_STATUS_ERROR;
         }
+        motion_core_move(&motion);
 
         // Prepare status payload
         response->command = request->command;
