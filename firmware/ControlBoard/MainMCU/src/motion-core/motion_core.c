@@ -215,6 +215,24 @@ void motion_core_process(void) {
 
     // Surface rotate process
     is_surface_rotate_completed = !mm_move_vector(&g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_ANGLE_MAX_STEP);
+    if (g_cur_motion.surface_rotate.x > 360.0f) {
+        g_cur_motion.surface_rotate.x -= 360.0f;
+    }
+    if (g_cur_motion.surface_rotate.y > 360.0f) {
+        g_cur_motion.surface_rotate.y -= 360.0f;
+    }
+    if (g_cur_motion.surface_rotate.z > 360.0f) {
+        g_cur_motion.surface_rotate.z -= 360.0f;
+    }
+    if (g_cur_motion.surface_rotate.x < 0.0f) {
+        g_cur_motion.surface_rotate.x += 360.0f;
+    }
+    if (g_cur_motion.surface_rotate.y < 0.0f) {
+        g_cur_motion.surface_rotate.y += 360.0f;
+    }
+    if (g_cur_motion.surface_rotate.z < 0.0f) {
+        g_cur_motion.surface_rotate.z += 360.0f;
+    }
 
     // Change height process
     mm_move_value(&g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_HEIGHT_MAX_STEP);

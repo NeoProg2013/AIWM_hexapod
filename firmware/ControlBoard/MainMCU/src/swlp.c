@@ -126,7 +126,7 @@ void swlp_process(void) {
                 } else {
                     if (motion_core_is_rotate_completed()) {
                         if (direction) {
-                            motion.surface_rotate.y = 360 * 10;
+                            motion.surface_rotate.y = 361;
                         } else {
                             motion.surface_rotate.y = 0;
                         }
