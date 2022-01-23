@@ -62,7 +62,7 @@ void swlp_init(void) {
 /// @return bytes for transmit from tx_buffer
 //  ***************************************************************************
 
-bool direction = true;
+bool direction = false;
 bool is_init = false;
 
 void swlp_process(void) {
@@ -98,12 +98,10 @@ void swlp_process(void) {
             case SWLP_CMD_SELECT_SEQUENCE_UP:
                 motion.surface_point.y = -85;
                 motion.cfg.speed = 100;
-                //sequences_engine_select_sequence(SEQUENCE_UP, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
                 motion.surface_point.y = -15;
                 motion.cfg.speed = 30;
-                //sequences_engine_select_sequence(SEQUENCE_DOWN, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_MOVE:
                 motion.cfg.speed = request->motion_speed;
@@ -125,7 +123,7 @@ void swlp_process(void) {
                     is_init = true;
                 } else {
                     if (motion_core_is_rotate_completed()) {
-                        if (direction) {
+                        if (!direction) {
                             motion.surface_rotate.y = 361;
                         } else {
                             motion.surface_rotate.y = 0;
@@ -134,30 +132,6 @@ void swlp_process(void) {
                         direction = !direction;
                     }
                 }
-                /*if (motion_core_is_rotate_completed()) {
-                    if (direction) {
-                        motion.surface_rotate.x = 10;
-                        motion.surface_rotate.y += 20;
-                        motion.surface_rotate.z = 0;
-                        motion.cfg.distance = 0;
-                        motion.cfg.curvature = 0;
-                    } else {
-                        motion.surface_rotate.x = 10;
-                        motion.surface_rotate.y -= 20;
-                        motion.surface_rotate.z = 0;
-                        motion.cfg.distance = 0;
-                        motion.cfg.curvature = 0;
-                    }
-                    motion_core_move(&motion);
-                    
-                    if (motion.surface_rotate.y >= 360 && direction) {
-                        direction = false;
-                    }
-                    if (motion.surface_rotate.y <= 0 && !direction) {
-                        direction = true;
-                    }
-                }*/
-                //sequences_engine_select_sequence(SEQUENCE_PUSH_PULL, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
                 //sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
@@ -169,15 +143,41 @@ void swlp_process(void) {
                 //sequences_engine_select_sequence(SEQUENCE_DANCE, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:
-                motion.surface_rotate.x = 15;
-                motion.surface_rotate.y = 0;
-                motion.surface_rotate.z = 0;
+                if (!is_init) {
+                    motion.surface_rotate.x = 0;
+                    motion.surface_rotate.y = 0;
+                    motion.surface_rotate.z = 0;
+                    is_init = true;
+                } else {
+                    if (motion_core_is_rotate_completed()) {
+                        if (!direction) {
+                            motion.surface_rotate.x = 20;
+                            
+                        } else {
+                            motion.surface_rotate.x = -20;
+                        }
+                        motion.cfg.speed = 80;
+                    }
+                }
                 //sequences_engine_select_sequence(SEQUENCE_ROTATE_X, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:
-                motion.surface_rotate.x = 15;
-                motion.surface_rotate.y = 45;
-                motion.surface_rotate.z = 0;
+                if (!is_init) {
+                    motion.surface_rotate.x = 0;
+                    motion.surface_rotate.y = 0;
+                    motion.surface_rotate.z = 0;
+                    is_init = true;
+                } else {
+                    if (motion_core_is_rotate_completed()) {
+                        if (!direction) {
+                            motion.surface_rotate.z = 20;
+                            
+                        } else {
+                            motion.surface_rotate.z = -20;
+                        }
+                        motion.cfg.speed = 80;
+                    }
+                }
                 //sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, request->motion_speed, request->curvature, request->distance);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_NONE:
@@ -187,6 +187,7 @@ void swlp_process(void) {
                 motion.cfg.curvature = 0;
                 motion.cfg.distance = 0;
                 is_init = false;
+                direction = false;
                 //sequences_engine_select_sequence(SEQUENCE_NONE, request->motion_speed, request->curvature, request->distance);
                 break;
                 

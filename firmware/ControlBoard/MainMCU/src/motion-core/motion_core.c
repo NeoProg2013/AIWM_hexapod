@@ -224,13 +224,13 @@ void motion_core_process(void) {
     if (g_cur_motion.surface_rotate.z > 360.0f) {
         g_cur_motion.surface_rotate.z -= 360.0f;
     }
-    if (g_cur_motion.surface_rotate.x < 0.0f) {
+    if (g_cur_motion.surface_rotate.x < -360.0f) {
         g_cur_motion.surface_rotate.x += 360.0f;
     }
-    if (g_cur_motion.surface_rotate.y < 0.0f) {
+    if (g_cur_motion.surface_rotate.y < -360.0f) {
         g_cur_motion.surface_rotate.y += 360.0f;
     }
-    if (g_cur_motion.surface_rotate.z < 0.0f) {
+    if (g_cur_motion.surface_rotate.z < -360.0f) {
         g_cur_motion.surface_rotate.z += 360.0f;
     }
 
