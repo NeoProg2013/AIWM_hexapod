@@ -194,12 +194,12 @@ void TIM17_IRQHandler(void) {
             return;
         }
 
-        // Sync shadow buffer with active buffer if it unlock
+        // Sync shadow buffer with active buffer if it unlocked
         if (shadow_buffer_is_locked == false) {
             memcpy(active_buffer, shadow_buffer, sizeof(active_buffer));
         }
 
-        // Sorting PWM channels: bubble sorting method
+        // Sorting PWM channels: bubble sorting method for time stable
         for (uint32_t i = 0; i < SUPPORT_PWM_CHANNELS_COUNT - 1; ++i) {
             for (uint32_t j = 0; j < SUPPORT_PWM_CHANNELS_COUNT - i - 1; ++j) {
                 if (active_buffer_ptr[j]->ticks > active_buffer_ptr[j + 1]->ticks) {

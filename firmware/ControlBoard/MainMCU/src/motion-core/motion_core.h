@@ -32,10 +32,10 @@ extern void motion_core_init(void);
 extern void motion_core_move(const motion_t* motion);
 
 /// ***************************************************************************
-/// @brief  Check surface rotate completed
-/// @return true - rotate completed, false - otherwise
+/// @brief  Check surface move completed
+/// @return true - completed, false - otherwise
 /// ***************************************************************************
-extern bool motion_core_is_rotate_completed(void);
+extern bool motion_core_is_surface_move_completed(void);
 
 /// ***************************************************************************
 /// @brief  Get current\stop motion parameters

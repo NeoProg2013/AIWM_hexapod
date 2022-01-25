@@ -11,8 +11,7 @@
 #include "pwm.h"
 #include "system_monitor.h"
 #include <math.h>
-#define CHANGE_HEIGHT_MAX_STEP                  (1.0f)
-#define CHANGE_ANGLE_MAX_STEP                   (1.5f)
+#define CHANGE_SURFACE_POS_MAX_STEP             (1.5f)
 #define MOTION_DEFAULT_STEP_HEIGHT              (30)
 
 #define MOTION_SURFACE_MIN_HEIGHT               (-15)
@@ -48,7 +47,7 @@ static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 static motion_t g_cur_motion = {0};
 static motion_t g_dst_motion = {0};
 static hexapod_state_t hexapod_state = HEXAPOD_STATE_RDY;//HEXAPOD_STATE_DOWN;
-static bool is_surface_rotate_completed = false;
+static bool is_surface_move_completed = false;
 
 
 
@@ -119,8 +118,8 @@ void motion_core_move(const motion_t* motion) {
     }*/
 }
 
-bool motion_core_is_rotate_completed(void) {
-    return is_surface_rotate_completed;
+bool motion_core_is_surface_move_completed(void) {
+    return is_surface_move_completed;
 }
 
 motion_t motion_core_get_current_motion(void) {
@@ -163,8 +162,8 @@ void motion_core_process(void) {
         // Move limbs 0, 2, 4 to up state for even loop
         // Move limbs 1, 3, 5 to up state for odd loop
         bool is_completed = true;
-        for (int32_t i = motion_loop & 0x01; i < SUPPORT_LIMBS_COUNT; i += 2) { 
-            if (mm_move_value(&g_limbs[i].pos.y, g_cur_motion.cfg.step_height, CHANGE_HEIGHT_MAX_STEP)) {
+        for (int32_t i = motion_loop & 0x01; i < SUPPORT_LIMBS_COUNT; i += 2) {
+            if (mm_move_value(&g_limbs[i].pos.y, g_cur_motion.cfg.step_height, CHANGE_SURFACE_POS_MAX_STEP)) {
                 is_completed = false;
             }
         }
@@ -199,7 +198,7 @@ void motion_core_process(void) {
             // Move all limbs to down state
             bool is_completed = true;
             for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) { 
-                if (mm_move_value(&g_limbs[i].pos.y, 0.0f, CHANGE_HEIGHT_MAX_STEP)) {
+                if (mm_move_value(&g_limbs[i].pos.y, 0.0f, CHANGE_SURFACE_POS_MAX_STEP)) {
                     is_completed = false;
                 }
             }
@@ -213,29 +212,12 @@ void motion_core_process(void) {
         }
     }
 
-    // Surface rotate process
-    is_surface_rotate_completed = !mm_move_vector(&g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_ANGLE_MAX_STEP);
-    if (g_cur_motion.surface_rotate.x > 360.0f) {
-        g_cur_motion.surface_rotate.x -= 360.0f;
-    }
-    if (g_cur_motion.surface_rotate.y > 360.0f) {
-        g_cur_motion.surface_rotate.y -= 360.0f;
-    }
-    if (g_cur_motion.surface_rotate.z > 360.0f) {
-        g_cur_motion.surface_rotate.z -= 360.0f;
-    }
-    if (g_cur_motion.surface_rotate.x < -360.0f) {
-        g_cur_motion.surface_rotate.x += 360.0f;
-    }
-    if (g_cur_motion.surface_rotate.y < -360.0f) {
-        g_cur_motion.surface_rotate.y += 360.0f;
-    }
-    if (g_cur_motion.surface_rotate.z < -360.0f) {
-        g_cur_motion.surface_rotate.z += 360.0f;
-    }
+    // Surface moving process
+    is_surface_move_completed = !mm_move_surface(&g_cur_motion.surface_point, &g_dst_motion.surface_point, 
+                                                 &g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_SURFACE_POS_MAX_STEP);
 
     // Change height process
-    mm_move_value(&g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_HEIGHT_MAX_STEP);
+    //is_surface_move_completed = !mm_move_value(&g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_SURFACE_POS_MAX_STEP);
     /*if (hexapod_state == HEXAPOD_STATE_MOVE && g_cur_motion.surface_point.y > MOTION_SURFACE_UP_HEIGHT_THRESHOLD) {
         g_cur_motion.surface_point.y = MOTION_SURFACE_UP_HEIGHT_THRESHOLD; // Avoid move body to down while motion is process
     }*/

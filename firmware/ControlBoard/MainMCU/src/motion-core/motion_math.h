@@ -27,15 +27,6 @@ typedef struct {
 } limb_t;
 
 
-/// ***************************************************************************
-/// @brief  Move vector on step
-/// @param  src: source vector pos
-/// @param  dst: destination vector pos
-/// @param  max_step: max step for move
-/// @return true - move success, false - vector already reached destination pos
-/// ***************************************************************************
-extern bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step);
-
 
 /// ***************************************************************************
 /// @brief  Move value on step
@@ -45,6 +36,26 @@ extern bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step);
 /// @return true - move success, false - value already reached destination value
 /// ***************************************************************************
 extern bool mm_move_value(float* src, float dst, float max_step);
+
+/// ***************************************************************************
+/// @brief  Move vector on step
+/// @param  src: source vector pos
+/// @param  dst: destination vector pos
+/// @param  max_step: max step for move
+/// @return true - move success, false - vector already reached destination pos
+/// ***************************************************************************
+extern bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step);
+
+/// ***************************************************************************
+/// @brief  Move surface on step
+/// @param  src_p: source surface point pos
+/// @param  dst_p: destination surface point pos
+/// @param  src_r: source surface rotation
+/// @param  dst_r: destination surface rotation
+/// @param  max_step: max step for move
+/// @return true - move success, false - furface already reached destination pos
+/// ***************************************************************************
+extern bool mm_move_surface(p3d_t* src_p, const p3d_t* dst_p, r3d_t* src_r, const r3d_t* dst_r, float max_step);
 
 /// ***************************************************************************
 /// @brief  Surface compensation

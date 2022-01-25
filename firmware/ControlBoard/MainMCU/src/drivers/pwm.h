@@ -12,7 +12,7 @@
 #define SUPPORT_PWM_CHANNELS_COUNT                  (18)
 
 #define PWM_START_FREQUENCY_HZ                      (200)
-#define PWM_MIN_FREQUENCY_HZ                        (70)
+#define PWM_MIN_FREQUENCY_HZ                        (60)
 #define PWM_MAX_FREQUENCY_HZ                        (200)
 
 

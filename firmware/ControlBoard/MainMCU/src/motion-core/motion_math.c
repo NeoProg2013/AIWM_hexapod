@@ -14,6 +14,26 @@
 
 
 
+
+bool mm_move_value(float* src, float dst, float max_step) {
+	float diff = dst - *src;
+	float diff_abs = fabs(diff);
+    
+    // Move completed?
+    if (diff_abs < FLT_EPSILON) {
+        return false;
+    }
+
+    // Constrain step for add remainder
+	if (diff_abs < max_step) {
+		max_step = diff_abs;
+	}
+
+    // Add step
+    *src += max_step * (diff / diff_abs);
+    return true;
+}
+
 bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step) {
 	float x_diff = dst->x - src->x;
 	float y_diff = dst->y - src->y;
@@ -39,33 +59,58 @@ bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step) {
 	}
 
     // Add step
-    float kx = x_diff / max_diff_abs;
-    float ky = y_diff / max_diff_abs;
-    float kz = z_diff / max_diff_abs;
-    src->x += max_step * kx;
-    src->y += max_step * ky;
-    src->z += max_step * kz;
+    src->x += max_step * (x_diff / max_diff_abs);
+    src->y += max_step * (y_diff / max_diff_abs);
+    src->z += max_step * (z_diff / max_diff_abs);
     return true;
 }
 
-bool mm_move_value(float* src, float dst, float max_step) {
-	float diff = dst - *src;
-	float diff_abs = fabs(diff);
-    
-    // Move completed?
-    if (diff_abs < FLT_EPSILON) {
-        return false;
-    }
+bool mm_move_surface(p3d_t* src_p, const p3d_t* dst_p, r3d_t* src_r, const r3d_t* dst_r, float max_step) {
+	float diff[6] = { 0 };
+	diff[0] = dst_p->x - src_p->x;
+	diff[1] = dst_p->y - src_p->y;
+	diff[2] = dst_p->z - src_p->z;
+	diff[3] = dst_r->x - src_r->x;
+	diff[4] = dst_r->y - src_r->y;
+	diff[5] = dst_r->z - src_r->z;
 
-    // Constrain step for add remainder
-	if (diff_abs < max_step) {
-		max_step = diff_abs;
+	// Search max diff
+	float max_diff_abs = fabs(diff[0]);
+	for (int i = 1; i < sizeof(diff) / sizeof(diff[0]); ++i) {
+		if (max_diff_abs < fabs(diff[i])) {
+			max_diff_abs = fabs(diff[i]);
+		}
 	}
 
-    // Add step
-    float k = diff / diff_abs;
-    *src += max_step * k;
-    return true;
+	// Move completed?
+	if (max_diff_abs < FLT_EPSILON) {
+		return false;
+	}
+
+	// Constrain step for add remainder
+	if (max_diff_abs < max_step) {
+		max_step = max_diff_abs;
+	}
+
+	// Add step
+	src_p->x += max_step * (diff[0] / max_diff_abs);
+	src_p->y += max_step * (diff[1] / max_diff_abs);
+	src_p->z += max_step * (diff[2] / max_diff_abs);
+	src_r->x += max_step * (diff[3] / max_diff_abs);
+	src_r->y += max_step * (diff[4] / max_diff_abs);
+	src_r->z += max_step * (diff[5] / max_diff_abs);
+    
+    // Constrain surface rotation angles value
+    if (fabs(src_r->x) > 360.0f) {
+        src_r->x += -360.0f;
+    }
+    if (fabs(src_r->y) > 360.0f) {
+        src_r->y += -360.0f;
+    } 
+    if (fabs(src_r->z) > 360.0f) {
+        src_r->z += -360.0f;
+    }
+	return true;
 }
 
 bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate) {
@@ -104,9 +149,9 @@ bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, con
     // Nx(x - x0) + Ny(y - y0) + Nz(z - 0z) = 0
     // y = (-Nx(x - x0) - Nz(z - z0)) / Ny + y0
     for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        limbs[i].surface_offsets.x = 0;
-        limbs[i].surface_offsets.y = (-n.z * (surface_point->z - limbs[i].pos.z) - n.x * (surface_point->x - limbs[i].pos.x)) / n.y + surface_point->y;
-        limbs[i].surface_offsets.z = 0;
+        limbs[i].surface_offsets.x = surface_point->x;
+        limbs[i].surface_offsets.z = surface_point->z;
+        limbs[i].surface_offsets.y = -(n.x * (limbs[i].pos.x - surface_point->x) + n.z * (limbs[i].pos.z - surface_point->z)) / n.y + surface_point->y;
     }
     return true;
 }
