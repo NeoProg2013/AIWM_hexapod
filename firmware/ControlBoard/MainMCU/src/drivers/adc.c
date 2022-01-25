@@ -3,7 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "adc.h"
-#include "project_base.h"
+#include "project-base.h"
 #include "stm32f373xc.h"
 #include "systimer.h"
 #define ADC_INPUT_1_PIN                 GPIOC, 3

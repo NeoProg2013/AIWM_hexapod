@@ -1,13 +1,13 @@
 /// ***************************************************************************
-/// @file    servo_driver.c
+/// @file    servo-driver.c
 /// @author  NeoProg
 /// ***************************************************************************
-#include "servo_driver.h"
-#include "project_base.h"
+#include "servo-driver.h"
+#include "project-base.h"
 #include "configurator.h"
 #include "cli.h"
 #include "pwm.h"
-#include "system_monitor.h"
+#include "system-monitor.h"
 #include "systimer.h"
 
 #define SERVO_POWER_EN_PIN                      GPIOC, 2

@@ -1,9 +1,9 @@
 //  ***************************************************************************
-/// @file    motion_core.c
+/// @file    motion-core.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "project_base.h"
-#include "motion_math.h"
+#include "project-base.h"
+#include "motion-math.h"
 #include <math.h>
 #include <float.h>
 #define M_PI                                (3.14159265f)

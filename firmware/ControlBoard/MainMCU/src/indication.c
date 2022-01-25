@@ -3,8 +3,8 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "indication.h"
-#include "project_base.h"
-#include "system_monitor.h"
+#include "project-base.h"
+#include "system-monitor.h"
 #include "systimer.h"
 
 #define LED_R_PIN                   GPIOC, 13

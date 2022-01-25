@@ -4,7 +4,7 @@
 /// ***************************************************************************
 #include "pwm.h"
 #include "stm32f373xc.h"
-#include "project_base.h"
+#include "project-base.h"
 #include <string.h>
 #define PWM_CHANNEL_DISABLE_VALUE       (0xFFFF)
 #define PWM_CHANNEL_PULSE_TRIM          (3)

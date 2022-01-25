@@ -3,7 +3,7 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "i2c1.h"
-#include "project_base.h"
+#include "project-base.h"
 #include "systimer.h"
 
 #define I2C_SCL_PIN                     GPIOB, 8

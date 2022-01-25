@@ -3,13 +3,12 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "cli.h"
-#include "project_base.h"
+#include "project-base.h"
 #include "usart1.h"
-#include "system_monitor.h"
-#include "communication.h"
+#include "system-monitor.h"
 #include "configurator.h"
-#include "servo_driver.h"
-#include "motion_core.h"
+#include "servo-driver.h"
+#include "motion-core.h"
 #include "indication.h"
 #include "smcu.h"
 #include "version.h"

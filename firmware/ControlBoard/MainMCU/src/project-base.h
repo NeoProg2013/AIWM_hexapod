@@ -1,5 +1,5 @@
 //  ***************************************************************************
-/// @file    project_base.c
+/// @file    project-base.c
 /// @author  NeoProg
 /// @brief   Contain basic information and declarations. Should be include to all project files
 //  ***************************************************************************

@@ -2,13 +2,13 @@
 /// @file    main.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "project_base.h"
+#include "project-base.h"
 #include "configurator.h"
-#include "system_monitor.h"
+#include "system-monitor.h"
 #include "swlp.h"
 #include "cli.h"
-#include "servo_driver.h"
-#include "motion_core.h"
+#include "servo-driver.h"
+#include "motion-core.h"
 #include "indication.h"
 #include "display.h"
 #include "smcu.h"

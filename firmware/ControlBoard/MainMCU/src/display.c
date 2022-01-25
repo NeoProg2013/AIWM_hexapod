@@ -3,9 +3,9 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "display.h"
-#include "project_base.h"
-#include "oled_gl.h"
-#include "system_monitor.h"
+#include "project-base.h"
+#include "oled-gl.h"
+#include "system-monitor.h"
 #include "systimer.h"
 #include "version.h"
 

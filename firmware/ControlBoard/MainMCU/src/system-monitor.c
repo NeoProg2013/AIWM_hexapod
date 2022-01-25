@@ -2,8 +2,8 @@
 /// @file    system_status.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "system_monitor.h"
-#include "project_base.h"
+#include "system-monitor.h"
+#include "project-base.h"
 #include "adc.h"
 #include "configurator.h"
 #include "systimer.h"

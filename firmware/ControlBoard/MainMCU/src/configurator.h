@@ -7,7 +7,7 @@
 #define _CONFIGURATOR_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "memory_map.h"
+#include "memory-map.h"
 #include "cli.h"
 
 

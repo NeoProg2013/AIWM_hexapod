@@ -1,16 +1,16 @@
 //  ***************************************************************************
-/// @file    oled_gl.c
+/// @file    oled-gl.c
 /// @author  NeoProg
 //  ***************************************************************************
-#include "oled_gl.h"
+#include "oled-gl.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include "ssd1306_128x64.h"
-#include "oled_gl_font_6x8.h"
+#include "ssd1306-128x64.h"
+#include "oled-gl-font-6x8.h"
 #include "systimer.h"
-#include "system_monitor.h"
+#include "system-monitor.h"
 
 
 typedef enum {

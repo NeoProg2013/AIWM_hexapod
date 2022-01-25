@@ -1,11 +1,10 @@
 //  ***************************************************************************
-/// @file    oled_gl.h
+/// @file    oled-gl.h
 /// @author  NeoProg
 /// @brief   OLED display graphic library
 //  ***************************************************************************
 #ifndef _OLED_GL_H_
 #define _OLED_GL_H_
-
 #include <stdint.h>
 #include <stdbool.h>
 

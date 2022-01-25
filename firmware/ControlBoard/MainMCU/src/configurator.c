@@ -3,10 +3,10 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "configurator.h"
-#include "project_base.h"
-#include "memory_map.h"
+#include "project-base.h"
+#include "memory-map.h"
 #include "i2c1.h"
-#include "system_monitor.h"
+#include "system-monitor.h"
 #include "systimer.h"
 
 #define STORAGE_DEVICE_ADDRESS              (0xA0)

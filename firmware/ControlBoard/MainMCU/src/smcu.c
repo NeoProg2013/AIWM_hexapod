@@ -3,10 +3,10 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "smcu.h"
-#include "project_base.h"
+#include "project-base.h"
 #include "usart3.h"
 #include "cli.h"
-#include "system_monitor.h"
+#include "system-monitor.h"
 #include "systimer.h"
 #define COMMUNICATION_BAUD_RATE             (500000)
 #define COMMUNICATION_TIMEOUT               (50) // ms

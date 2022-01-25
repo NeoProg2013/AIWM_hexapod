@@ -3,13 +3,13 @@
 /// @author  NeoProg
 //  ***************************************************************************
 #include "swlp.h"
-#include "project_base.h"
-#include "swlp_protocol.h"
+#include "project-base.h"
+#include "swlp-protocol.h"
 #include "usart2.h"
 #include "indication.h"
-#include "system_monitor.h"
-#include "servo_driver.h"
-#include "motion_core.h"
+#include "system-monitor.h"
+#include "servo-driver.h"
+#include "motion-core.h"
 #include "systimer.h"
 #include <math.h>
 

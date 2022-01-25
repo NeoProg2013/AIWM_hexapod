@@ -2433,10 +2433,10 @@
                 <name>$PROJ_DIR$\src\drivers\pwm.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\src\drivers\ssd1306_128x64.c</name>
+                <name>$PROJ_DIR$\src\drivers\ssd1306-128x64.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\src\drivers\ssd1306_128x64.h</name>
+                <name>$PROJ_DIR$\src\drivers\ssd1306-128x64.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\src\drivers\systimer.c</name>
@@ -2469,34 +2469,34 @@
                 <name>$PROJ_DIR$\src\motion-core\math-structs.h</name>
             </file>
             <file>
+                <name>$PROJ_DIR$\src\motion-core\motion-core.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\motion-core\motion-core.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\motion-core\motion-math.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\motion-core\motion-math.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\motion-core\motion-scripts.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\src\motion-core\motion-scripts.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\src\motion-core\motion_core.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\motion-core\motion_core.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\motion-core\motion_math.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\motion-core\motion_math.h</name>
-            </file>
         </group>
         <group>
             <name>tools</name>
             <file>
-                <name>$PROJ_DIR$\src\tools\oled_gl.c</name>
+                <name>$PROJ_DIR$\src\tools\oled-gl-font-6x8.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\src\tools\oled_gl.h</name>
+                <name>$PROJ_DIR$\src\tools\oled-gl.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\src\tools\oled_gl_font_6x8.h</name>
+                <name>$PROJ_DIR$\src\tools\oled-gl.h</name>
             </file>
         </group>
         <file>
@@ -2527,16 +2527,16 @@
             <name>$PROJ_DIR$\src\main.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\memory_map.h</name>
+            <name>$PROJ_DIR$\src\memory-map.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\project_base.h</name>
+            <name>$PROJ_DIR$\src\project-base.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\servo_driver.c</name>
+            <name>$PROJ_DIR$\src\servo-driver.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\servo_driver.h</name>
+            <name>$PROJ_DIR$\src\servo-driver.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\smcu.c</name>
@@ -2545,19 +2545,19 @@
             <name>$PROJ_DIR$\src\smcu.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\src\swlp-protocol.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\src\swlp.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\swlp.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\swlp_protocol.h</name>
+            <name>$PROJ_DIR$\src\system-monitor.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\system_monitor.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\system_monitor.h</name>
+            <name>$PROJ_DIR$\src\system-monitor.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\version.h</name>

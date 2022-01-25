@@ -1,15 +1,15 @@
 /// ***************************************************************************
-/// @file    motion_core.c
+/// @file    motion-core.c
 /// @author  NeoProg
 /// ***************************************************************************
-#include "project_base.h"
-#include "motion_core.h"
-#include "motion_math.h"
-#include "servo_driver.h"
+#include "project-base.h"
+#include "motion-core.h"
+#include "motion-math.h"
+#include "servo-driver.h"
 #include "configurator.h"
 #include "systimer.h"
 #include "pwm.h"
-#include "system_monitor.h"
+#include "system-monitor.h"
 #include <math.h>
 #define CHANGE_SURFACE_POS_MAX_STEP             (1.5f)
 #define MOTION_DEFAULT_STEP_HEIGHT              (30)
