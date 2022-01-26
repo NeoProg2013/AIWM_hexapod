@@ -15,6 +15,7 @@
 #define MOTION_DEFAULT_STEP_HEIGHT              (30)
 
 #define MOTION_SURFACE_MIN_HEIGHT               (-15)
+#define MOTION_SURFACE_MAX_HEIGHT               (-150)
 #define MOTION_SURFACE_UP_HEIGHT_THRESHOLD      (-85)
 
 #define MOTION_LIMBS_DOWN_TIMEOUT               (100)
@@ -46,7 +47,7 @@ static const v3d_t limbs_base_pos[] = {
 static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 static motion_t g_cur_motion = {0};
 static motion_t g_dst_motion = {0};
-static hexapod_state_t hexapod_state = HEXAPOD_STATE_RDY;//HEXAPOD_STATE_DOWN;
+static hexapod_state_t hexapod_state = HEXAPOD_STATE_DOWN;
 static bool is_surface_move_completed = false;
 
 
@@ -67,11 +68,9 @@ void motion_core_init() {
         g_limbs[i].pos = limbs_base_pos[i];
     }
 
-    // Make motion surface
-    g_cur_motion.surface_point.x = 0;
-    g_cur_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
-    g_cur_motion.surface_point.z = 0;
-    g_dst_motion = g_cur_motion;
+    // Init motion
+    motion_core_move(&g_dst_motion);
+    g_cur_motion = g_dst_motion;
 
     // Calculate limbs offset by regarding surface
     if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
@@ -98,24 +97,41 @@ void motion_core_init() {
 
 void motion_core_move(const motion_t* motion) {
     g_dst_motion = *motion;
-    if (g_dst_motion.cfg.step_height == 0) {
-        g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
-    }
-    if (g_dst_motion.surface_point.y > MOTION_SURFACE_MIN_HEIGHT) {
-        g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
-    }
-    servo_driver_set_speed(g_dst_motion.cfg.speed);
-    /*if (hexapod_state == HEXAPOD_STATE_DOWN) {
-        g_dst_motion.curvature = 0;
-        g_dst_motion.distance = 0;
-        g_dst_motion.speed = 0;
+    
+    // Inhibit motion if hexapod is down
+    if (hexapod_state == HEXAPOD_STATE_DOWN) {
+        g_dst_motion.cfg.speed = 0;
+        g_dst_motion.cfg.curvature = 0;
+        g_dst_motion.cfg.distance = 0;
+        g_dst_motion.cfg.step_height = 0;
         g_dst_motion.surface_rotate.x = 0;
         g_dst_motion.surface_rotate.y = 0;
         g_dst_motion.surface_rotate.z = 0;
-        if (g_dst_motion.surface_point.y > surface_up_y) {
-            g_dst_motion.surface_point = surface_down_y;
+        g_dst_motion.surface_point.x = 0;
+        g_dst_motion.surface_point.z = 0;
+        if (isgreater(g_dst_motion.surface_point.y, MOTION_SURFACE_UP_HEIGHT_THRESHOLD)) {
+            g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
         }
-    }*/
+    }
+    
+    // Inhibit move hexapod to down while motion is progress
+    if (hexapod_state == HEXAPOD_STATE_MOVE && isgreater(g_dst_motion.surface_point.y, MOTION_SURFACE_UP_HEIGHT_THRESHOLD)) {
+        g_dst_motion.surface_point.y = MOTION_SURFACE_UP_HEIGHT_THRESHOLD;
+    }
+    
+    // Set motion speed
+    servo_driver_set_speed(g_dst_motion.cfg.speed);
+    
+    // Check parameters
+    if (g_dst_motion.cfg.step_height == 0) {
+        g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
+    }
+    if (isgreater(g_dst_motion.surface_point.y, MOTION_SURFACE_MIN_HEIGHT)) {
+        g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
+    }
+    if (isless(g_dst_motion.surface_point.y, MOTION_SURFACE_MAX_HEIGHT)) {
+        g_dst_motion.surface_point.y = MOTION_SURFACE_MAX_HEIGHT;
+    }
 }
 
 bool motion_core_is_surface_move_completed(void) {
@@ -163,7 +179,7 @@ void motion_core_process(void) {
         // Move limbs 1, 3, 5 to up state for odd loop
         bool is_completed = true;
         for (int32_t i = motion_loop & 0x01; i < SUPPORT_LIMBS_COUNT; i += 2) {
-            if (mm_move_value(&g_limbs[i].pos.y, g_cur_motion.cfg.step_height, CHANGE_SURFACE_POS_MAX_STEP)) {
+            if (!mm_move_value(&g_limbs[i].pos.y, g_cur_motion.cfg.step_height, CHANGE_SURFACE_POS_MAX_STEP)) {
                 is_completed = false;
             }
         }
@@ -198,7 +214,7 @@ void motion_core_process(void) {
             // Move all limbs to down state
             bool is_completed = true;
             for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) { 
-                if (mm_move_value(&g_limbs[i].pos.y, 0.0f, CHANGE_SURFACE_POS_MAX_STEP)) {
+                if (!mm_move_value(&g_limbs[i].pos.y, 0.0f, CHANGE_SURFACE_POS_MAX_STEP)) {
                     is_completed = false;
                 }
             }
@@ -213,14 +229,17 @@ void motion_core_process(void) {
     }
 
     // Surface moving process
-    is_surface_move_completed = !mm_move_surface(&g_cur_motion.surface_point, &g_dst_motion.surface_point, 
-                                                 &g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_SURFACE_POS_MAX_STEP);
-
-    // Change height process
-    //is_surface_move_completed = !mm_move_value(&g_cur_motion.surface_point.y, g_dst_motion.surface_point.y, CHANGE_SURFACE_POS_MAX_STEP);
-    /*if (hexapod_state == HEXAPOD_STATE_MOVE && g_cur_motion.surface_point.y > MOTION_SURFACE_UP_HEIGHT_THRESHOLD) {
-        g_cur_motion.surface_point.y = MOTION_SURFACE_UP_HEIGHT_THRESHOLD; // Avoid move body to down while motion is process
-    }*/
+    is_surface_move_completed = mm_move_surface(&g_cur_motion.surface_point, &g_dst_motion.surface_point, 
+                                                &g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_SURFACE_POS_MAX_STEP);
+    if (islessequal(g_cur_motion.surface_point.y, MOTION_SURFACE_UP_HEIGHT_THRESHOLD)) {
+        if (is_surface_move_completed && hexapod_state == HEXAPOD_STATE_DOWN) {
+            hexapod_state = HEXAPOD_STATE_RDY;
+        }
+    } else {
+        if (hexapod_state == HEXAPOD_STATE_RDY) {
+            hexapod_state = HEXAPOD_STATE_DOWN;
+        }
+    }
 
     // Calculate limbs offset relatively surface
     if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {

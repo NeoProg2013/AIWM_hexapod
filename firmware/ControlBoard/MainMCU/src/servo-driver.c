@@ -9,6 +9,7 @@
 #include "pwm.h"
 #include "system-monitor.h"
 #include "systimer.h"
+#include <math.h>
 
 #define SERVO_POWER_EN_PIN                      GPIOC, 2
 #define SERVO_TURN_POWER_ON()                   gpio_set  (SERVO_POWER_EN_PIN)
@@ -289,7 +290,7 @@ static float calculate_physic_angle(float logic_angle, const servo_t* servo) {
     }
     
     // Check physic angle value
-    if (physic_angle < 0 || physic_angle > servo->max_physic_angle) {
+    if (isless(physic_angle, 0) || isgreater(physic_angle, servo->max_physic_angle)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
         sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
         servo_driver_power_off();

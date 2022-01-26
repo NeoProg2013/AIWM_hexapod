@@ -14,24 +14,23 @@
 
 
 
-
 bool mm_move_value(float* src, float dst, float max_step) {
 	float diff = dst - *src;
 	float diff_abs = fabs(diff);
     
     // Move completed?
     if (diff_abs < FLT_EPSILON) {
-        return false;
+        return true;
     }
 
     // Constrain step for add remainder
-	if (diff_abs < max_step) {
+	if (isless(diff_abs, max_step)) {
 		max_step = diff_abs;
 	}
 
     // Add step
     *src += max_step * (diff / diff_abs);
-    return true;
+    return false;
 }
 
 bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step) {
@@ -41,20 +40,20 @@ bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step) {
 
     // Search max diff
 	float max_diff_abs = fabs(x_diff);
-	if (max_diff_abs < fabs(y_diff)) {
+	if (isless(max_diff_abs, fabs(y_diff))) {
 		max_diff_abs = fabs(y_diff);
 	}
-	if (max_diff_abs < fabs(z_diff)) {
+	if (isless(max_diff_abs, fabs(z_diff))) {
 		max_diff_abs = fabs(z_diff);
 	}
     
     // Move completed?
     if (max_diff_abs < FLT_EPSILON) {
-        return false;
+        return true;
     }
 
     // Constrain step for add remainder
-	if (max_diff_abs < max_step) {
+	if (isless(max_diff_abs, max_step)) {
 		max_step = max_diff_abs;
 	}
 
@@ -62,7 +61,7 @@ bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step) {
     src->x += max_step * (x_diff / max_diff_abs);
     src->y += max_step * (y_diff / max_diff_abs);
     src->z += max_step * (z_diff / max_diff_abs);
-    return true;
+    return false;
 }
 
 bool mm_move_surface(p3d_t* src_p, const p3d_t* dst_p, r3d_t* src_r, const r3d_t* dst_r, float max_step) {
@@ -77,18 +76,18 @@ bool mm_move_surface(p3d_t* src_p, const p3d_t* dst_p, r3d_t* src_r, const r3d_t
 	// Search max diff
 	float max_diff_abs = fabs(diff[0]);
 	for (int i = 1; i < sizeof(diff) / sizeof(diff[0]); ++i) {
-		if (max_diff_abs < fabs(diff[i])) {
+		if (isless(max_diff_abs, fabs(diff[i]))) {
 			max_diff_abs = fabs(diff[i]);
 		}
 	}
 
 	// Move completed?
 	if (max_diff_abs < FLT_EPSILON) {
-		return false;
+		return true;
 	}
 
 	// Constrain step for add remainder
-	if (max_diff_abs < max_step) {
+	if (isless(max_diff_abs, max_step)) {
 		max_step = max_diff_abs;
 	}
 
@@ -101,16 +100,16 @@ bool mm_move_surface(p3d_t* src_p, const p3d_t* dst_p, r3d_t* src_r, const r3d_t
 	src_r->z += max_step * (diff[5] / max_diff_abs);
     
     // Constrain surface rotation angles value
-    if (fabs(src_r->x) > 360.0f) {
+    if (isgreater(fabs(src_r->x), 360.0f)) {
         src_r->x += -360.0f;
     }
-    if (fabs(src_r->y) > 360.0f) {
+    if (isgreater(fabs(src_r->y), 360.0f)) {
         src_r->y += -360.0f;
     } 
-    if (fabs(src_r->z) > 360.0f) {
+    if (isgreater(fabs(src_r->z), 360.0f)) {
         src_r->z += -360.0f;
     }
-	return true;
+	return false;
 }
 
 bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate) {
@@ -141,7 +140,7 @@ bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, con
 	n.z = z;
 
     // For avoid divide by zero
-    if (n.y == 0) {
+    if (fabs(n.y) < FLT_EPSILON) {
         return false;
     }
 
@@ -211,12 +210,12 @@ bool mm_kinematic_calculate_angles(limb_t* limbs) {
         limbs[i].tibia.angle = RAD_TO_DEG(gamma) - tibia_zero_rotate_deg;
 
         // Protection
-        if (limbs[i].coxa.angle  < limbs[i].coxa.prot_min_angle)  limbs[i].coxa.angle  = limbs[i].coxa.prot_min_angle;
-        if (limbs[i].coxa.angle  > limbs[i].coxa.prot_max_angle)  limbs[i].coxa.angle  = limbs[i].coxa.prot_max_angle;
-        if (limbs[i].femur.angle < limbs[i].femur.prot_min_angle) limbs[i].femur.angle = limbs[i].femur.prot_min_angle;
-        if (limbs[i].femur.angle > limbs[i].femur.prot_max_angle) limbs[i].femur.angle = limbs[i].femur.prot_max_angle;
-        if (limbs[i].tibia.angle < limbs[i].tibia.prot_min_angle) limbs[i].tibia.angle = limbs[i].tibia.prot_min_angle;
-        if (limbs[i].tibia.angle > limbs[i].tibia.prot_max_angle) limbs[i].tibia.angle = limbs[i].tibia.prot_max_angle;
+        if (isless(limbs[i].coxa.angle,  limbs[i].coxa.prot_min_angle))  limbs[i].coxa.angle  = limbs[i].coxa.prot_min_angle;
+        if (isless(limbs[i].femur.angle, limbs[i].femur.prot_min_angle)) limbs[i].femur.angle = limbs[i].femur.prot_min_angle;
+        if (isless(limbs[i].tibia.angle, limbs[i].tibia.prot_min_angle)) limbs[i].tibia.angle = limbs[i].tibia.prot_min_angle;
+        if (isgreater(limbs[i].coxa.angle,  limbs[i].coxa.prot_max_angle))  limbs[i].coxa.angle  = limbs[i].coxa.prot_max_angle;
+        if (isgreater(limbs[i].femur.angle, limbs[i].femur.prot_max_angle)) limbs[i].femur.angle = limbs[i].femur.prot_max_angle;
+        if (isgreater(limbs[i].tibia.angle, limbs[i].tibia.prot_max_angle)) limbs[i].tibia.angle = limbs[i].tibia.prot_max_angle;
     }
     return true;
 }
@@ -244,14 +243,14 @@ bool mm_process_advanced_traj(limb_t* limbs, const v3d_t* base_pos, float time, 
         traj_radius[i] = sqrtf((curvature_radius - x0) * (curvature_radius - x0) + z0 * z0);
 
         // Search max trajectory radius
-        if (traj_radius[i] > max_traj_radius) {
+        if (isgreater(traj_radius[i], max_traj_radius)) {
             max_traj_radius = traj_radius[i];
         }
 
         // Calculation limb start angle
         start_angle_rad[i] = atan2f(z0, -(curvature_radius - x0));
     }
-    if (max_traj_radius == 0) {
+    if (fabs(max_traj_radius) < FLT_EPSILON) {
         return false; // Avoid division by zero
     }
 

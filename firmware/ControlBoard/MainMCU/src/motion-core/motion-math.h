@@ -33,7 +33,7 @@ typedef struct {
 /// @param  src: source value
 /// @param  dst: destination value
 /// @param  max_step: max step for move
-/// @return true - move success, false - value already reached destination value
+/// @return true - value already reached destination value, false - otherwise
 /// ***************************************************************************
 extern bool mm_move_value(float* src, float dst, float max_step);
 
@@ -42,7 +42,7 @@ extern bool mm_move_value(float* src, float dst, float max_step);
 /// @param  src: source vector pos
 /// @param  dst: destination vector pos
 /// @param  max_step: max step for move
-/// @return true - move success, false - vector already reached destination pos
+/// @return true - vector already reached destination point, false - otherwise
 /// ***************************************************************************
 extern bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step);
 
@@ -53,7 +53,7 @@ extern bool mm_move_vector(v3d_t* src, const v3d_t* dst, float max_step);
 /// @param  src_r: source surface rotation
 /// @param  dst_r: destination surface rotation
 /// @param  max_step: max step for move
-/// @return true - move success, false - furface already reached destination pos
+/// @return true - surface already reached destination pos, false - otherwise
 /// ***************************************************************************
 extern bool mm_move_surface(p3d_t* src_p, const p3d_t* dst_p, r3d_t* src_r, const r3d_t* dst_r, float max_step);
 
