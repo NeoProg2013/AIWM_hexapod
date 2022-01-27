@@ -148,7 +148,7 @@ motion_t motion_core_get_stop_motion(void) {
     stop_motion.surface_rotate.y = 0;
     stop_motion.surface_rotate.z = 0;
     stop_motion.surface_point.x = 0;
-    stop_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
+    stop_motion.surface_point.y = g_cur_motion.surface_point.y;
     stop_motion.surface_point.z = 0;
     stop_motion.cfg.curvature = 0;
     stop_motion.cfg.distance = 0;
