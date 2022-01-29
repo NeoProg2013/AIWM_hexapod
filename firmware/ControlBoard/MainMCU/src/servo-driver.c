@@ -4,23 +4,23 @@
 /// ***************************************************************************
 #include "servo-driver.h"
 #include "project-base.h"
-#include "configurator.h"
 #include "cli.h"
 #include "pwm.h"
 #include "system-monitor.h"
 #include "systimer.h"
 #include <math.h>
 
+#define SERVO_CONFIG_DIRECT_DIRECTION_MASK      (0x00)
+#define SERVO_CONFIG_REVERSE_DIRECTION_MASK     (0x01)
+
 #define SERVO_POWER_EN_PIN                      GPIOC, 2
 #define SERVO_TURN_POWER_ON()                   gpio_set  (SERVO_POWER_EN_PIN)
 #define SERVO_TURN_POWER_OFF()                  gpio_reset(SERVO_POWER_EN_PIN)
 
-
-#define SERVO_DS3218MG_270_ID                   (0x00)
-#define       DS3218MG_MIN_PULSE_WIDTH          (500)
-#define       DS3218MG_MAX_PULSE_WIDTH          (2500)
-#define       DS3218MG_MAX_PHYSIC_ANGLE         (270)
-#define       DS3218MG_LOGIC_ZERO               (DS3218MG_MAX_PHYSIC_ANGLE / 2)
+#define DS3218MG_MIN_PULSE_WIDTH                (500)
+#define DS3218MG_MAX_PULSE_WIDTH                (2500)
+#define DS3218MG_MAX_PHYSIC_ANGLE               (270)
+#define DS3218MG_LOGIC_ZERO                     (DS3218MG_MAX_PHYSIC_ANGLE / 2)  
 
 
 typedef enum {
@@ -38,13 +38,9 @@ typedef struct {
     override_t override_level;
     int16_t    override_value;
     
-    // EEPROM configuration
+    // Configuration
     uint8_t  config;
     int16_t  zero_trim;                             
-    uint16_t logic_zero;
-    uint16_t min_pulse_width;
-    uint16_t max_pulse_width;
-    uint16_t max_physic_angle;
 } servo_t;
 
 CLI_CMD_HANDLER(servo_cli_cmd_help);
@@ -102,7 +98,7 @@ void servo_driver_init(void) {
 
 /// ***************************************************************************
 /// @brief  Start move servo to new angle
-/// @param  ch:    servo channel
+/// @param  ch: servo channel
 /// @param  angle: new angle
 /// @return none
 /// ***************************************************************************
@@ -175,11 +171,11 @@ void servo_driver_process(void) {
         }
 
         // Calculate PWM pulse width  
-        float step = (float)(servo->max_pulse_width - servo->min_pulse_width) / (float)servo->max_physic_angle;
-        servo->pulse_width = (uint32_t)( (float)servo->min_pulse_width + physic_angle * step );
+        float step = (float)(DS3218MG_MAX_PULSE_WIDTH - DS3218MG_MIN_PULSE_WIDTH) / (float)DS3218MG_MAX_PHYSIC_ANGLE;
+        servo->pulse_width = (uint32_t)( (float)DS3218MG_MIN_PULSE_WIDTH + physic_angle * step );
     
         // Check pulse width value
-        if (servo->pulse_width < servo->min_pulse_width || servo->pulse_width > servo->max_pulse_width) {
+        if (servo->pulse_width < DS3218MG_MIN_PULSE_WIDTH || servo->pulse_width > DS3218MG_MAX_PULSE_WIDTH) {
             sysmon_set_error(SYSMON_MATH_ERROR);
             sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
             servo_driver_power_off();
@@ -243,33 +239,48 @@ const cli_cmd_t* servo_get_cmd_list(uint32_t* count) {
 /// @return true - read success, false - fail
 /// ***************************************************************************
 static bool read_configuration(void) {
-    for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
-        servo_t* servo = &servo_list[i];
-        
-        // Calculate start address of servo configuration
-        uint32_t base_address = MM_SERVO_CONFIG_BLOCK_BASE_EE_ADDRESS + i * MM_SERVO_CONFIG_BLOCK_SIZE;
+    servo_list[0].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[0].zero_trim = -3;
+    servo_list[1].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
+    servo_list[1].zero_trim = 0;
+    servo_list[2].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
+    servo_list[2].zero_trim = 0;
+    
+    servo_list[3].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[3].zero_trim = 1;
+    servo_list[4].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
+    servo_list[4].zero_trim = 0;
+    servo_list[5].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
+    servo_list[5].zero_trim = -1;
+    
+    servo_list[6].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[6].zero_trim = 2;
+    servo_list[7].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[7].zero_trim = 1;
+    servo_list[8].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[8].zero_trim = -1;
+    
+    servo_list[9].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[9].zero_trim = 3;
+    servo_list[10].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[10].zero_trim = 0;
+    servo_list[11].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[11].zero_trim = 4;
+    
+    servo_list[12].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[12].zero_trim = -1;
+    servo_list[13].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[13].zero_trim = 2;
+    servo_list[14].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[14].zero_trim = 4;
+    
+    servo_list[15].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
+    servo_list[15].zero_trim = 1;
+    servo_list[16].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
+    servo_list[16].zero_trim = 0;
+    servo_list[17].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
+    servo_list[17].zero_trim = 0;
 
-        // Read servo configuration
-        if (config_read_8(base_address + MM_SERVO_CONFIG_OFFSET, &servo->config) == false || servo->config == 0xFF) {
-            return false;
-        }
-        
-        // Load servo information
-        uint8_t servo_id = (servo->config & MM_SERVO_CONFIG_SERVO_TYPE_MASK) >> 4;
-        if (servo_id == SERVO_DS3218MG_270_ID) {
-            servo->logic_zero       = DS3218MG_LOGIC_ZERO;
-            servo->min_pulse_width  = DS3218MG_MIN_PULSE_WIDTH;
-            servo->max_pulse_width  = DS3218MG_MAX_PULSE_WIDTH;
-            servo->max_physic_angle = DS3218MG_MAX_PHYSIC_ANGLE;
-        } else { // Unknown servo type
-            return false;
-        }
-
-        // Read servo zero trim
-        if (config_read_16(base_address + MM_SERVO_ZERO_TRIM_OFFSET, (uint16_t*)&servo->zero_trim) == false) {
-            return false;
-        }
-    }
     return true;
 }
 
@@ -283,14 +294,14 @@ static float calculate_physic_angle(float logic_angle, const servo_t* servo) {
     
     // Convert logic angle to servo physic angle
     float physic_angle = 0;
-    if (servo->config & MM_SERVO_CONFIG_REVERSE_DIRECTION_MASK) {
-        physic_angle = servo->logic_zero - (logic_angle + (float)servo->zero_trim);
+    if (servo->config & SERVO_CONFIG_REVERSE_DIRECTION_MASK) {
+        physic_angle = (float)DS3218MG_LOGIC_ZERO - (logic_angle + (float)servo->zero_trim);
     } else {
-        physic_angle = servo->logic_zero + (logic_angle + (float)servo->zero_trim);
+        physic_angle = (float)DS3218MG_LOGIC_ZERO + (logic_angle + (float)servo->zero_trim);
     }
     
     // Check physic angle value
-    if (isless(physic_angle, 0) || isgreater(physic_angle, servo->max_physic_angle)) {
+    if (isless(physic_angle, 0) || isgreater(physic_angle, DS3218MG_MAX_PHYSIC_ANGLE)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
         sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
         servo_driver_power_off();

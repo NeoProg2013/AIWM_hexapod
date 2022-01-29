@@ -2506,12 +2506,6 @@
             <name>$PROJ_DIR$\src\cli.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\src\configurator.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\configurator.h</name>
-        </file>
-        <file>
             <name>$PROJ_DIR$\src\display.c</name>
         </file>
         <file>

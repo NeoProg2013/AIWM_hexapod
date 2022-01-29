@@ -45,7 +45,7 @@
 #define MM_SERVO_CONFIG_BLOCK_SIZE                          (8)
 
 #define MM_SERVO_CONFIG_OFFSET                              (0)          ///< U8  Servo configuration
-#define     MM_SERVO_CONFIG_REVERSE_DIRECTION_MASK          (0x01)
+
 #define     MM_SERVO_CONFIG_SERVO_TYPE_MASK                 (0xF0)
 #define MM_SERVO_ZERO_TRIM_OFFSET                           (2)          ///< S16 Servo zero trim
 

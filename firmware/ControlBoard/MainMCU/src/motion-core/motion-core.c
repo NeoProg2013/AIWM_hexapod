@@ -7,7 +7,6 @@
 #include "motion-scripts.h"
 #include "motion-math.h"
 #include "servo-driver.h"
-#include "configurator.h"
 #include "systimer.h"
 #include "pwm.h"
 #include "system-monitor.h"
@@ -141,7 +140,6 @@ void motion_core_move(const motion_t* motion) {
 void motion_core_stop(void) {
     g_dst_motion.cfg.curvature = 0;
     g_dst_motion.cfg.distance = 0;
-    g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
 }
 
 void motion_core_select_script(motion_script_id_t id) {
@@ -223,11 +221,9 @@ static void main_motion_process(void) {
     static int32_t motion_time = MOTION_TIME_MIN_VALUE;
     static int32_t motion_loop = 0;
 
-    if (g_hexapod_state == HEXAPOD_STATE_RDY) {
-        if (g_dst_motion.cfg.distance) {
-            g_cur_motion.cfg = g_dst_motion.cfg; // Update motion configuration
-            g_hexapod_state = HEXAPOD_STATE_MOTION_INIT;
-        }
+    if (g_hexapod_state == HEXAPOD_STATE_RDY && g_dst_motion.cfg.distance) {
+        g_cur_motion.cfg = g_dst_motion.cfg; // Update motion configuration
+        g_hexapod_state = HEXAPOD_STATE_MOTION_INIT;
     } 
     
     if (g_hexapod_state == HEXAPOD_STATE_MOTION_INIT) {
@@ -328,39 +324,42 @@ static void script_motion_process(void) {
 /// @return true - load and validate success, false - fail
 /// ***************************************************************************
 static bool load_config(void) {
-    uint32_t base_address = MM_LIMB_CONFIG_BASE_EE_ADDRESS;
-
-    // Read length
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        if (!config_read_16(base_address + MM_LIMB_COXA_LENGTH_OFFSET,  &g_limbs[i].coxa.length))  return false;
-        if (!config_read_16(base_address + MM_LIMB_FEMUR_LENGTH_OFFSET, &g_limbs[i].femur.length)) return false;
-        if (!config_read_16(base_address + MM_LIMB_TIBIA_LENGTH_OFFSET, &g_limbs[i].tibia.length)) return false;
+        g_limbs[i].coxa.length  = 53;
+        g_limbs[i].coxa.prot_min_angle = -45;
+        g_limbs[i].coxa.prot_max_angle = 45;
+        g_limbs[i].femur.length = 76;
+        g_limbs[i].femur.prot_min_angle = -90;
+        g_limbs[i].femur.prot_max_angle = 65;
+        g_limbs[i].tibia.length = 137;
+        g_limbs[i].tibia.prot_min_angle = -85;
+        g_limbs[i].tibia.prot_max_angle = 65;
     }
-
-    // Read zero rotate
-    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        if (!config_read_16(base_address + MM_LIMB_COXA_ZERO_ROTATE_OFFSET + i * sizeof(uint16_t), (uint16_t*)&g_limbs[i].coxa.zero_rotate)) return false;
-        if (!config_read_16(base_address + MM_LIMB_FEMUR_ZERO_ROTATE_OFFSET, (uint16_t*)&g_limbs[i].femur.zero_rotate)) return false;
-        if (!config_read_16(base_address + MM_LIMB_TIBIA_ZERO_ROTATE_OFFSET, (uint16_t*)&g_limbs[i].tibia.zero_rotate)) return false;
-        if (abs(g_limbs[i].coxa.zero_rotate) > 360 || abs(g_limbs[i].femur.zero_rotate) > 360 || abs(g_limbs[i].tibia.zero_rotate) > 360) {
-            return false;
-        }
-    }
-
-    // Read protection
-    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        if (!config_read_16(base_address + MM_LIMB_PROTECTION_COXA_MIN_ANGLE_OFFSET,  (uint16_t*)&g_limbs[i].coxa.prot_min_angle))  return false;
-        if (!config_read_16(base_address + MM_LIMB_PROTECTION_COXA_MAX_ANGLE_OFFSET,  (uint16_t*)&g_limbs[i].coxa.prot_max_angle))  return false;
-        if (!config_read_16(base_address + MM_LIMB_PROTECTION_FEMUR_MIN_ANGLE_OFFSET, (uint16_t*)&g_limbs[i].femur.prot_min_angle)) return false;
-        if (!config_read_16(base_address + MM_LIMB_PROTECTION_FEMUR_MAX_ANGLE_OFFSET, (uint16_t*)&g_limbs[i].femur.prot_max_angle)) return false;
-        if (!config_read_16(base_address + MM_LIMB_PROTECTION_TIBIA_MIN_ANGLE_OFFSET, (uint16_t*)&g_limbs[i].tibia.prot_min_angle)) return false;
-        if (!config_read_16(base_address + MM_LIMB_PROTECTION_TIBIA_MAX_ANGLE_OFFSET, (uint16_t*)&g_limbs[i].tibia.prot_max_angle)) return false;
-        if (g_limbs[i].coxa.prot_min_angle  >= g_limbs[i].coxa.prot_max_angle  ||
-        g_limbs[i].femur.prot_min_angle >= g_limbs[i].femur.prot_max_angle ||
-        g_limbs[i].tibia.prot_min_angle >= g_limbs[i].tibia.prot_max_angle) {
-            return false;
-        }
-    }
+    
+    g_limbs[0].coxa.zero_rotate = 135;
+    g_limbs[0].femur.zero_rotate = 35;
+    g_limbs[0].tibia.zero_rotate = 135;
+    
+    g_limbs[1].coxa.zero_rotate = 180;
+    g_limbs[1].femur.zero_rotate = 35;
+    g_limbs[1].tibia.zero_rotate = 135;
+    
+    g_limbs[2].coxa.zero_rotate = 225;
+    g_limbs[2].femur.zero_rotate = 35;
+    g_limbs[2].tibia.zero_rotate = 135;
+    
+    g_limbs[3].coxa.zero_rotate = 45;
+    g_limbs[3].femur.zero_rotate = 35;
+    g_limbs[3].tibia.zero_rotate = 135;
+    
+    g_limbs[4].coxa.zero_rotate = 0;
+    g_limbs[4].femur.zero_rotate = 35;
+    g_limbs[4].tibia.zero_rotate = 135;
+    
+    g_limbs[5].coxa.zero_rotate = 315;
+    g_limbs[5].femur.zero_rotate = 35;
+    g_limbs[5].tibia.zero_rotate = 135;
+    
     return true;
 }
 

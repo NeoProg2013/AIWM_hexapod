@@ -6,7 +6,6 @@
 #include "project-base.h"
 #include "usart1.h"
 #include "system-monitor.h"
-#include "configurator.h"
 #include "servo-driver.h"
 #include "motion-core.h"
 #include "indication.h"
@@ -153,14 +152,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
                 return cmd_list[i].handler(argv, argc, response);
             }
         }
-    }*/ else if (strcmp(module, "config") == 0) {
-        const cli_cmd_t* cmd_list = config_get_cmd_list(&cmd_list_size);
-        for (uint32_t i = 0; i < cmd_list_size; ++i) {
-            if (strcmp(cmd, cmd_list[i].cmd) == 0) {
-                return cmd_list[i].handler(argv, argc, response);
-            }
-        }
-    } else if (strcmp(module, "indication") == 0) {
+    }*/ else if (strcmp(module, "indication") == 0) {
         const cli_cmd_t* cmd_list = indication_get_cmd_list(&cmd_list_size);
         for (uint32_t i = 0; i < cmd_list_size; ++i) {
             if (strcmp(cmd, cmd_list[i].cmd) == 0) {

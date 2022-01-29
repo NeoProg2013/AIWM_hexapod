@@ -3,7 +3,6 @@
 /// @author  NeoProg
 /// ***************************************************************************
 #include "project-base.h"
-#include "configurator.h"
 #include "system-monitor.h"
 #include "swlp.h"
 #include "cli.h"
@@ -35,17 +34,11 @@ void main() {
     debug_gpio_init();
     
     // Base module initialation
-    config_init();
     sysmon_init();
     swlp_init();
     cli_init();
     indication_init();
     display_init();
-    
-    // Check EEPROM intergity
-    if (config_check_intergity() == false) {
-        emergency_loop();
-    }
     
     // Initializaion submodules
     smcu_init();    
