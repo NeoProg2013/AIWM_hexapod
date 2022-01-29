@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    usart2.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "usart2.h"
 #include "project-base.h"
 #define USART_TX_PIN                    GPIOB, 3
@@ -15,12 +15,12 @@ static usart2_callbacks_t usart_callbacks;
 static void usart_reset(bool reset_tx, bool reset_rx);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART initialization
 /// @param  baud_rate: USART baud rate
 /// @param  callbacks: USART callbacks
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     usart_callbacks = *callbacks;
     
@@ -70,11 +70,11 @@ void usart2_init(uint32_t baud_rate, usart2_callbacks_t* callbacks) {
     usart_reset(true, true);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART start frame transmit
 /// @param  bytes_count: bytes count for transmit
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void usart2_start_tx(uint32_t bytes_count) {
     usart_reset(true, false);
     DMA1_Channel7->CMAR  = (uint32_t)tx_buffer;
@@ -83,11 +83,11 @@ void usart2_start_tx(uint32_t bytes_count) {
     USART2->CR1 |= USART_CR1_TE;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART start frame receive
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void usart2_start_rx(void) {
     usart_reset(false, true);
     memset(rx_buffer, 0, sizeof(rx_buffer));
@@ -97,20 +97,20 @@ void usart2_start_rx(void) {
     USART2->CR1 |= USART_CR1_RE;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get USART TX buffer address
 /// @param  none
 /// @return TX buffer address
-//  ***************************************************************************
+/// ***************************************************************************
 uint8_t* usart2_get_tx_buffer(void) {
     return tx_buffer;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get USART RX buffer address
 /// @param  none
 /// @return RX buffer address
-//  ***************************************************************************
+/// ***************************************************************************
 uint8_t* usart2_get_rx_buffer(void) {
     return rx_buffer;
 }
@@ -119,13 +119,13 @@ uint8_t* usart2_get_rx_buffer(void) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART reset transmitted or\and receiver
 /// @note   Clear interrupt flags according interrupt mapping diagram (figure 222 of Reference Manual)
 /// @param  reset_tx: true - reset transmitter
 /// @param  reset_rx: true - reset receiver
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static void usart_reset(bool reset_tx, bool reset_rx) {
     if (reset_tx) {
         USART2->CR1 &= ~USART_CR1_TE;
@@ -145,11 +145,11 @@ static void usart_reset(bool reset_tx, bool reset_rx) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  DMA channel ISR for transmitter
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void DMA1_Channel7_IRQHandler(void) {
     uint32_t status = DMA1->ISR;
     if (status & DMA_ISR_TCIF7) {   // Frame transmit complete
@@ -162,11 +162,11 @@ void DMA1_Channel7_IRQHandler(void) {
     }
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  DMA channel ISR for receiver
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void DMA1_Channel6_IRQHandler(void) {
     uint32_t status = DMA1->ISR;
     if (status & DMA_ISR_TCIF6) { // DMA buffer is overflow
@@ -179,11 +179,11 @@ void DMA1_Channel6_IRQHandler(void) {
     }
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART ISR
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void USART2_IRQHandler(void) {
     uint32_t status = USART2->ISR;
     if (status & (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE | USART_ISR_PE)) {

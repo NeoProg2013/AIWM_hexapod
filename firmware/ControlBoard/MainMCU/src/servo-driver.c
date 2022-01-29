@@ -78,10 +78,10 @@ static bool read_configuration(void);
 static float calculate_physic_angle(float logic_angle, const servo_t* servo);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Servo driver initialization
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void servo_driver_init(void) {
     // Init servo power enable pin: output mode, push-pull, high speed, no pull
     SERVO_TURN_POWER_OFF();
@@ -100,12 +100,12 @@ void servo_driver_init(void) {
     pwm_init(PWM_START_FREQUENCY_HZ);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Start move servo to new angle
 /// @param  ch:    servo channel
 /// @param  angle: new angle
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void servo_driver_move(uint32_t ch, float angle) {
     if (ch >= SUPPORT_SERVO_COUNT) {
         sysmon_set_error(SYSMON_FATAL_ERROR);
@@ -116,27 +116,27 @@ void servo_driver_move(uint32_t ch, float angle) {
     servo_list[ch].logic_angle = angle;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Servo driver power ON
-//  *************+**************************************************************
+/// *************+**************************************************************
 void servo_driver_power_on(void) {
     SERVO_TURN_POWER_ON();
     pwm_enable();
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Servo driver power OFF
 /// @note   Call before system reset
-//  ***************************************************************************
+/// ***************************************************************************
 void servo_driver_power_off(void) {
     SERVO_TURN_POWER_OFF();
     pwm_disable();
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Set servo speed
 /// @param  speed: speed [0; 100]
-//  ***************************************************************************
+/// ***************************************************************************
 void servo_driver_set_speed(uint32_t speed) {
     speed = (speed > 100) ? 100 : speed;
     float factor = (float)speed / 100.0f;
@@ -144,10 +144,10 @@ void servo_driver_set_speed(uint32_t speed) {
     pwm_set_frequency(freq);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Servo driver process
 /// @note   Call each PWM period
-//  ***************************************************************************
+/// ***************************************************************************
 void servo_driver_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_SERVO_DRIVER) == true) {
         servo_driver_power_off();
@@ -223,11 +223,11 @@ void servo_driver_process(void) {
     }
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get command list for CLI
 /// @param  cmd_list: pointer to cmd list size
 /// @return command list
-//  ***************************************************************************
+/// ***************************************************************************
 const cli_cmd_t* servo_get_cmd_list(uint32_t* count) {
     *count = sizeof(cli_cmd_list) / sizeof(cli_cmd_t);
     return cli_cmd_list;
@@ -237,11 +237,11 @@ const cli_cmd_t* servo_get_cmd_list(uint32_t* count) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Read configuration
 /// @param  none
 /// @return true - read success, false - fail
-//  ***************************************************************************
+/// ***************************************************************************
 static bool read_configuration(void) {
     for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
         servo_t* servo = &servo_list[i];
@@ -273,12 +273,12 @@ static bool read_configuration(void) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Calculate physic angle
 /// @param  logic_angle: logic angle
 /// @param  servo: servo object
 /// @return physic angle value
-//  ***************************************************************************
+/// ***************************************************************************
 static float calculate_physic_angle(float logic_angle, const servo_t* servo) {
     
     // Convert logic angle to servo physic angle

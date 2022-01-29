@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    cli.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "cli.h"
 #include "project-base.h"
 #include "usart1.h"
@@ -31,11 +31,11 @@ static bool parse_command_line(char* cmd_line, char* module, char* cmd, char (*a
 static bool process_command(const char* module, const char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t argc, char* response);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  CLI driver initialization
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void cli_init(void) {
     usart1_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
@@ -46,11 +46,11 @@ void cli_init(void) {
     usart1_start_rx();
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  CLI driver process
 /// @note   Call from Main Loop
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void cli_process(void) {
     if (state == STATE_FRAME_RECEIVED) {
         char module[CLI_ARG_MAX_SIZE] = {0};
@@ -85,18 +85,18 @@ void cli_process(void) {
     }
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get TX buffer for send data
 /// @return TX buffer address
-//  ***************************************************************************
+/// ***************************************************************************
 void* cli_get_tx_buffer(void) {
     return usart1_get_tx_buffer();
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  CLI send data for logging
 /// @param  data: data for send
-//  ***************************************************************************
+/// ***************************************************************************
 void cli_send_data(const char* data) {
     char* tx_buffer = (char*)usart1_get_tx_buffer();
     if (data != NULL) {
@@ -109,7 +109,7 @@ void cli_send_data(const char* data) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Process command
 /// @param  module: module name
 /// @param  cmd: command
@@ -118,7 +118,7 @@ void cli_send_data(const char* data) {
 /// @param  response: response
 /// @retval response
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 static bool process_command(const char* module, const char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t argc, char* response) {
     uint32_t cmd_list_size = 0;
     
@@ -174,7 +174,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
     return false;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Parse command line
 /// @param  cmd_line: command line
 /// @param  module: module name
@@ -186,7 +186,7 @@ static bool process_command(const char* module, const char* cmd, char (*argv)[CL
 /// @retval argv
 /// @retval argc
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static bool parse_command_line(char* cmd_line, char* module, char* cmd, char (*argv)[CLI_ARG_MAX_SIZE], uint8_t* argc) {
 
     // Parse module name
@@ -220,20 +220,20 @@ static bool parse_command_line(char* cmd_line, char* module, char* cmd, char (*a
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Frame received callback
 /// @param  frame_size: received frame size
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static void frame_received_callback(uint32_t frame_size) {
     state = STATE_FRAME_RECEIVED;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Frame transmitter or error callback
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static void frame_error_callback(void) {
     state = STATE_WAIT_FRAME;
     usart1_start_rx();

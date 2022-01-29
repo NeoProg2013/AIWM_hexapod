@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    smcu.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "smcu.h"
 #include "project-base.h"
 #include "usart3.h"
@@ -29,9 +29,9 @@ static void frame_received_callback(uint32_t frame_size);
 static void frame_error_callback(void);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  SMCU driver initialization
-//  ***************************************************************************
+/// ***************************************************************************
 void smcu_init(void) {
     usart3_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
@@ -42,9 +42,9 @@ void smcu_init(void) {
     state = STATE_WAIT_FRAME;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  SMCU driver process
-//  ***************************************************************************
+/// ***************************************************************************
 void smcu_process(void) {
     static uint64_t frame_receive_time = (uint64_t)(-1);
     if (frame_receive_time == (uint64_t)(-1)) {
@@ -91,11 +91,11 @@ void smcu_process(void) {
     }
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get sensors data
 /// @param  foot_sensors: pointer for get address to foot sensor data
 /// @param  accel_sensor: pointer for get address to accel sensor data
-//  ***************************************************************************
+/// ***************************************************************************
 void smcu_get_sensor_data(int16_t** foot_sensors, int32_t** accel_sensor) {
     *foot_sensors = foot_sensors_data;
     *accel_sensor = accel_sensor_data;
@@ -105,18 +105,18 @@ void smcu_get_sensor_data(int16_t** foot_sensors, int32_t** accel_sensor) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Frame received callback
 /// @param  frame_size: received frame size none
-//  ***************************************************************************
+/// ***************************************************************************
 static void frame_received_callback(uint32_t frame_size) {
     received_frame_size = frame_size;
     state = STATE_FRAME_RECEIVED;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Frame transmitter or error callback
-//  ***************************************************************************
+/// ***************************************************************************
 static void frame_error_callback(void) {
     state = STATE_WAIT_FRAME;
     usart3_start_rx();

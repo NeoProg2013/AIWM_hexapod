@@ -1,8 +1,8 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    motion-core.h
 /// @author  NeoProg
 /// @brief   Hexapod motion core
-//  ***************************************************************************
+/// ***************************************************************************
 #ifndef _MOTION_CORE_H_
 #define _MOTION_CORE_H_
 #include "math-structs.h"
@@ -20,29 +20,45 @@ typedef struct {
     motion_cfg_t cfg;
 } motion_t;
 
+typedef enum {
+    MOTION_SCRIPT_NONE = -1,
+    MOTION_SCRIPT_UP,
+    MOTION_SCRIPT_DOWN,
+    MOTION_SCRIPT_X_ROTATE,
+    MOTION_SCRIPT_Z_ROTATE,
+    MOTION_SCRIPT_XY_ROTATE,
+    MOTION_SCRIPT_UP_DOWN,
+    MOTION_SCRIPT_Z_PUSH_PULL,
+    MOTION_SCRIPT_X_SWAY,
+    MOTION_SCRIPT_SQUARE,
+
+    MOTION_SCRIPTS_COUNT
+} motion_script_id_t;
+
+
 /// ***************************************************************************
 /// @brief  Motion core initialization
 /// ***************************************************************************
 extern void motion_core_init(void);
 
 /// ***************************************************************************
-/// @brief  Start/stop motion
+/// @brief  Start/stop main motion
 /// @param  motion: motion description. @ref motion_t
 /// ***************************************************************************
 extern void motion_core_move(const motion_t* motion);
+extern void motion_core_stop(void);
 
 /// ***************************************************************************
-/// @brief  Check surface move completed
-/// @return true - completed, false - otherwise
+/// @brief  Start/stop motion script
+/// @param  id: motion script id. @ref motion_script_id_t
 /// ***************************************************************************
-extern bool motion_core_is_surface_move_completed(void);
+extern void motion_core_select_script(motion_script_id_t id);
 
 /// ***************************************************************************
-/// @brief  Get current\stop motion parameters
+/// @brief  Get current motion parameters
 /// @return Copy of motion parameters
 /// ***************************************************************************
 extern motion_t motion_core_get_current_motion(void);
-extern motion_t motion_core_get_stop_motion(void);
 
 /// ***************************************************************************
 /// @brief  Motion core process

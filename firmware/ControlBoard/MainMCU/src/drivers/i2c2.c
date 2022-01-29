@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    i2c2.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "i2c2.h"
 #include "project-base.h"
 #include "systimer.h"
@@ -19,11 +19,11 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask);
 static void disable_i2c(void);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  I2C initialization
 /// @param  speed: I2C speed. @Ref i2c_speed_t
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void i2c2_init(i2c_speed_t speed) {
     
     // Send pulses on SCL
@@ -69,7 +69,7 @@ void i2c2_init(i2c_speed_t speed) {
     NVIC_SetPriority(DMA1_Channel4_IRQn, I2C2_IRQ_PRIORITY);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Async write data to I2C device
 /// @note   Internal address send using sync mode
 /// @param  i2c_address: device address
@@ -77,7 +77,7 @@ void i2c2_init(i2c_speed_t speed) {
 /// @param  data: pointer to buffer
 /// @param  bytes_count: bytes count for write
 /// @return true - operation started, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool i2c2_async_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
     if (i2c2_is_async_operation_completed() == false) {
         return false;
@@ -105,14 +105,14 @@ bool i2c2_async_write(uint8_t i2c_address, uint32_t internal_address, uint8_t in
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Write data to I2C device
 /// @param  i2c_address: device address
 /// @param  internal_address: device internal register address
 /// @param  data: pointer to buffer
 /// @param  bytes_count: bytes count for write
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool i2c2_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
     if (i2c2_async_write(i2c_address, internal_address, internal_address_size, data, bytes_count) == false) {
         return false;
@@ -121,10 +121,10 @@ bool i2c2_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal
     return i2c2_get_async_operation_result();
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get async operation state
 /// @return true - operation completed, false - operation in progress
-//  ***************************************************************************
+/// ***************************************************************************
 bool i2c2_is_async_operation_completed(void) {
     if (I2C2->ISR & I2C_ISR_BUSY) {
         if (get_time_ms() > async_operation_timeout_value) {
@@ -135,10 +135,10 @@ bool i2c2_is_async_operation_completed(void) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get async operation status
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool i2c2_get_async_operation_result(void) {
     return is_driver_error == false;
 }
@@ -147,13 +147,13 @@ bool i2c2_get_async_operation_result(void) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Send internal address data
 /// @note   Send internal address as MSB first
 /// @param  internal_address: internal address
 /// @param  internal_address_size: internal address size
 /// @return true - success, false - timeout
-//  ***************************************************************************
+/// ***************************************************************************
 static bool send_internal_address(uint32_t internal_address, uint8_t internal_address_size) {
     uint8_t* ptr = (uint8_t*)&internal_address;
     ptr += internal_address_size - 1; // Go to MSB
@@ -176,12 +176,12 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Wait bit set in register with timeout
 /// @param  reg: register address
 /// @param  mask: mask
 /// @return true - success, false - timeout
-//  ***************************************************************************
+/// ***************************************************************************
 #define I2C_WAIT_TIMEOUT_VALUE          (5) // ms
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
     uint64_t start_time = get_time_ms();
@@ -194,10 +194,10 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Disable I2C
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static void disable_i2c(void) {
     I2C2->CR2 |= I2C_CR2_STOP; // Send stop condition
     for (uint32_t i = 0; (i < 1000) && (I2C2->CR2 & I2C_CR2_STOP); ++i);
@@ -211,11 +211,11 @@ static void disable_i2c(void) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  I2C2 event ISR
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void I2C2_EV_IRQHandler(void) {
     uint32_t status = I2C2->ISR;
     I2C2->ICR = 0xFFFFFFFF; // Clear flags
@@ -228,11 +228,11 @@ void I2C2_EV_IRQHandler(void) {
     disable_i2c();
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  I2C2 error ISR
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void I2C2_ER_IRQHandler(void) {
     uint32_t status = I2C2->ISR;
     I2C2->ICR = 0xFFFFFFFF; // Clear flags

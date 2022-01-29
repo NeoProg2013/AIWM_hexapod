@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    i2c1.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "i2c1.h"
 #include "project-base.h"
 #include "systimer.h"
@@ -17,11 +17,11 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask);
 static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  I2C initialization
 /// @param  speed: I2C speed. @Ref i2c_speed_t
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void i2c1_init(i2c_speed_t speed) {
     
     // Send pulses on SCL
@@ -55,14 +55,14 @@ void i2c1_init(i2c_speed_t speed) {
     I2C1->TIMINGR = speed;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Read data from I2C device
 /// @param  i2c_address: device address
 /// @param  internal_address: device internal register address
 /// @param  buffer: pointer to buffer
 /// @param  bytes_count: bytes count for read
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* buffer, uint8_t bytes_count) {
 
     bool result = true;
@@ -108,14 +108,14 @@ bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_
     return result;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Write data to I2C device
 /// @param  i2c_address: device address
 /// @param  internal_address: device internal register address
 /// @param  data: pointer to buffer
 /// @param  bytes_count: bytes count for write
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool i2c1_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
 
     bool result = true;
@@ -161,13 +161,13 @@ bool i2c1_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Send internal address data
 /// @note   Send internal address as MSB first
 /// @param  internal_address: internal address
 /// @param  internal_address_size: internal address size
 /// @return true - success, false - timeout
-//  ***************************************************************************
+/// ***************************************************************************
 static bool send_internal_address(uint32_t internal_address, uint8_t internal_address_size) {
 
     uint8_t* ptr = (uint8_t*)&internal_address;
@@ -191,12 +191,12 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Wait bit set in register with timeout
 /// @param  reg: register address
 /// @param  mask: mask
 /// @return true - success, false - timeout
-//  ***************************************************************************
+/// ***************************************************************************
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
 
     uint64_t start_time = get_time_ms();
@@ -209,12 +209,12 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Wait bit clear in register with timeout
 /// @param  reg: register address
 /// @param  mask: mask
 /// @return true - success, false - timeout
-//  ***************************************************************************
+/// ***************************************************************************
 static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask) {
 
     uint64_t start_time = get_time_ms();

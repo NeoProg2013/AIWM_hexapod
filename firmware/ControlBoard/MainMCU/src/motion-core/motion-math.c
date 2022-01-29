@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    motion-core.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "project-base.h"
 #include "motion-math.h"
 #include <math.h>
@@ -144,7 +144,6 @@ bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, con
         return false;
     }
 
-    // Calculate Y using surface equation. X and Z always is zero
     // Nx(x - x0) + Ny(y - y0) + Nz(z - 0z) = 0
     // y = (-Nx(x - x0) - Nz(z - z0)) / Ny + y0
     for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {

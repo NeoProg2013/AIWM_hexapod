@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    configurator.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "configurator.h"
 #include "project-base.h"
 #include "memory-map.h"
@@ -46,20 +46,20 @@ static const cli_cmd_t cli_cmd_list[] = {
 };
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Configurator initialization
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void config_init(void) {
     i2c1_init(I2C_SPEED_400KHZ);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Check EEPROM intergity
 /// @param  none
 /// @return true - success, false - otherwise
-//  ***************************************************************************
+/// ***************************************************************************
 bool config_check_intergity(void) { 
     for (uint32_t page = 0; page < CONFIG_SECTION_PAGE_COUNT; ++page) {
         if (config_check_page_integrity(page) == false) {
@@ -84,13 +84,13 @@ bool config_check_intergity(void) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Read data from configuration section
 /// @param  address: data block address
 /// @param  buffer: buffer for data
 /// @param  bytes_count: bytes count for read
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool config_read(uint32_t address, uint8_t* buffer, uint32_t bytes_count) {
     memset(buffer, 0xFF, bytes_count);
     if (sysmon_is_module_disable(SYSMON_MODULE_CONFIGURATOR) == true) {
@@ -119,13 +119,13 @@ bool config_read(uint32_t address, uint8_t* buffer, uint32_t bytes_count) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Write data to configuration section
 /// @param  address: data block address
 /// @param  data: data for write
 /// @param  bytes_count: bytes count for write
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool config_write(uint32_t address, uint8_t* data, uint32_t bytes_count) {
     if (sysmon_is_module_disable(SYSMON_MODULE_CONFIGURATOR) == true) {
         return false;
@@ -154,44 +154,44 @@ bool config_write(uint32_t address, uint8_t* data, uint32_t bytes_count) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Read BYTE/WORD/DWORD from configuration section
 /// @param  address: data block address
 /// @param  buffer: buffer for data
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool config_read_8(uint32_t address, uint8_t* buffer)   { return config_read(address, (uint8_t*)buffer, 1); }
 bool config_read_16(uint32_t address, uint16_t* buffer) { return config_read(address, (uint8_t*)buffer, 2); }
 bool config_read_32(uint32_t address, uint32_t* buffer) { return config_read(address, (uint8_t*)buffer, 4); }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get command list for CLI
 /// @param  cmd_list: pointer to cmd list size
 /// @return command list
-//  ***************************************************************************
+/// ***************************************************************************
 const cli_cmd_t* config_get_cmd_list(uint32_t* count) {
     *count = sizeof(cli_cmd_list) / sizeof(cli_cmd_t);
     return cli_cmd_list;
 }
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Write BYTE/WORD/DWORD to configuration section
 /// @param  address: data block address
 /// @param  data: data for write
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 static bool config_write_8(uint32_t address, uint8_t data)   { return config_write(address, (uint8_t*)&data, 1); }
 static bool config_write_16(uint32_t address, uint16_t data) { return config_write(address, (uint8_t*)&data, 2); }
 static bool config_write_32(uint32_t address, uint32_t data) { return config_write(address, (uint8_t*)&data, 4); }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Calculate checksum for page
 /// @param  page: page number
 /// @param  checksum: checksum value
 /// @retval checksum
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 static bool config_calc_checksum(uint32_t page, uint16_t *checksum) {
     *checksum = 0;
 
@@ -206,11 +206,11 @@ static bool config_calc_checksum(uint32_t page, uint16_t *checksum) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Check page integrity
 /// @param  page: page number
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 static bool config_check_page_integrity(uint32_t page) {
     uint16_t checksum = 0;
     if (config_calc_checksum(page, &checksum) == false) {
@@ -225,11 +225,11 @@ static bool config_check_page_integrity(uint32_t page) {
     return checksum == current_checksum;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Update checksum for page
 /// @param  page: page number
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 static bool config_update_checksum(uint32_t page) {
     uint16_t checksum = 0;
     if (config_calc_checksum(page, &checksum) == false) {

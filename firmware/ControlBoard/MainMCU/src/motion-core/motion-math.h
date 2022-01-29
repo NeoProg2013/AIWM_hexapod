@@ -1,8 +1,8 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    motion-core.h
 /// @author  NeoProg
 /// @brief   Hexapod motion core
-//  ***************************************************************************
+/// ***************************************************************************
 #ifndef _MOTION_MATH_H_
 #define _MOTION_MATH_H_
 #include "math-structs.h"
@@ -66,12 +66,12 @@ extern bool mm_move_surface(p3d_t* src_p, const p3d_t* dst_p, r3d_t* src_r, cons
 /// ***************************************************************************
 extern bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, const r3d_t* surface_rotate);
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Calculate angles
 /// @param  limbs: limb_t structure, @ref limb_t
 /// @retval limb_t::link_t::servo_angle
 /// @return true - calculation success, false - no
-//  ***************************************************************************
+/// ***************************************************************************
 extern bool mm_kinematic_calculate_angles(limb_t* limbs);
 
 /// ***************************************************************************

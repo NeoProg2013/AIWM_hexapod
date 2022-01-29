@@ -1,7 +1,7 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    swlp.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "swlp.h"
 #include "project-base.h"
 #include "swlp-protocol.h"
@@ -35,11 +35,11 @@ static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size);
 static uint16_t calculate_crc16(const uint8_t* frame, uint32_t size);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  SWLP driver initialization
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void swlp_init(void) {
     usart2_callbacks_t callbacks;
     callbacks.frame_received_callback = frame_received_callback;
@@ -53,24 +53,19 @@ void swlp_init(void) {
     usart2_start_rx();
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Process received frame
 /// @param  rx_buffer: received data
 /// @param  frame_size: frame size
 /// @param  tx_buffer: transmit data
 /// @retval tx_buffer
 /// @return bytes for transmit from tx_buffer
-//  ***************************************************************************
-
-bool direction = false;
-bool is_init = false;
-
+/// ***************************************************************************
 void swlp_process(void) {
     
     // We are start with SYSMON_CONN_LOST_ERROR error
     static uint64_t frame_receive_time = 0;
     if (state == STATE_FRAME_RECEIVED) {
-        
         uint8_t* tx_buffer = usart2_get_tx_buffer();
         uint8_t* rx_buffer = usart2_get_rx_buffer();
 
@@ -90,154 +85,54 @@ void swlp_process(void) {
         memset(swlp_tx_frame, 0, sizeof(swlp_frame_t));
         
         // Process command
-        motion_t motion = motion_core_get_current_motion();
         response->command_status = SWLP_CMD_STATUS_OK;
         switch (request->command) {
             case SWLP_CMD_NONE:
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP:
-                motion.surface_point.y = -85;
-                motion.cfg.speed = 60;
+                motion_core_select_script(MOTION_SCRIPT_UP);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_DOWN:
-                motion.surface_point.y = -15;
-                motion.cfg.speed = 0;
+                motion_core_select_script(MOTION_SCRIPT_DOWN);
                 break;
-            case SWLP_CMD_SELECT_SEQUENCE_MOVE:
-                motion.cfg.speed = request->motion_speed;
-                motion.cfg.curvature = request->curvature;
-                motion.cfg.distance = request->distance;
-                motion.cfg.step_height = 30;
-                //sequences_engine_select_sequence(SEQUENCE_MOVE, , request->curvature, request->distance);
+            case SWLP_CMD_SELECT_SEQUENCE_MOVE: {
+                    motion_t motion = motion_core_get_current_motion();
+                    motion.cfg.speed = request->motion_speed;
+                    motion.cfg.curvature = request->curvature;
+                    motion.cfg.distance = request->distance;
+                    motion.cfg.step_height = 30;
+                    motion_core_move(&motion);
+                }
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
-
-                //sequences_engine_select_sequence(SEQUENCE_UP_DOWN, request->motion_speed, request->curvature, request->distance);
+                motion_core_select_script(MOTION_SCRIPT_UP_DOWN);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL:
-                if (!is_init) {
-                    motion.surface_rotate.x = 15;
-                    motion.cfg.distance = 0;
-                    motion.cfg.curvature = 0;
-                    motion.cfg.speed = 0;
-                    is_init = true;
-                } else {
-                    if (motion_core_is_surface_move_completed()) {
-                        if (!direction) {
-                            motion.surface_rotate.y = 361;
-                        } else {
-                            motion.surface_rotate.y = 0;
-                        }
-                        motion.cfg.speed = 60;
-                        direction = !direction;
-                    }
-                }
+                motion_core_select_script(MOTION_SCRIPT_Z_PUSH_PULL);
                 break;
-                
+
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
-                if (motion_core_is_surface_move_completed()) {
-                    if (!direction) {
-                        motion.surface_rotate.x = 0;
-                        motion.surface_rotate.y = 0;
-                        motion.surface_rotate.z = 0;
-                        motion.surface_point.x = 0;
-                        motion.surface_point.y = -85;
-                        motion.surface_point.z = 50;
-                    } else {
-                        motion.surface_rotate.x = 0;
-                        motion.surface_rotate.y = 0;
-                        motion.surface_rotate.z = 0;
-                        motion.surface_point.x = 0;
-                        motion.surface_point.y = -85;
-                        motion.surface_point.z = -50;
-                    }
-                    motion.cfg.speed = 0;
-                    direction = !direction;
-                }
-                //sequences_engine_select_sequence(SEQUENCE_ATTACK_LEFT, request->motion_speed, request->curvature, request->distance);
-                break;
             case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
-                //sequences_engine_select_sequence(SEQUENCE_ATTACK_RIGHT, request->motion_speed, request->curvature, request->distance);
+                motion_core_select_script(MOTION_SCRIPT_X_SWAY);
                 break;
+
             case SWLP_CMD_SELECT_SEQUENCE_DANCE:
-                if (motion_core_is_surface_move_completed()) {
-                    if (!direction) {
-                        motion.surface_rotate.x = -20;
-                        motion.surface_rotate.y = 0;
-                        motion.surface_rotate.z = 0;
-                        motion.surface_point.x = 0;
-                        motion.surface_point.y = -85;
-                        motion.surface_point.z = 50;
-                    } else {
-                        motion.surface_rotate.x = 20;
-                        motion.surface_rotate.y = 0;
-                        motion.surface_rotate.z = 0;
-                        motion.surface_point.x = 0;
-                        motion.surface_point.y = -85;
-                        motion.surface_point.z = -50;
-                    }
-                    motion.cfg.speed = 0;
-                    direction = !direction;
-                }
-                //sequences_engine_select_sequence(SEQUENCE_DANCE, request->motion_speed, request->curvature, request->distance);
+                motion_core_select_script(MOTION_SCRIPT_XY_ROTATE);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:
-                if (!is_init) {
-                    motion.surface_rotate.x = 0;
-                    motion.surface_rotate.y = 0;
-                    motion.surface_rotate.z = 0;
-                    is_init = true;
-                } else {
-                    if (motion_core_is_surface_move_completed()) {
-                        if (!direction) {
-                            motion.surface_rotate.x = 15;
-                            
-                        } else {
-                            motion.surface_rotate.x = -15;
-                        }
-                        motion.cfg.speed = 0;
-                        direction = !direction;
-                    }
-                }
-                //sequences_engine_select_sequence(SEQUENCE_ROTATE_X, request->motion_speed, request->curvature, request->distance);
+                motion_core_select_script(MOTION_SCRIPT_X_ROTATE);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:
-                if (!is_init) {
-                    motion.surface_rotate.x = 0;
-                    motion.surface_rotate.y = 0;
-                    motion.surface_rotate.z = 0;
-                    is_init = true;
-                } else {
-                    if (motion_core_is_surface_move_completed()) {
-                        if (!direction) {
-                            motion.surface_rotate.z = 15;
-                            
-                        } else {
-                            motion.surface_rotate.z = -15;
-                        }
-                        motion.cfg.speed = 0;
-                        direction = !direction;
-                    }
-                }
-                //sequences_engine_select_sequence(SEQUENCE_ROTATE_Z, request->motion_speed, request->curvature, request->distance);
+                motion_core_select_script(MOTION_SCRIPT_Z_ROTATE);
                 break;
             case SWLP_CMD_SELECT_SEQUENCE_NONE:
-                motion.surface_rotate.x = 0;
-                motion.surface_rotate.y = 0;
-                motion.surface_rotate.z = 0;
-                motion.surface_point.x = 0;
-                motion.surface_point.z = 0;
-                motion.cfg.curvature = 0;
-                motion.cfg.distance = 0;
-                is_init = false;
-                direction = false;
-                //sequences_engine_select_sequence(SEQUENCE_NONE, request->motion_speed, request->curvature, request->distance);
+                motion_core_select_script(MOTION_SCRIPT_NONE);
+                motion_core_stop();
                 break;
                 
             default:
                 response->command_status = SWLP_CMD_STATUS_ERROR;
         }
-        motion_core_move(&motion);
 
         // Prepare status payload
         response->command = request->command;
@@ -272,12 +167,12 @@ void swlp_process(void) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Check SWP frame
 /// @param  rx_buffer: frame
 /// @param  frame_size: frame size
 /// @return true - frame valid, false - frame invalid
-//  ***************************************************************************
+/// ***************************************************************************
 static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size) {
 
     // Check frame size
@@ -300,12 +195,12 @@ static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size) {
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Calculate frame CRC16
 /// @param  frame: frame
 /// @param  size: frame size
 /// @return CRC16 value
-//  ***************************************************************************
+/// ***************************************************************************
 static uint16_t calculate_crc16(const uint8_t* frame, uint32_t size) {
 
     uint16_t crc16 = 0xFFFF;
@@ -326,21 +221,21 @@ static uint16_t calculate_crc16(const uint8_t* frame, uint32_t size) {
     return crc16;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Frame received callback
 /// @param  frame_size: received frame size
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static void frame_received_callback(uint32_t frame_size) {
     state = STATE_FRAME_RECEIVED;
     received_frame_size = frame_size;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Frame transmitter or error callback
 /// @param  none
 /// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static void frame_transmitted_or_error_callback(void) {
     state = STATE_WAIT_FRAME;
     usart2_start_rx();
