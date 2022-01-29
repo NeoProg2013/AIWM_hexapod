@@ -9,7 +9,6 @@
 #include "servo-driver.h"
 #include "motion-core.h"
 #include "indication.h"
-#include "smcu.h"
 #include "version.h"
 #define COMMUNICATION_BAUD_RATE                     (1000000)
 

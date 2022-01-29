@@ -10,7 +10,6 @@
 #include "motion-core.h"
 #include "indication.h"
 #include "display.h"
-#include "smcu.h"
 #include "pwm.h"
 #include "systimer.h"
 
@@ -40,8 +39,7 @@ void main() {
     indication_init();
     display_init();
     
-    // Initializaion submodules
-    smcu_init();    
+    // Motion core nitializaion  
     motion_core_init();
     
     delay_ms(100);
@@ -62,9 +60,6 @@ void main() {
             sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
             servo_driver_power_off();
         }*/
-        
-        smcu_process();
-        //sequences_engine_process();
         
         // Motion process
         // This 2 functions should be call in this sequence

@@ -2456,12 +2456,6 @@
             <file>
                 <name>$PROJ_DIR$\src\drivers\usart2.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\src\drivers\usart3.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\drivers\usart3.h</name>
-            </file>
         </group>
         <group>
             <name>motion-core</name>
@@ -2531,12 +2525,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\servo-driver.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\smcu.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\smcu.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\swlp-protocol.h</name>

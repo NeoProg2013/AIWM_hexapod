@@ -23,7 +23,6 @@ static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask);
 /// @return none
 /// ***************************************************************************
 void i2c1_init(i2c_speed_t speed) {
-    
     // Send pulses on SCL
     gpio_set_mode        (I2C_SCL_PIN, GPIO_MODE_OUTPUT);
     gpio_set_output_type (I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
@@ -64,7 +63,6 @@ void i2c1_init(i2c_speed_t speed) {
 /// @return true - success, false - error
 /// ***************************************************************************
 bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* buffer, uint8_t bytes_count) {
-
     bool result = true;
 
     // Set basic I2C configuration
@@ -117,7 +115,6 @@ bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_
 /// @return true - success, false - error
 /// ***************************************************************************
 bool i2c1_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
-
     bool result = true;
 
     // Set basic I2C configuration
@@ -169,7 +166,6 @@ bool i2c1_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal
 /// @return true - success, false - timeout
 /// ***************************************************************************
 static bool send_internal_address(uint32_t internal_address, uint8_t internal_address_size) {
-
     uint8_t* ptr = (uint8_t*)&internal_address;
     ptr += internal_address_size - 1; // Go to MSB
     for (uint32_t i = 0; i < internal_address_size; ++i) {
@@ -198,7 +194,6 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
 /// @return true - success, false - timeout
 /// ***************************************************************************
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
-
     uint64_t start_time = get_time_ms();
     do {
         if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
@@ -216,7 +211,6 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
 /// @return true - success, false - timeout
 /// ***************************************************************************
 static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask) {
-
     uint64_t start_time = get_time_ms();
     do {
         if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
