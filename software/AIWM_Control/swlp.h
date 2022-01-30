@@ -22,18 +22,20 @@ public:
     Q_INVOKABLE bool startService();
     Q_INVOKABLE void stopService();
 
-    Q_INVOKABLE void sendGetUpCommand();
-    Q_INVOKABLE void sendGetDownCommand();
-    Q_INVOKABLE void sendUpDownCommand();
-    Q_INVOKABLE void sendPushPullCommand();
-    Q_INVOKABLE void sendAttackLeftCommand();
-    Q_INVOKABLE void sendAttackRightCommand();
-    Q_INVOKABLE void sendDanceCommand();
-    Q_INVOKABLE void sendRotateXCommand();
-    Q_INVOKABLE void sendRotateZCommand();
-    Q_INVOKABLE void sendStopMoveCommand();
-    Q_INVOKABLE void sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature);
+    Q_INVOKABLE void sendGetUpCommand()    { setCommand(SWLP_CMD_SELECT_SCRIPT_UP);          }
+    Q_INVOKABLE void sendGetDownCommand()  { setCommand(SWLP_CMD_SELECT_SCRIPT_DOWN);        }
+    Q_INVOKABLE void sendXRotateCommand()  { setCommand(SWLP_CMD_SELECT_SCRIPT_X_ROTATE);    }
+    Q_INVOKABLE void sendZRotateCommand()  { setCommand(SWLP_CMD_SELECT_SCRIPT_Z_ROTATE);    }
+    Q_INVOKABLE void sendXYRotateCommand() { setCommand(SWLP_CMD_SELECT_SCRIPT_XY_ROTATE);   }
+    Q_INVOKABLE void sendUpDownCommand()   { setCommand(SWLP_CMD_SELECT_SCRIPT_UP_DOWN);     }
+    Q_INVOKABLE void sendPushPullCommand() { setCommand(SWLP_CMD_SELECT_SCRIPT_Z_PUSH_PULL); }
+    Q_INVOKABLE void sendXSwayCommand()    { setCommand(SWLP_CMD_SELECT_SCRIPT_X_SWAY);      }
+    Q_INVOKABLE void sendSquareCommand()   { setCommand(SWLP_CMD_SELECT_SCRIPT_SQUARE);      }
+    Q_INVOKABLE void sendStopMoveCommand() { setCommand(SWLP_CMD_NONE);                      }
 
+    Q_INVOKABLE void sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
+                                            QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
+                                            QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ);
 signals:
     void frameReceived();
     void systemStatusUpdated(QVariant newSystemStatus, QVariant newModuleStatus);

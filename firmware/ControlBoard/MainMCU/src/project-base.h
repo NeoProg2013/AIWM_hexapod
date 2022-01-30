@@ -11,6 +11,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
+#include <intrinsics.h>
+#include "systimer.h"
 
 
 #define SYSTEM_CLOCK_FREQUENCY              (72000000)

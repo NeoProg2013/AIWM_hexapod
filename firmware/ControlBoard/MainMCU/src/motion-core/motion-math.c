@@ -4,13 +4,12 @@
 /// ***************************************************************************
 #include "project-base.h"
 #include "motion-math.h"
-#include <math.h>
 #include <float.h>
 #define M_PI                                (3.14159265f)
 #define RAD_TO_DEG(rad)                     ((rad) * 180.0f / M_PI)
 #define DEG_TO_RAD(deg)                     ((deg) * M_PI / 180.0f)
-#define IS_EVEN(v)                          ((v & 0x01) == 0)
-#define IS_ODD(v)                           ((v & 0x01) != 0)
+#define IS_EVEN(v)                          (((v) & 0x01) == 0)
+#define IS_ODD(v)                           (((v) & 0x01) != 0)
 
 
 

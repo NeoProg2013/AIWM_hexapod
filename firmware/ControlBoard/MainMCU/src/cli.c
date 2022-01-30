@@ -65,14 +65,12 @@ void cli_process(void) {
                 if (tx_buffer[0] == '\0') {
                     strcpy(tx_buffer, CLI_ERROR("ERROR"));
                 }
-            }
-            else {
+            } else {
                 if (tx_buffer[0] == '\0') {
                     strcpy(tx_buffer, CLI_OK("OK"));
                 }
             }
-        }
-        else {
+        } else {
             strcpy(tx_buffer, CLI_ERROR("ERROR"));
         }
 

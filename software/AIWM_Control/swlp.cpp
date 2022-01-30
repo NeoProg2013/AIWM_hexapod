@@ -18,7 +18,6 @@ bool Swlp::startService() {
     m_payloadMutex.lock();
     memset(&m_commandPayload, 0, sizeof(m_commandPayload));
     m_commandPayload.command = SWLP_CMD_NONE;
-    m_commandPayload.motion_speed = 90;
     m_payloadMutex.unlock();
 
     // Init thread
@@ -43,30 +42,25 @@ void Swlp::stopService() {
     }
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread stopped";
 }
-void Swlp::sendGetUpCommand()       { setCommand(SWLP_CMD_SELECT_SEQUENCE_UP);           }
-void Swlp::sendGetDownCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_DOWN);         }
-void Swlp::sendUpDownCommand()      { setCommand(SWLP_CMD_SELECT_SEQUENCE_UP_DOWN);      }
-void Swlp::sendPushPullCommand()    { setCommand(SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL);    }
-void Swlp::sendAttackLeftCommand()  { setCommand(SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT);  }
-void Swlp::sendAttackRightCommand() { setCommand(SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT); }
-void Swlp::sendDanceCommand()       { setCommand(SWLP_CMD_SELECT_SEQUENCE_DANCE);        }
-void Swlp::sendRotateXCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_X);     }
-void Swlp::sendRotateZCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z);     }
-void Swlp::sendStopMoveCommand()    { setCommand(SWLP_CMD_SELECT_SEQUENCE_NONE);         }
-void Swlp::sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature) {
-    int distanceInt = distance.toInt();
-    if (distanceInt > INT8_MAX) {
-        distanceInt = INT8_MAX;
-    }
-    if (distanceInt < INT8_MIN) {
-        distanceInt = INT8_MIN;
-    }
 
+void Swlp::sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
+                                  QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
+                                  QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ) {
     m_payloadMutex.lock();
-    m_commandPayload.command = SWLP_CMD_SELECT_SEQUENCE_MOVE;
-    m_commandPayload.distance = distanceInt;
+    m_commandPayload.command = SWLP_CMD_MOVE;
+    m_commandPayload.speed = speed.toInt();
     m_commandPayload.curvature = curvature.toInt();
-    m_commandPayload.motion_speed = speed.toInt();
+    m_commandPayload.distance = distance.toInt();
+    m_commandPayload.step_height = stepHeight.toInt();
+
+    m_commandPayload.surface_point_x = surfacePointX.toInt();
+    m_commandPayload.surface_point_y = surfacePointY.toInt();
+    m_commandPayload.surface_point_z = surfacePointZ.toInt();
+
+    m_commandPayload.surface_rotate_x = surfaceRotateX.toInt();
+    m_commandPayload.surface_rotate_y = surfaceRotateY.toInt();
+    m_commandPayload.surface_rotate_z = surfaceRotateZ.toInt();
+
     m_payloadMutex.unlock();
 }
 
@@ -170,7 +164,7 @@ void Swlp::datagramReceivedEvent() {
     emit batteryStatusUpdated(statusPayload.battery_charge, statusPayload.battery_voltage);
 }
 void Swlp::sendCommandPayloadEvent() {
-    //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call sendCommandPayloadEvent()";
+    //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call sendCommandPayloadEvent() ";
     // Prepare SWLP frame
     swlp_frame_t frame;
     memset(&frame, 0, sizeof(frame));

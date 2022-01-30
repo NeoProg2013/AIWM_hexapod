@@ -13,6 +13,10 @@
 #include "pwm.h"
 #include "systimer.h"
 
+#define DEBUG_TP_PIN_SET                   (GPIOC->BSRR = 0x01 << 9)
+#define DEBUG_TP_PIN_CLR                   (GPIOC->BRR  = 0x01 << 9)
+#define DEBUG_TP_PIN_TOGGLE                (GPIOC->ODR ^= 0x01 << 9)
+
 
 static void system_init(void);
 static void debug_gpio_init(void);
@@ -40,9 +44,9 @@ void main() {
     display_init();
     
     // Motion core nitializaion  
+    servo_driver_init();
     motion_core_init();
     
-    delay_ms(100);
     while (true) {
         
         // Check system failure
@@ -53,25 +57,21 @@ void main() {
         
         // Override select sequence if need
         /*if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
-            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
+            motion_core_select_script(MOTION_SCRIPT_DOWN);
         }*/
         // Disable servo power if low supply voltage
         /*if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
-            sequences_engine_select_sequence(SEQUENCE_DOWN, 0, 0, 0);
+            motion_core_select_script(MOTION_SCRIPT_DOWN);
             servo_driver_power_off();
         }*/
         
         // Motion process
         // This 2 functions should be call in this sequence
-        static uint64_t prev_synchro_value = 0;
-        if (synchro != prev_synchro_value) {
-            if (synchro - prev_synchro_value > 1 && prev_synchro_value != 0) {
-                sysmon_set_error(SYSMON_SYNC_ERROR);
-            }
-            prev_synchro_value = synchro;
-
+        if (pwm_is_ready()) {
+            pwm_set_lock_state(true);
             motion_core_process();
             servo_driver_process();
+            pwm_set_lock_state(false);
         } 
         else { // Here is other operations
             sysmon_process();
@@ -92,9 +92,9 @@ static void emergency_loop(void) {
     while (true) {
         sysmon_process();
         swlp_process();
-        cli_process();
         indication_process();
         display_process();
+        cli_process();
     }
 }
 
@@ -142,7 +142,8 @@ static void system_init(void) {
 
     // Enable clocks for TIM17
     RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
-    while ((RCC->APB2ENR & RCC_APB2ENR_TIM17EN) == 0);    
+    while ((RCC->APB2ENR & RCC_APB2ENR_TIM17EN) == 0); 
+    DBGMCU->APB2FZ |= DBGMCU_APB2_FZ_DBG_TIM17_STOP; // Stop PWM counter for debug mode
     
     // Enable clocks for USART3
     RCC->APB1ENR |= RCC_APB1ENR_USART3EN;
@@ -193,6 +194,7 @@ static void debug_gpio_init(void) {
     gpio_set_pull        (DEBUG_TP3_PIN, GPIO_PULL_NO);
 }
 
+#pragma call_graph_root="interrupt"
 void HardFault_Handler(void) {
     while (true);
 }

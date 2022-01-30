@@ -7,11 +7,11 @@
 #include "motion-scripts.h"
 #include "motion-math.h"
 #include "servo-driver.h"
-#include "systimer.h"
 #include "pwm.h"
 #include "system-monitor.h"
-#include <math.h>
 #define CHANGE_SURFACE_POS_MAX_STEP             (1.5f)
+#define MOTION_MIN_STEP_HEIGHT                  (15)
+#define MOTION_MAX_STEP_HEIGHT                  (60)
 #define MOTION_DEFAULT_STEP_HEIGHT              (30)
 
 #define MOTION_SURFACE_MIN_HEIGHT               (-15)
@@ -39,7 +39,7 @@ typedef enum {
 
 
 
-static bool load_config(void);
+static void load_config(void);
 static void main_motion_process(void);
 static void script_motion_process(void);
 
@@ -59,15 +59,7 @@ static bool g_is_surface_move_completed = false;
 
 
 void motion_core_init() {
-    // Initialize servo driver
-    servo_driver_init();
-
-    // Load motion core configuration
-    if (!load_config()) {
-        sysmon_set_error(SYSMON_CONFIG_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
-        return;
-    }
+    load_config();
     
     // Load start points
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
@@ -81,14 +73,14 @@ void motion_core_init() {
     // Calculate limbs offset by regarding surface
     if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
         return;
     }
 
     // Set servo start angles
     if (!mm_kinematic_calculate_angles(g_limbs)) {
-        sysmon_set_error(SYSMON_CONFIG_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
         return;
     }
 
@@ -114,10 +106,8 @@ void motion_core_move(const motion_t* motion) {
         g_dst_motion.surface_rotate.y = 0;
         g_dst_motion.surface_rotate.z = 0;
         g_dst_motion.surface_point.x = 0;
+        g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
         g_dst_motion.surface_point.z = 0;
-        if (isgreater(g_dst_motion.surface_point.y, MOTION_SURFACE_UP_HEIGHT_THRESHOLD)) {
-            g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
-        }
     }
     
     // Inhibit move hexapod to down while motion is progress
@@ -126,8 +116,11 @@ void motion_core_move(const motion_t* motion) {
     }
     
     // Check parameters
-    if (g_dst_motion.cfg.step_height == 0) {
-        g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
+    if (g_dst_motion.cfg.step_height < MOTION_MIN_STEP_HEIGHT) {
+        g_dst_motion.cfg.step_height = MOTION_MIN_STEP_HEIGHT;
+    }
+    if (g_dst_motion.cfg.step_height > MOTION_MAX_STEP_HEIGHT) {
+        g_dst_motion.cfg.step_height = MOTION_MAX_STEP_HEIGHT;
     }
     if (isgreater(g_dst_motion.surface_point.y, MOTION_SURFACE_MIN_HEIGHT)) {
         g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
@@ -137,9 +130,17 @@ void motion_core_move(const motion_t* motion) {
     }
 }
 
-void motion_core_stop(void) {
+void motion_core_stop_motion(void) {
+    motion_core_select_script(MOTION_SCRIPT_NONE);
+    g_dst_motion.cfg.speed = 0;
     g_dst_motion.cfg.curvature = 0;
     g_dst_motion.cfg.distance = 0;
+    g_dst_motion.cfg.step_height = 0;
+    g_dst_motion.surface_rotate.x = 0;
+    g_dst_motion.surface_rotate.y = 0;
+    g_dst_motion.surface_rotate.z = 0;
+    g_dst_motion.surface_point.x = 0;
+    g_dst_motion.surface_point.z = 0;
 }
 
 void motion_core_select_script(motion_script_id_t id) {
@@ -157,7 +158,7 @@ motion_t motion_core_get_current_motion(void) {
 }
 
 void motion_core_process(void) {
-    if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_DRIVER) == true) return;  // Module disabled
+    if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_CORE)) return;  // Module disabled
 
     //
     // Main motion process
@@ -169,13 +170,25 @@ void motion_core_process(void) {
     //
     script_motion_process();
     
-    // Change motion speed
-    servo_driver_set_speed(g_dst_motion.cfg.speed);
+    // Change motion speed (inhibit change if some script is running, script control speed self)
+    if (g_hexapod_state != HEXAPOD_STATE_SCRIPT_INIT && g_hexapod_state != HEXAPOD_STATE_SCRIPT_EXEC && g_hexapod_state != HEXAPOD_STATE_SCRIPT_DEINIT) {
+        servo_driver_set_speed(g_dst_motion.cfg.speed);
+    }
+    
+    // Add user offsets
+    r3d_t dst_surface_rotate = g_dst_motion.surface_rotate;
+    dst_surface_rotate.x += g_dst_motion.user_surface_rotate.x;
+    dst_surface_rotate.y += g_dst_motion.user_surface_rotate.y;
+    dst_surface_rotate.z += g_dst_motion.user_surface_rotate.z;
+    
+    v3d_t dst_surface_point = g_dst_motion.surface_point;
+    dst_surface_point.x += g_dst_motion.user_surface_point.x;
+    dst_surface_point.y += g_dst_motion.user_surface_point.y;
+    dst_surface_point.z += g_dst_motion.user_surface_point.z;
     
     // Surface moving process
-    g_is_surface_move_completed = mm_move_surface(&g_cur_motion.surface_point, &g_dst_motion.surface_point, 
-                                                  &g_cur_motion.surface_rotate, &g_dst_motion.surface_rotate, CHANGE_SURFACE_POS_MAX_STEP);
-    if (islessequal(g_cur_motion.surface_point.y, MOTION_SURFACE_UP_HEIGHT_THRESHOLD)) {
+    g_is_surface_move_completed = mm_move_surface(&g_cur_motion.surface_point, &dst_surface_point, &g_cur_motion.surface_rotate, &dst_surface_rotate, CHANGE_SURFACE_POS_MAX_STEP);
+    if (islessequal(g_cur_motion.surface_point.y, MOTION_SURFACE_UP_HEIGHT_THRESHOLD)) { // We reach MOTION_SURFACE_UP_HEIGHT_THRESHOLD by axis Y?
         if (g_is_surface_move_completed && g_hexapod_state == HEXAPOD_STATE_DOWN) {
             g_hexapod_state = HEXAPOD_STATE_RDY;
         }
@@ -188,14 +201,14 @@ void motion_core_process(void) {
     // Calculate limbs offset relatively surface
     if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
         return;
     }
 
     // Calculate servo logic angles
     if (!mm_kinematic_calculate_angles(g_limbs)) {
         sysmon_set_error(SYSMON_MATH_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+        sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
         return;
     }
 
@@ -249,7 +262,7 @@ static void main_motion_process(void) {
             const motion_cfg_t* cfg = &g_cur_motion.cfg;
             if (!mm_process_advanced_traj(g_limbs, g_limbs_base_pos, motion_time, motion_loop, cfg->curvature, cfg->distance, cfg->step_height)) {
                 sysmon_set_error(SYSMON_MATH_ERROR);
-                sysmon_disable_module(SYSMON_MODULE_MOTION_DRIVER);
+                sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
                 return;
             }
             motion_time += 20;
@@ -299,6 +312,7 @@ static void script_motion_process(void) {
     if (g_hexapod_state == HEXAPOD_STATE_SCRIPT_INIT) {
         if (motion_scripts[g_motion_script].init != NULL) {
             motion_scripts[g_motion_script].init(&g_dst_motion);
+            servo_driver_set_speed(g_dst_motion.cfg.speed);
         }
         g_hexapod_state = HEXAPOD_STATE_SCRIPT_EXEC;
     }
@@ -311,6 +325,7 @@ static void script_motion_process(void) {
         } else {
             if (g_is_surface_move_completed) {
                 motion_scripts[g_motion_script].exec(&g_dst_motion);
+                servo_driver_set_speed(g_dst_motion.cfg.speed);
             }
         }
     }
@@ -323,7 +338,7 @@ static void script_motion_process(void) {
 /// @brief  Load configuration
 /// @return true - load and validate success, false - fail
 /// ***************************************************************************
-static bool load_config(void) {
+static void load_config(void) {
     for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
         g_limbs[i].coxa.length  = 53;
         g_limbs[i].coxa.prot_min_angle = -45;
@@ -359,8 +374,6 @@ static bool load_config(void) {
     g_limbs[5].coxa.zero_rotate = 315;
     g_limbs[5].femur.zero_rotate = 35;
     g_limbs[5].tibia.zero_rotate = 135;
-    
-    return true;
 }
 
 

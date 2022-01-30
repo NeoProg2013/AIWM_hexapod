@@ -84,6 +84,7 @@ uint16_t adc_read(void) {
 /// ***************************************************************************
 /// @brief  ADC1 ISR
 /// ***************************************************************************
+#pragma call_graph_root="interrupt"
 void ADC1_IRQHandler(void) {
     uint32_t status = ADC1->SR;
     if (status & ADC_SR_EOC) {

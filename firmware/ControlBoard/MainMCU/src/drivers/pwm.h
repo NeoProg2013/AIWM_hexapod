@@ -6,8 +6,6 @@
 #ifndef _PWM_H_
 #define _PWM_H_
 
-#include <stdint.h>
-#include <stdbool.h>
 
 #define SUPPORT_PWM_CHANNELS_COUNT                  (18)
 
@@ -21,10 +19,11 @@ extern uint64_t synchro;
 
 
 extern void pwm_init(uint32_t frequency);
-extern void pwm_enable(void);
-extern void pwm_disable(void);
+extern void pwm_set_state(bool is_enabled);
+extern void pwm_start_sync(void);
 extern void pwm_set_frequency(uint32_t frequency);
-extern void pwm_set_shadow_buffer_lock_state(bool is_locked);
+extern void pwm_set_lock_state(bool is_locked);
+extern bool pwm_is_ready(void);
 extern void pwm_set_width(uint32_t channel, uint32_t width);
 
 

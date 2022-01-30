@@ -7,6 +7,7 @@
 #define _MOTION_SCRIPTS_H_
 #include "motion-core.h"
 
+
 typedef struct {
     void(*init)(motion_t* motion);
     void(*exec)(motion_t* motion);

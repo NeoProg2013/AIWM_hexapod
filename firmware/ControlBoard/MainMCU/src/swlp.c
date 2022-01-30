@@ -87,51 +87,69 @@ void swlp_process(void) {
         // Process command
         response->command_status = SWLP_CMD_STATUS_OK;
         switch (request->command) {
-            case SWLP_CMD_NONE:
-                break;
-            case SWLP_CMD_SELECT_SEQUENCE_UP:
+            case SWLP_CMD_SELECT_SCRIPT_UP:
                 motion_core_select_script(MOTION_SCRIPT_UP);
                 break;
-            case SWLP_CMD_SELECT_SEQUENCE_DOWN:
+            case SWLP_CMD_SELECT_SCRIPT_DOWN:
                 motion_core_select_script(MOTION_SCRIPT_DOWN);
                 break;
-            case SWLP_CMD_SELECT_SEQUENCE_MOVE: {
+            case SWLP_CMD_SELECT_SCRIPT_X_ROTATE:
+                motion_core_select_script(MOTION_SCRIPT_X_ROTATE);
+                break;
+            case SWLP_CMD_SELECT_SCRIPT_Z_ROTATE:
+                motion_core_select_script(MOTION_SCRIPT_Z_ROTATE);
+                break;
+            case SWLP_CMD_SELECT_SCRIPT_XY_ROTATE:
+                motion_core_select_script(MOTION_SCRIPT_XY_ROTATE);
+                break;
+            case SWLP_CMD_SELECT_SCRIPT_UP_DOWN:
+                motion_core_select_script(MOTION_SCRIPT_UP_DOWN);
+                break;
+            case SWLP_CMD_SELECT_SCRIPT_Z_PUSH_PULL:
+                motion_core_select_script(MOTION_SCRIPT_Z_PUSH_PULL);
+                break;
+            case SWLP_CMD_SELECT_SCRIPT_X_SWAY:
+                motion_core_select_script(MOTION_SCRIPT_X_SWAY);
+                break;
+            case SWLP_CMD_SELECT_SCRIPT_SQUARE:
+                motion_core_select_script(MOTION_SCRIPT_SQUARE);
+                break;
+            
+            case SWLP_CMD_NONE: {
+                    motion_core_select_script(MOTION_SCRIPT_NONE);
                     motion_t motion = motion_core_get_current_motion();
-                    motion.cfg.speed = request->motion_speed;
-                    motion.cfg.curvature = request->curvature;
-                    motion.cfg.distance = request->distance;
-                    motion.cfg.step_height = 30;
+                    motion.cfg.speed = 0;
+                    motion.cfg.curvature = 0;
+                    motion.cfg.distance = 0;
+                    motion.user_surface_point.x = request->surface_point_x;
+                    motion.user_surface_point.y = request->surface_point_y;
+                    motion.user_surface_point.z = request->surface_point_z;
+                    motion.user_surface_rotate.x = request->surface_rotate_x;
+                    motion.user_surface_rotate.y = request->surface_rotate_y;
+                    motion.user_surface_rotate.z = request->surface_rotate_z;
                     motion_core_move(&motion);
                 }
                 break;
-            case SWLP_CMD_SELECT_SEQUENCE_UP_DOWN:
-                motion_core_select_script(MOTION_SCRIPT_UP_DOWN);
-                break;
-            case SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL:
-                motion_core_select_script(MOTION_SCRIPT_Z_PUSH_PULL);
-                break;
-
-            case SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT:
-            case SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT:
-                motion_core_select_script(MOTION_SCRIPT_X_SWAY);
-                break;
-
-            case SWLP_CMD_SELECT_SEQUENCE_DANCE:
-                motion_core_select_script(MOTION_SCRIPT_XY_ROTATE);
-                break;
-            case SWLP_CMD_SELECT_SEQUENCE_ROTATE_X:
-                motion_core_select_script(MOTION_SCRIPT_X_ROTATE);
-                break;
-            case SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z:
-                motion_core_select_script(MOTION_SCRIPT_Z_ROTATE);
-                break;
-            case SWLP_CMD_SELECT_SEQUENCE_NONE:
-                motion_core_select_script(MOTION_SCRIPT_NONE);
-                motion_core_stop();
-                break;
+            case SWLP_CMD_MOVE: {
+                    motion_core_select_script(MOTION_SCRIPT_NONE);
+                    motion_t motion = motion_core_get_current_motion();
+                    motion.cfg.speed = request->speed;
+                    motion.cfg.curvature = request->curvature;
+                    motion.cfg.distance = request->distance;
+                    motion.cfg.step_height = request->step_height;
+                    motion.user_surface_point.x = request->surface_point_x;
+                    motion.user_surface_point.y = request->surface_point_y;
+                    motion.user_surface_point.z = request->surface_point_z;
+                    motion.user_surface_rotate.x = request->surface_rotate_x;
+                    motion.user_surface_rotate.y = request->surface_rotate_y;
+                    motion.user_surface_rotate.z = request->surface_rotate_z;
+                    motion_core_move(&motion);
+                }
+                break;  
                 
             default:
                 response->command_status = SWLP_CMD_STATUS_ERROR;
+                break;
         }
 
         // Prepare status payload
@@ -140,6 +158,15 @@ void swlp_process(void) {
         response->system_status = sysmon_system_status;
         response->battery_voltage = sysmon_battery_voltage;
         response->battery_charge = sysmon_battery_charge;
+        
+        // Gathering current motion surface
+        motion_t motion = motion_core_get_current_motion();
+        response->surface_point_x = (int16_t)motion.surface_point.x;
+        response->surface_point_y = (int16_t)motion.surface_point.y;
+        response->surface_point_z = (int16_t)motion.surface_point.z;
+        response->surface_rotate_x = (int16_t)motion.surface_rotate.x;
+        response->surface_rotate_y = (int16_t)motion.surface_rotate.y;
+        response->surface_rotate_z = (int16_t)motion.surface_rotate.z;
 
         // Prepare response
         swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
@@ -174,9 +201,7 @@ void swlp_process(void) {
 /// @return true - frame valid, false - frame invalid
 /// ***************************************************************************
 static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size) {
-
-    // Check frame size
-    if (frame_size != sizeof(swlp_frame_t)) {
+    if (frame_size != sizeof(swlp_frame_t)) { // Check frame size
         return false;
     }
 
@@ -202,7 +227,6 @@ static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size) {
 /// @return CRC16 value
 /// ***************************************************************************
 static uint16_t calculate_crc16(const uint8_t* frame, uint32_t size) {
-
     uint16_t crc16 = 0xFFFF;
     uint16_t data = 0;
     uint16_t k = 0;

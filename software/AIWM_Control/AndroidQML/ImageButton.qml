@@ -10,6 +10,7 @@ Button {
 
     property string imageSrc: ""
     property string imageColor: "#FFFFFF"
+    property string borderColor: "#AAAAAA"
     property int imageRotate: 0
 
     id: root
@@ -23,7 +24,7 @@ Button {
             id: frameRectangle
             anchors.fill: parent
             color: "#00000000"
-            border.color: "#AAAAAA"
+            border.color: borderColor
             border.width: 2
         }
         Image {

@@ -2,13 +2,9 @@
     <qresource prefix="/">
         <file>qtquickcontrols2.conf</file>
         <file>AndroidQML/ControlPage.qml</file>
-        <file>AndroidQML/ImageButton.qml</file>
         <file>AndroidQML/main.qml</file>
         <file>AndroidQML/StatusLabel.qml</file>
         <file>main.cpp</file>
-        <file>images/dance.svg</file>
-        <file>images/swordLeft.svg</file>
-        <file>images/swordRight.svg</file>
         <file>images/getDown.svg</file>
         <file>images/getUp.svg</file>
         <file>images/rotateX.svg</file>
@@ -20,11 +16,31 @@
         <file>swlp_protocol.h</file>
         <file>fonts/RobotoMono-Regular.ttf</file>
         <file>images/joystick.svg</file>
-        <file>images/arrowUpDown.svg</file>
-        <file>images/arrowPushPull.svg</file>
         <file>fonts/OpenSans-Regular.ttf</file>
         <file>AndroidQML/StreamWidget.qml</file>
         <file>images/noise.gif</file>
+        <file>images/icon.png</file>
+        <file>images/rotateXY.svg</file>
+        <file>images/square.svg</file>
+        <file>images/swayX.svg</file>
+        <file>images/upDown.svg</file>
+        <file>images/pushPull.svg</file>
+        <file>AndroidQML/CP_ScriptsPanel.qml</file>
+        <file>AndroidQML/ImageButton.qml</file>
+        <file>images/status/DisplayError.svg</file>
+        <file>images/status/FatalError.svg</file>
+        <file>images/status/I2CError.svg</file>
+        <file>images/status/InternalError.svg</file>
+        <file>images/status/MathError.svg</file>
+        <file>images/status/MotionCoreError.svg</file>
+        <file>images/status/MPU6050Error.svg</file>
+        <file>images/status/ServoDriverError.svg</file>
+        <file>images/status/StepDetectorError.svg</file>
+        <file>images/status/SyncError.svg</file>
+        <file>images/status/SystemMonitorError.svg</file>
+        <file>images/status/VoltageError.svg</file>
+        <file>AndroidQML/CP_StatusPanel.qml</file>
+        <file>AndroidQML/CP_Joystick.qml</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

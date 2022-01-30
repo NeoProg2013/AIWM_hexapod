@@ -52,14 +52,14 @@ static state_t module_state = STATE_NOINIT;
 /// ***************************************************************************
 void display_init(void) {
     if (!oled_gl_init()) {
-        sysmon_set_error(SYSMON_COMM_ERROR);
+        sysmon_set_error(SYSMON_I2C_ERROR);
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }
   
     // Draw battery voltage (static)
     if (!oled_gl_draw_bitmap(0, 0, BATTERY_BITMAP_WIDTH, BATTERY_BITMAP_HEIGHT, battery_bitmap)) {
-        sysmon_set_error(SYSMON_FATAL_ERROR);
+        sysmon_set_error(SYSMON_INTERNAL_ERROR);
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }
@@ -76,7 +76,7 @@ void display_init(void) {
     
     // Draw module status (dynamic)
     if (!oled_gl_draw_bitmap(4, 0, MODULE_BITMAP_WIDTH, MODULE_BITMAP_HEIGHT, module_bitmap)) {
-        sysmon_set_error(SYSMON_FATAL_ERROR);
+        sysmon_set_error(SYSMON_INTERNAL_ERROR);
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }
@@ -106,7 +106,7 @@ void display_init(void) {
     oled_gl_draw_rect(0, 120, 0, 8, 8);
     
     if (!oled_gl_sync_update()) {
-        sysmon_set_error(SYSMON_COMM_ERROR);
+        sysmon_set_error(SYSMON_I2C_ERROR);
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }
@@ -186,13 +186,13 @@ void display_process(void) {
         
         case STATE_NOINIT:
         default:
-            sysmon_set_error(SYSMON_FATAL_ERROR);
+            sysmon_set_error(SYSMON_INTERNAL_ERROR);
             sysmon_disable_module(SYSMON_MODULE_DISPLAY);
             break;
     }
     
     if (!oled_gl_async_process()) {
-        sysmon_set_error(SYSMON_COMM_ERROR);
+        sysmon_set_error(SYSMON_I2C_ERROR);
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }

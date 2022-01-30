@@ -8,7 +8,6 @@
 #include "pwm.h"
 #include "system-monitor.h"
 #include "systimer.h"
-#include <math.h>
 
 #define SERVO_CONFIG_DIRECT_DIRECTION_MASK      (0x00)
 #define SERVO_CONFIG_REVERSE_DIRECTION_MASK     (0x01)
@@ -44,25 +43,21 @@ typedef struct {
 } servo_t;
 
 CLI_CMD_HANDLER(servo_cli_cmd_help);
+CLI_CMD_HANDLER(servo_cli_cmd_cfg);
 CLI_CMD_HANDLER(servo_cli_cmd_power);
 CLI_CMD_HANDLER(servo_cli_cmd_logging);
 CLI_CMD_HANDLER(servo_cli_cmd_calibration);
-CLI_CMD_HANDLER(servo_cli_cmd_status);
 CLI_CMD_HANDLER(servo_cli_cmd_set);
-CLI_CMD_HANDLER(servo_cli_cmd_logic_zero);
-CLI_CMD_HANDLER(servo_cli_cmd_physic_zero);
 CLI_CMD_HANDLER(servo_cli_cmd_reset);
 
 static const cli_cmd_t cli_cmd_list[] = {
-    { .cmd = "help",        .handler = servo_cli_cmd_help             },
-    { .cmd = "power",       .handler = servo_cli_cmd_power            },
-    { .cmd = "logging",     .handler = servo_cli_cmd_logging          },
-    { .cmd = "calibration", .handler = servo_cli_cmd_calibration      },
-    { .cmd = "status",      .handler = servo_cli_cmd_status           },
-    { .cmd = "set",         .handler = servo_cli_cmd_set              },
-    { .cmd = "logic-zero",  .handler = servo_cli_cmd_logic_zero       },
-    { .cmd = "physic-zero", .handler = servo_cli_cmd_physic_zero      },
-    { .cmd = "reset",       .handler = servo_cli_cmd_reset            }
+    { .cmd = "help",        .handler = servo_cli_cmd_help        },
+    { .cmd = "status",      .handler = servo_cli_cmd_cfg         },
+    { .cmd = "power",       .handler = servo_cli_cmd_power       },
+    { .cmd = "logging",     .handler = servo_cli_cmd_logging     },
+    { .cmd = "calibration", .handler = servo_cli_cmd_calibration },
+    { .cmd = "set",         .handler = servo_cli_cmd_set         },
+    { .cmd = "reset",       .handler = servo_cli_cmd_reset       }
 };
 
 
@@ -70,7 +65,7 @@ static servo_t servo_list[SUPPORT_SERVO_COUNT] = {0};
 static bool is_enable_data_logging = false;
 
 
-static bool read_configuration(void);
+static void load_config(void);
 static float calculate_physic_angle(float logic_angle, const servo_t* servo);
 
 
@@ -86,12 +81,7 @@ void servo_driver_init(void) {
     gpio_set_output_speed(SERVO_POWER_EN_PIN, GPIO_SPEED_LOW);
     gpio_set_pull        (SERVO_POWER_EN_PIN, GPIO_PULL_NO);
    
-    if (read_configuration() == false) {
-        sysmon_set_error(SYSMON_CONFIG_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
-        servo_driver_power_off();
-        return;
-    }
+    load_config();
     
     pwm_init(PWM_START_FREQUENCY_HZ);
 }
@@ -117,7 +107,7 @@ void servo_driver_move(uint32_t ch, float angle) {
 /// *************+**************************************************************
 void servo_driver_power_on(void) {
     SERVO_TURN_POWER_ON();
-    pwm_enable();
+    pwm_set_state(true);
 }
 
 /// ***************************************************************************
@@ -126,7 +116,7 @@ void servo_driver_power_on(void) {
 /// ***************************************************************************
 void servo_driver_power_off(void) {
     SERVO_TURN_POWER_OFF();
-    pwm_disable();
+    pwm_set_state(false);
 }
 
 /// ***************************************************************************
@@ -151,7 +141,6 @@ void servo_driver_process(void) {
     }
     
     // Calculate servo state and update PWM driver
-    pwm_set_shadow_buffer_lock_state(true);
     for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
         servo_t* servo = &servo_list[i];
             
@@ -191,7 +180,6 @@ void servo_driver_process(void) {
         // Load pulse width
         pwm_set_width(i, pulse_width);
     }
-    pwm_set_shadow_buffer_lock_state(false);
     
     if (is_enable_data_logging) {
         void* tx_buffer = cli_get_tx_buffer();
@@ -234,11 +222,9 @@ const cli_cmd_t* servo_get_cmd_list(uint32_t* count) {
 
 
 /// ***************************************************************************
-/// @brief  Read configuration
-/// @param  none
-/// @return true - read success, false - fail
+/// @brief  Load servo configuration
 /// ***************************************************************************
-static bool read_configuration(void) {
+static void load_config(void) {
     servo_list[0].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[0].zero_trim = -3;
     servo_list[1].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
@@ -280,8 +266,6 @@ static bool read_configuration(void) {
     servo_list[16].zero_trim = 0;
     servo_list[17].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
     servo_list[17].zero_trim = 0;
-
-    return true;
 }
 
 /// ***************************************************************************
@@ -291,7 +275,6 @@ static bool read_configuration(void) {
 /// @return physic angle value
 /// ***************************************************************************
 static float calculate_physic_angle(float logic_angle, const servo_t* servo) {
-    
     // Convert logic angle to servo physic angle
     float physic_angle = 0;
     if (servo->config & SERVO_CONFIG_REVERSE_DIRECTION_MASK) {
@@ -319,21 +302,34 @@ static float calculate_physic_angle(float logic_angle, const servo_t* servo) {
 // ***************************************************************************
 CLI_CMD_HANDLER(servo_cli_cmd_help) {
     const char* help = CLI_HELP(
-        "[SERVO SUBSYSTEM]\r\n"
-        "Commands: \r\n"
+        "[SERVO DRIVER]\r\n"
+        "  servo cfg - print servos configuration\r\n"
         "  servo power <0|1> - enable/disable servo power\r\n"
         "  servo logging <0|1> - enable/disable logging\r\n"
         "  servo calibration - move all servos to logic zero\r\n"
         "  servo status <servo idx> - print servo status\r\n"
         "  servo set <servo idx> <zero-trim|logic|physic|pulse> <value> - move servo\r\n"
-        "  servo logic-zero <servo idx> - move servo to logic zero\r\n"
-        "  servo physic-zero <servo idx> move servo to physic zero\r\n"
-        "  servo reset <servo idx> return servo to subsystem control");
+        "  servo reset [servo idx] return servo to subsystem control");
     if (strlen(response) >= USART1_TX_BUFFER_SIZE) {
         strcpy(response, CLI_ERROR("Help message size more USART1_TX_BUFFER_SIZE"));
         return false;
     }
     strcpy(response, help);
+    return true;
+}
+CLI_CMD_HANDLER(servo_cli_cmd_cfg) {
+    uint32_t servo_index = (atoi(argv[0]) < SUPPORT_SERVO_COUNT) ? atoi(argv[0]) : SUPPORT_SERVO_COUNT - 1;
+    servo_t* servo = &servo_list[servo_index];
+    sprintf(response, CLI_OK("servo %d status report")
+                      CLI_OK("    - override level: %d")
+                      CLI_OK("    - override value: %d")
+                      CLI_OK("    - logic angle: %d")
+                      CLI_OK("    - physic angle: %d")
+                      CLI_OK("    - pulse width: %d")
+                      CLI_OK("    - zero trim: %d")
+                      CLI_OK("    - config: %d"),
+            servo_index, servo->override_level, servo->override_value,
+            (int32_t)servo->logic_angle, (int32_t)servo->physic_angle, servo->pulse_width, servo->zero_trim, servo->config);
     return true;
 }
 CLI_CMD_HANDLER(servo_cli_cmd_power) {
@@ -358,20 +354,6 @@ CLI_CMD_HANDLER(servo_cli_cmd_calibration) {
         servo_list[i].override_value = 0;
     }
     sprintf(response, CLI_OK("moved all servo to logic zero"));
-    return true;
-}
-CLI_CMD_HANDLER(servo_cli_cmd_status) {
-    uint32_t servo_index = (argc == 1) ? atoi(argv[0]) : 0;
-    servo_t* servo = &servo_list[(servo_index < SUPPORT_SERVO_COUNT) ? servo_index : SUPPORT_SERVO_COUNT - 1];
-    sprintf(response, CLI_OK("servo status report")
-                      CLI_OK("    - override level: %d")
-                      CLI_OK("    - override value: %d")
-                      CLI_OK("    - logic angle: %d")
-                      CLI_OK("    - physic angle: %d")
-                      CLI_OK("    - pulse width: %d")
-                      CLI_OK("    - zero trim: %d"),
-            servo->override_level, servo->override_value,
-            (int32_t)servo->logic_angle, (int32_t)servo->physic_angle, servo->pulse_width, servo->zero_trim);
     return true;
 }
 CLI_CMD_HANDLER(servo_cli_cmd_set) {
@@ -408,27 +390,19 @@ CLI_CMD_HANDLER(servo_cli_cmd_set) {
     }
     return true;
 }
-CLI_CMD_HANDLER(servo_cli_cmd_logic_zero) {
-    uint32_t servo_index = (argc >= 1) ? atoi(argv[0]) : 0;
-    servo_t* servo = &servo_list[(servo_index < SUPPORT_SERVO_COUNT) ? servo_index : SUPPORT_SERVO_COUNT - 1];
-    servo->override_level = OVERRIDE_LOGIC_ANGLE;
-    servo->override_value = 0;
-    sprintf(response, CLI_OK("[%lu] moved to logic zero"), servo_index);
-    return true;
-}
-CLI_CMD_HANDLER(servo_cli_cmd_physic_zero) {
-    uint32_t servo_index = (argc >= 1) ? atoi(argv[0]) : 0;
-    servo_t* servo = &servo_list[(servo_index < SUPPORT_SERVO_COUNT) ? servo_index : SUPPORT_SERVO_COUNT - 1];
-    servo->override_level = OVERRIDE_PHYSIC_ANGLE;
-    servo->override_value = (uint32_t)calculate_physic_angle(0, servo);
-    sprintf(response, CLI_OK("[%lu] moved to physic zero"), servo_index);
-    return true;
-}
 CLI_CMD_HANDLER(servo_cli_cmd_reset) {
-    uint32_t servo_index = (argc >= 1) ? atoi(argv[0]) : 0;
-    servo_t* servo = &servo_list[(servo_index < SUPPORT_SERVO_COUNT) ? servo_index : SUPPORT_SERVO_COUNT - 1];
-    servo->override_level = OVERRIDE_NO;
-    servo->override_value = 0;
-    sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, servo->override_level);
+    if (argc >= 1) {
+        uint32_t servo_index = atoi(argv[0]);
+        servo_t* servo = &servo_list[(servo_index < SUPPORT_SERVO_COUNT) ? servo_index : SUPPORT_SERVO_COUNT - 1];
+        servo->override_level = OVERRIDE_NO;
+        servo->override_value = 0;
+        sprintf(response, CLI_OK("[%lu] has new override level %lu"), servo_index, servo->override_level);
+    } else {
+        for (uint32_t i = 0; i < SUPPORT_SERVO_COUNT; ++i) {
+            servo_list[i].override_level = OVERRIDE_NO;
+            servo_list[i].override_value = 0;
+        }   
+        sprintf(response, CLI_OK("all servos have new override level %lu"), OVERRIDE_NO);
+    }
     return true;
 }

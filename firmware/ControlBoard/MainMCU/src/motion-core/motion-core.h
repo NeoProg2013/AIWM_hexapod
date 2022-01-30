@@ -15,8 +15,13 @@ typedef struct {
 } motion_cfg_t;
 
 typedef struct {
+    // Surface parameters from user
+    p3d_t user_surface_point;
+    r3d_t user_surface_rotate;
+    // Surface parameters for internal usage
     p3d_t surface_point;
     r3d_t surface_rotate;
+    // Motion configuration from user
     motion_cfg_t cfg;
 } motion_t;
 

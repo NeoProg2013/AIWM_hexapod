@@ -121,20 +121,20 @@ static void square_exec(motion_t* motion) {
 
     switch (loop++) {
     case 0:
-        motion->surface_rotate.x = 15;
-        motion->surface_rotate.z = 15;
+        motion->surface_rotate.x = 10;
+        motion->surface_rotate.z = 10;
         break;
     case 1:
-        motion->surface_rotate.x = -15;
-        motion->surface_rotate.z = -15;
+        motion->surface_rotate.x = -10;
+        motion->surface_rotate.z = -10;
         break;
     case 2:
-        motion->surface_rotate.x = -15;
-        motion->surface_rotate.z = 15;
+        motion->surface_rotate.x = -10;
+        motion->surface_rotate.z = 10;
         break;
     case 3:
-        motion->surface_rotate.x = 15;
-        motion->surface_rotate.z = -15;
+        motion->surface_rotate.x = 10;
+        motion->surface_rotate.z = -10;
         loop = 0;
         break;
     }

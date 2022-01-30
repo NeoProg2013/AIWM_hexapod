@@ -9,6 +9,8 @@
 #define I2C_SDA_PIN                     GPIOF, 7
 #define I2C_MAX_TX_BYTE_TIME            (2) // ms
 
+#define I2C_WAIT_TIMEOUT_VALUE          (5) // ms
+
 
 static bool is_driver_error = false;
 static uint32_t async_operation_timeout_value = 0;
@@ -182,7 +184,6 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
 /// @param  mask: mask
 /// @return true - success, false - timeout
 /// ***************************************************************************
-#define I2C_WAIT_TIMEOUT_VALUE          (5) // ms
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
     uint64_t start_time = get_time_ms();
     do {
@@ -216,6 +217,7 @@ static void disable_i2c(void) {
 /// @param  none
 /// @return none
 /// ***************************************************************************
+#pragma call_graph_root="interrupt"
 void I2C2_EV_IRQHandler(void) {
     uint32_t status = I2C2->ISR;
     I2C2->ICR = 0xFFFFFFFF; // Clear flags
@@ -233,6 +235,7 @@ void I2C2_EV_IRQHandler(void) {
 /// @param  none
 /// @return none
 /// ***************************************************************************
+#pragma call_graph_root="interrupt"
 void I2C2_ER_IRQHandler(void) {
     uint32_t status = I2C2->ISR;
     I2C2->ICR = 0xFFFFFFFF; // Clear flags

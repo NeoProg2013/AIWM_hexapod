@@ -56,6 +56,7 @@ void delay_ms(uint32_t ms) {
 /// @brief  Systimer ISR
 /// @return none
 /// ***************************************************************************
+#pragma call_graph_root="interrupt"
 void SysTick_Handler(void) {
     ++systime_ms;
 }
