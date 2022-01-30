@@ -14,3 +14,5 @@
 /firmware/ControlBoard/SecondaryMCU/SecondaryMCU.dep
 /firmware/ControlBoard/SecondaryMCU/SecondaryMCU.ewt
 /firmware/ControlBoard/MainMCU/.idea
+.idea
+/firmware/ControlBoard/settings
