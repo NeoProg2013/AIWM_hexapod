@@ -31,11 +31,12 @@ public:
     Q_INVOKABLE void sendPushPullCommand() { setCommand(SWLP_CMD_SELECT_SCRIPT_Z_PUSH_PULL); }
     Q_INVOKABLE void sendXSwayCommand()    { setCommand(SWLP_CMD_SELECT_SCRIPT_X_SWAY);      }
     Q_INVOKABLE void sendSquareCommand()   { setCommand(SWLP_CMD_SELECT_SCRIPT_SQUARE);      }
-    Q_INVOKABLE void sendStopMoveCommand() { setCommand(SWLP_CMD_NONE);                      }
 
     Q_INVOKABLE void sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
                                             QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
                                             QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ);
+    Q_INVOKABLE void sendStopMoveCommand(QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
+                                         QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ);
 signals:
     void frameReceived();
     void systemStatusUpdated(QVariant newSystemStatus, QVariant newModuleStatus);

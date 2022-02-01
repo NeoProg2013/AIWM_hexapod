@@ -61,6 +61,48 @@ void Swlp::sendStartMotionCommand(QVariant speed, QVariant distance, QVariant cu
     m_commandPayload.surface_rotate_y = surfaceRotateY.toInt();
     m_commandPayload.surface_rotate_z = surfaceRotateZ.toInt();
 
+    qDebug() << "[sendStartMotionCommand] speed" << m_commandPayload.speed;
+    qDebug() << "[sendStartMotionCommand] curvature" << m_commandPayload.curvature;
+    qDebug() << "[sendStartMotionCommand] distance" << m_commandPayload.distance;
+    qDebug() << "[sendStartMotionCommand] step_height" << m_commandPayload.step_height;
+    qDebug() << "[sendStartMotionCommand] surface_point_x" << m_commandPayload.surface_point_x;
+    qDebug() << "[sendStartMotionCommand] surface_point_y" << m_commandPayload.surface_point_y;
+    qDebug() << "[sendStartMotionCommand] surface_point_z" << m_commandPayload.surface_point_z;
+    qDebug() << "[sendStartMotionCommand] surface_rotate_x" << m_commandPayload.surface_rotate_x;
+    qDebug() << "[sendStartMotionCommand] surface_rotate_y" << m_commandPayload.surface_rotate_y;
+    qDebug() << "[sendStartMotionCommand] surface_rotate_z" << m_commandPayload.surface_rotate_z;
+
+    m_payloadMutex.unlock();
+}
+
+void Swlp::sendStopMoveCommand(QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
+                               QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ) {
+    m_payloadMutex.lock();
+    m_commandPayload.command = SWLP_CMD_NONE;
+    m_commandPayload.speed = 0;
+    m_commandPayload.curvature = 0;
+    m_commandPayload.distance = 0;
+    m_commandPayload.step_height = 0;
+
+    m_commandPayload.surface_point_x = surfacePointX.toInt();
+    m_commandPayload.surface_point_y = surfacePointY.toInt();
+    m_commandPayload.surface_point_z = surfacePointZ.toInt();
+
+    m_commandPayload.surface_rotate_x = surfaceRotateX.toInt();
+    m_commandPayload.surface_rotate_y = surfaceRotateY.toInt();
+    m_commandPayload.surface_rotate_z = surfaceRotateZ.toInt();
+
+    qDebug() << "[sendStopMoveCommand] speed" << m_commandPayload.speed;
+    qDebug() << "[sendStopMoveCommand] curvature" << m_commandPayload.curvature;
+    qDebug() << "[sendStopMoveCommand] distance" << m_commandPayload.distance;
+    qDebug() << "[sendStopMoveCommand] step_height" << m_commandPayload.step_height;
+    qDebug() << "[sendStopMoveCommand] surface_point_x" << m_commandPayload.surface_point_x;
+    qDebug() << "[sendStopMoveCommand] surface_point_y" << m_commandPayload.surface_point_y;
+    qDebug() << "[sendStopMoveCommand] surface_point_z" << m_commandPayload.surface_point_z;
+    qDebug() << "[sendStopMoveCommand] surface_rotate_x" << m_commandPayload.surface_rotate_x;
+    qDebug() << "[sendStopMoveCommand] surface_rotate_y" << m_commandPayload.surface_rotate_y;
+    qDebug() << "[sendStopMoveCommand] surface_rotate_z" << m_commandPayload.surface_rotate_z;
+
     m_payloadMutex.unlock();
 }
 

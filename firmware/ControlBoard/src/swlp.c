@@ -118,6 +118,7 @@ void swlp_process(void) {
             case SWLP_CMD_NONE: {
                     motion_t motion = motion_core_get_current_motion();
                     motion.cfg.distance = 0;
+                    motion.cfg.speed = 0;
                     motion.user_surface_point.x = request->surface_point_x;
                     motion.user_surface_point.y = request->surface_point_y;
                     motion.user_surface_point.z = request->surface_point_z;

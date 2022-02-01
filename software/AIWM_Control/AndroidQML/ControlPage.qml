@@ -37,6 +37,16 @@ Item {
         }
     }
 
+    function sendMotionCmd() {
+        CppSwlpService.sendStartMotionCommand(joystick.speed, joystick.distance, joystick.curvature, joystick.stepHeight,
+                                              surfaceCtrl.px, surfaceCtrl.py, surfaceCtrl.pz,
+                                              surfaceCtrl.rx, surfaceCtrl.ry, surfaceCtrl.rz)
+    }
+    function sendStopMotionCmd() {
+        CppSwlpService.sendStopMoveCommand(surfaceCtrl.px, surfaceCtrl.py, surfaceCtrl.pz,
+                                           surfaceCtrl.rx, surfaceCtrl.ry, surfaceCtrl.rz)
+    }
+
 
     StreamWidget {
         id: streamWidget
@@ -73,147 +83,47 @@ Item {
         id: controlsSwipeView
         orientation: Qt.Vertical
         clip: true
-        height: 270
         anchors.rightMargin: 10
         anchors.leftMargin: 10
         anchors.bottomMargin: 10
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
+        anchors.topMargin: 320
         currentIndex: 1
 
         Item {
             CP_Joystick {
+                id: joystick
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
+                onParametersChanged: {
+                    sendMotionCmd()
+                }
             }
         }
         Item {
             CP_ScriptsPanel {
+                id: scriptPanel
                 anchors.right: parent.right
                 anchors.left: parent.left
                 anchors.top: parent.top
             }
-/*
 
-            Label {
-                id: labelRotate
-                y: 90
-                width: 85
-                height: 17
-                text: qsTr("Вращение")
+
+            CP_SurfaceCtrl {
+                id : surfaceCtrl
                 anchors.left: parent.left
-                horizontalAlignment: Text.AlignHCenter
-                anchors.leftMargin: 0
-            }
-
-            Slider {
-                id: sliderRotateX
-                width: 25
-                anchors.left: parent.left
-                anchors.top: labelRotate.bottom
-                anchors.bottom: parent.bottom
-                stepSize: 1
-                to: 15
-                anchors.leftMargin: 0
-                anchors.bottomMargin: 0
-                anchors.topMargin: 5
-                orientation: Qt.Vertical
-                value: 0
-            }
-
-            Slider {
-                id: sliderRotateY
-                y: 70
-                width: 25
-                anchors.left: sliderRotateX.right
-                anchors.top: labelRotate.bottom
-                anchors.bottom: parent.bottom
-                stepSize: 1
-                to: 360
-                anchors.leftMargin: 5
-                value: 0
-                orientation: Qt.Vertical
-                anchors.bottomMargin: 0
-                anchors.topMargin: 5
-            }
-
-            Slider {
-                id: sliderRotateZ
-                y: 70
-                width: 25
-                anchors.left: sliderRotateY.right
-                anchors.top: labelRotate.bottom
-                anchors.bottom: parent.bottom
-                stepSize: 1
-                to: 15
-                anchors.leftMargin: 5
-                value: 0
-                orientation: Qt.Vertical
-                anchors.bottomMargin: 0
-                anchors.topMargin: 5
-            }
-
-            Label {
-                id: labelPoint
-                y: 90
-                width: 85
-                height: 17
-                text: qsTr("Сдвиг")
                 anchors.right: parent.right
-                horizontalAlignment: Text.AlignHCenter
-                anchors.rightMargin: 0
-            }
-
-            Slider {
-                id: sliderPointX
-                width: 25
-                anchors.right: sliderPointY.left
-                anchors.top: labelRotate.bottom
+                anchors.top: scriptPanel.bottom
                 anchors.bottom: parent.bottom
-                to: 150
-                stepSize: 1
-                anchors.rightMargin: 5
-                value: 0
-                orientation: Qt.Vertical
-                anchors.bottomMargin: 0
                 anchors.topMargin: 5
+                onParametersChanged: {
+                    sendStopMotionCmd()
+                }
             }
-
-            Slider {
-                id: sliderPointY
-                y: 70
-                width: 25
-                anchors.right: sliderPointZ.left
-                anchors.top: labelRotate.bottom
-                anchors.bottom: parent.bottom
-                to: 150
-                stepSize: 1
-                anchors.rightMargin: 5
-                value: 0
-                orientation: Qt.Vertical
-                anchors.bottomMargin: 0
-                anchors.topMargin: 5
-            }
-
-            Slider {
-                id: sliderPointZ
-                x: 355
-                y: 70
-                width: 25
-                anchors.right: parent.right
-                anchors.top: labelRotate.bottom
-                anchors.bottom: parent.bottom
-                to: 150
-                stepSize: 1
-                anchors.rightMargin: 0
-                value: 0
-                orientation: Qt.Vertical
-                anchors.bottomMargin: 0
-                anchors.topMargin: 5
-            }*/
-
         }
     }
 }
@@ -222,6 +132,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:6}D{i:3}
+    D{i:0;formeditorColor:"#000000"}D{i:6}
 }
 ##^##*/

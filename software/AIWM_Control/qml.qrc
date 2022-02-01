@@ -41,6 +41,7 @@
         <file>images/status/VoltageError.svg</file>
         <file>AndroidQML/CP_StatusPanel.qml</file>
         <file>AndroidQML/CP_Joystick.qml</file>
+        <file>AndroidQML/CP_SurfaceCtrl.qml</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

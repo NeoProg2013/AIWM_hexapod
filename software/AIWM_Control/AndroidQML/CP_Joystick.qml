@@ -10,6 +10,13 @@ Item {
     height: 270
     clip: true
 
+    property int speed: motionSpeed.value
+    property int distance: 0
+    property int curvature: 0
+    property int stepHeight: stepHeight.value
+
+    signal parametersChanged
+
     Rectangle {
         id: joystickItem
         width: 270
@@ -58,23 +65,22 @@ Item {
 
                 onReleased: {
                     animationReturn.start()
-                    CppSwlpService.sendStopMoveCommand()
+                    root.distance = 0
+                    root.curvature = 0
+                    parametersChanged()
                 }
                 onPositionChanged: {
-                    var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2)
-                    var k = (joystickItem.width - dragItem.width) / 2000
-                    var curvature = Math.round(x / k)
+                    var x = dragItem.x - (joystickItem.width / 2 - dragItem.width / 2);
+                    var k = (joystickItem.width - dragItem.width) / 2000;
+                    root.curvature = Math.round(Math.round(x / k));
 
-                    var deadZoneHeight = 20
-                    var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2
-                    var maxDeadZone = (joystickItem.height - dragItem.height + deadZoneHeight) / 2
-                    var distance = 0
+                    var deadZoneHeight = 20;
+                    var minDeadZone = (joystickItem.height - dragItem.height - deadZoneHeight) / 2;
+                    var maxDeadZone = (joystickItem.height - dragItem.height + deadZoneHeight) / 2;
                     if (dragItem.y < minDeadZone || dragItem.y > maxDeadZone) {
-                        distance = -(dragItem.y * (220.0 / drag.maximumY) - 110.0)
-                        CppSwlpService.sendStartMotionCommand(motionSpeed.value, Math.round(distance), Math.round(curvature), stepHeight.value,
-                                                              0,0,0,0,0,0)//sliderRotateX.value, sliderRotateY.value, sliderRotateZ.value,
-                                                              //sliderPointX.value, sliderPointY.value, sliderPointZ.value)
+                        root.distance = Math.round(-(dragItem.y * (220.0 / drag.maximumY) - 110.0));
                     }
+                    parametersChanged()
                 }
             }
         }
@@ -107,6 +113,9 @@ Item {
         orientation: Qt.Vertical
         to: 100
         value: 90
+        onValueChanged: {
+            parametersChanged()
+        }
     }
 
     Label {
@@ -129,6 +138,9 @@ Item {
         from: 15
         to: 60
         value: 30
+        onValueChanged: {
+            parametersChanged()
+        }
     }
 
 }
