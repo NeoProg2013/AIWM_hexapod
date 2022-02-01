@@ -45,7 +45,7 @@
 
 
 
-
+#define constrain(amt,low,high)             ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 #define GPIO_MODE_INPUT                     (0x00)
 #define GPIO_MODE_OUTPUT                    (0x01)
@@ -105,6 +105,17 @@ static inline bool gpio_read_output(GPIO_TypeDef* port, uint32_t pin) {
     return port->ODR & (0x01u << pin);
 }
 
+
+static inline uint16_t constrain_u16(uint16_t v, uint16_t min, uint16_t max) {
+    if (v < min) return min;
+    if (v > max) return max;
+    return v;
+}
+static inline float constrain_float(float v, float min, float max) {
+    if (isless(v, min)) return min;
+    if (isgreater(v, max)) return max;
+    return v;
+}
 
 
 #endif // _PROJECT_BASE_H_

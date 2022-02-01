@@ -88,38 +88,35 @@ void swlp_process(void) {
         response->command_status = SWLP_CMD_STATUS_OK;
         switch (request->command) {
             case SWLP_CMD_SELECT_SCRIPT_UP:
-                motion_core_select_script(MOTION_SCRIPT_UP);
+                motion_core_move(NULL, MOTION_SCRIPT_UP);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_DOWN:
-                motion_core_select_script(MOTION_SCRIPT_DOWN);
+                motion_core_move(NULL, MOTION_SCRIPT_DOWN);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_X_ROTATE:
-                motion_core_select_script(MOTION_SCRIPT_X_ROTATE);
+                motion_core_move(NULL, MOTION_SCRIPT_X_ROTATE);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_Z_ROTATE:
-                motion_core_select_script(MOTION_SCRIPT_Z_ROTATE);
+                motion_core_move(NULL, MOTION_SCRIPT_Z_ROTATE);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_XY_ROTATE:
-                motion_core_select_script(MOTION_SCRIPT_XY_ROTATE);
+                motion_core_move(NULL, MOTION_SCRIPT_XY_ROTATE);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_UP_DOWN:
-                motion_core_select_script(MOTION_SCRIPT_UP_DOWN);
+                motion_core_move(NULL, MOTION_SCRIPT_UP_DOWN);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_Z_PUSH_PULL:
-                motion_core_select_script(MOTION_SCRIPT_Z_PUSH_PULL);
+                motion_core_move(NULL, MOTION_SCRIPT_Z_PUSH_PULL);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_X_SWAY:
-                motion_core_select_script(MOTION_SCRIPT_X_SWAY);
+                motion_core_move(NULL, MOTION_SCRIPT_X_SWAY);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_SQUARE:
-                motion_core_select_script(MOTION_SCRIPT_SQUARE);
+                motion_core_move(NULL, MOTION_SCRIPT_SQUARE);
                 break;
             
             case SWLP_CMD_NONE: {
-                    motion_core_select_script(MOTION_SCRIPT_NONE);
                     motion_t motion = motion_core_get_current_motion();
-                    motion.cfg.speed = 0;
-                    motion.cfg.curvature = 0;
                     motion.cfg.distance = 0;
                     motion.user_surface_point.x = request->surface_point_x;
                     motion.user_surface_point.y = request->surface_point_y;
@@ -127,11 +124,10 @@ void swlp_process(void) {
                     motion.user_surface_rotate.x = request->surface_rotate_x;
                     motion.user_surface_rotate.y = request->surface_rotate_y;
                     motion.user_surface_rotate.z = request->surface_rotate_z;
-                    motion_core_move(&motion);
+                    motion_core_move(&motion, MOTION_SCRIPT_NONE);
                 }
                 break;
             case SWLP_CMD_MOVE: {
-                    motion_core_select_script(MOTION_SCRIPT_NONE);
                     motion_t motion = motion_core_get_current_motion();
                     motion.cfg.speed = request->speed;
                     motion.cfg.curvature = request->curvature;
@@ -143,7 +139,7 @@ void swlp_process(void) {
                     motion.user_surface_rotate.x = request->surface_rotate_x;
                     motion.user_surface_rotate.y = request->surface_rotate_y;
                     motion.user_surface_rotate.z = request->surface_rotate_z;
-                    motion_core_move(&motion);
+                    motion_core_move(&motion, MOTION_SCRIPT_NONE);
                 }
                 break;  
                 

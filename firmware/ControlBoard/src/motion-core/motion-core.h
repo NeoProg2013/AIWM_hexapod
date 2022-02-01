@@ -8,10 +8,10 @@
 #include "math-structs.h"
 
 typedef struct {
-    int16_t speed;
-    int16_t curvature;
-    int16_t distance;
-    int16_t step_height;
+    uint16_t speed;
+    int16_t  curvature;
+    int16_t  distance;
+    uint16_t step_height;
 } motion_cfg_t;
 
 typedef struct {
@@ -48,16 +48,11 @@ extern void motion_core_init(void);
 
 /// ***************************************************************************
 /// @brief  Start/stop main motion
-/// @param  motion: motion description. @ref motion_t
+/// @param  motion: motion description, may be NULL. @ref motion_t
+/// @param  id: script for run. @ref motion_script_id_t
 /// ***************************************************************************
-extern void motion_core_move(const motion_t* motion);
-extern void motion_core_stop(void);
-
-/// ***************************************************************************
-/// @brief  Start/stop motion script
-/// @param  id: motion script id. @ref motion_script_id_t
-/// ***************************************************************************
-extern void motion_core_select_script(motion_script_id_t id);
+extern void motion_core_move(const motion_t* motion, motion_script_id_t id);
+extern void motion_core_reset_motion(void);
 
 /// ***************************************************************************
 /// @brief  Get current motion parameters

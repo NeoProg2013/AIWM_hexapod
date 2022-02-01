@@ -14,7 +14,7 @@
 #define SYSMON_INTERNAL_ERROR           (0x02 | SYSMON_FATAL_ERROR)     // Not resettable (enter to emergency loop)
 #define SYSMON_VOLTAGE_ERROR            (0x04)                          // Not resettable
 #define SYSMON_SYNC_ERROR               (0x08)                          // Not resettable
-#define SYSMON_MATH_ERROR               (0x10 | SYSMON_FATAL_ERROR)     // Not resettable (enter to emergency loop)
+#define SYSMON_MATH_ERROR               (0x10)                          // Resettable
 #define SYSMON_I2C_ERROR                (0x20)                          // Not resettable
 //#define RESERVED                (0x40)
 #define SYSMON_CONN_LOST_ERROR          (0x80)                          // Resettable

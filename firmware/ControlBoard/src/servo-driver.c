@@ -165,7 +165,7 @@ void servo_driver_process(void) {
     
         // Check pulse width value
         if (servo->pulse_width < DS3218MG_MIN_PULSE_WIDTH || servo->pulse_width > DS3218MG_MAX_PULSE_WIDTH) {
-            sysmon_set_error(SYSMON_MATH_ERROR);
+            sysmon_set_error(SYSMON_MATH_ERROR | SYSMON_FATAL_ERROR);
             sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
             servo_driver_power_off();
             return;
@@ -285,7 +285,7 @@ static float calculate_physic_angle(float logic_angle, const servo_t* servo) {
     
     // Check physic angle value
     if (isless(physic_angle, 0) || isgreater(physic_angle, DS3218MG_MAX_PHYSIC_ANGLE)) {
-        sysmon_set_error(SYSMON_MATH_ERROR);
+        sysmon_set_error(SYSMON_MATH_ERROR | SYSMON_FATAL_ERROR);
         sysmon_disable_module(SYSMON_MODULE_SERVO_DRIVER);
         servo_driver_power_off();
         return physic_angle;
