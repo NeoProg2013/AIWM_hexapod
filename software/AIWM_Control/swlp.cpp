@@ -129,7 +129,7 @@ void Swlp::run() {
         QTimer sendTimer;
         connect(&sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent, Qt::ConnectionType::DirectConnection);
         sendTimer.setSingleShot(false);
-        sendTimer.setInterval(100);
+        sendTimer.setInterval(30);
         sendTimer.start();
 
         // Setup timeout timer (callback call from GUI thread)
