@@ -214,8 +214,6 @@ static void disable_i2c(void) {
 
 /// ***************************************************************************
 /// @brief  I2C2 event ISR
-/// @param  none
-/// @return none
 /// ***************************************************************************
 #pragma call_graph_root="interrupt"
 void I2C2_EV_IRQHandler(void) {
@@ -232,8 +230,6 @@ void I2C2_EV_IRQHandler(void) {
 
 /// ***************************************************************************
 /// @brief  I2C2 error ISR
-/// @param  none
-/// @return none
 /// ***************************************************************************
 #pragma call_graph_root="interrupt"
 void I2C2_ER_IRQHandler(void) {

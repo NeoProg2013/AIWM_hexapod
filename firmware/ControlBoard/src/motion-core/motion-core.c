@@ -24,6 +24,7 @@
 #define MOTION_TIME_MIN_VALUE                   (0)
 #define MOTION_TIME_MID_VALUE                   (500)
 #define MOTION_TIME_MAX_VALUE                   (1000)
+#define MOTION_TIME_STEP                        (20)
 
 
 
@@ -59,6 +60,9 @@ static bool g_is_surface_move_completed = false;
 
 
 
+/// ***************************************************************************
+/// @brief  Motion core initialization
+/// ***************************************************************************
 void motion_core_init() {
     load_config();
     
@@ -95,60 +99,43 @@ void motion_core_init() {
     servo_driver_power_on();
 }
 
+/// ***************************************************************************
+/// @brief  Start/stop main motion
+/// @param  motion: motion description, may be NULL. @ref motion_t
+/// @param  id: script for run. @ref motion_script_id_t
+/// ***************************************************************************
 void motion_core_move(const motion_t* motion, motion_script_id_t id) {
-    if (motion) { // Update destination motion if it exist
+    if (motion) {
         g_dst_motion = *motion;
     }
     
     // Inhibit any motions if hexapod is down
     if (g_hexapod_state == HEXAPOD_STATE_DOWN) {
-        g_dst_motion.cfg.speed = 0;
-        g_dst_motion.cfg.curvature = 0;
-        g_dst_motion.cfg.distance = 0;
-        g_dst_motion.cfg.step_height = 0;
-        g_dst_motion.surface_rotate.x = 0;
-        g_dst_motion.surface_rotate.y = 0;
-        g_dst_motion.surface_rotate.z = 0;
-        g_dst_motion.surface_point.x = 0;
-        g_dst_motion.surface_point.y = 0;
-        g_dst_motion.surface_point.z = 0;
-        g_dst_motion.user_surface_rotate.x = 0;
-        g_dst_motion.user_surface_rotate.y = 0;
-        g_dst_motion.user_surface_rotate.z = 0;
-        g_dst_motion.user_surface_point.x = 0;
-        g_dst_motion.user_surface_point.y = 0;
-        g_dst_motion.user_surface_point.z = 0;
+        memset(&g_dst_motion, 0, sizeof(g_dst_motion));
     }
     
     // Handle script ID
     if (g_hexapod_state != HEXAPOD_STATE_RDY && id != MOTION_SCRIPT_NONE) {
         if (g_hexapod_state == HEXAPOD_STATE_DOWN && id == MOTION_SCRIPT_UP) {
-            g_motion_script = id;
-            return; // Inhibit any scripts for DOWN state except UP script
+            g_motion_script = id; // Inhibit any scripts for DOWN state except UP script
         }
         return; // Inhibit select script if current motion or script is not completed
     }
     g_motion_script = id;
 }
 
-void motion_core_reset_motion(void) {
-    g_dst_motion.cfg.speed = 0;
-    g_dst_motion.cfg.curvature = 0;
-    g_dst_motion.cfg.distance = 0;
-    g_dst_motion.cfg.step_height = 0;
-    g_dst_motion.user_surface_rotate.x = 0;
-    g_dst_motion.user_surface_rotate.y = 0;
-    g_dst_motion.user_surface_rotate.z = 0;
-    g_dst_motion.user_surface_point.x = 0;
-    g_dst_motion.user_surface_point.y = 0;
-    g_dst_motion.user_surface_point.z = 0;
-    motion_core_move(&g_dst_motion, MOTION_SCRIPT_NONE);
-}
-
+/// ***************************************************************************
+/// @brief  Get current motion parameters
+/// @return Copy of motion parameters
+/// ***************************************************************************
 motion_t motion_core_get_current_motion(void) {
     return g_dst_motion;
 }
 
+/// ***************************************************************************
+/// @brief  Motion core process
+/// @note   Call each PWM period from main loop
+/// ***************************************************************************
 void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_CORE)) return;  // Module disabled
     sysmon_clear_error(SYSMON_MATH_ERROR);
@@ -229,6 +216,9 @@ void motion_core_process(void) {
 
 
 
+/// ***************************************************************************
+/// @brief  Main motion process
+/// ***************************************************************************
 static void main_motion_process(void) {
     static int32_t motion_time = MOTION_TIME_MIN_VALUE;
     static int32_t motion_loop = 0;
@@ -265,7 +255,7 @@ static void main_motion_process(void) {
                 sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
                 return;
             }
-            motion_time += 20;
+            motion_time += MOTION_TIME_STEP;
             if (motion_time > MOTION_TIME_MAX_VALUE) {
                 motion_time = MOTION_TIME_MIN_VALUE;
                 ++motion_loop;
@@ -290,7 +280,7 @@ static void main_motion_process(void) {
             if (is_completed) {
                 motion_time = MOTION_TIME_MIN_VALUE;
                 motion_loop = 0;
-                g_hexapod_state = HEXAPOD_STATE_DOWN;
+                g_hexapod_state = HEXAPOD_STATE_DOWN; // Core select corrent state automatically after this function call
             }
         } else {
             g_hexapod_state = HEXAPOD_STATE_MOTION_INIT;
@@ -298,6 +288,9 @@ static void main_motion_process(void) {
     }
 }
 
+/// ***************************************************************************
+/// @brief  Script motion process. @see motion-script.h
+/// ***************************************************************************
 static void script_motion_process(void) {
     static motion_t save_motion = {0};
     static motion_script_id_t save_script_id = MOTION_SCRIPT_NONE;
@@ -331,7 +324,7 @@ static void script_motion_process(void) {
         }
     }
     else if (g_hexapod_state == HEXAPOD_STATE_SCRIPT_DEINIT && g_is_surface_move_completed) {
-        g_hexapod_state = HEXAPOD_STATE_DOWN; // Core select state automatically after this function call
+        g_hexapod_state = HEXAPOD_STATE_DOWN; // Core select corrent state automatically after this function call
     }
 }
 

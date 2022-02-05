@@ -219,7 +219,7 @@ void TIM17_IRQHandler(void) {
         // Create pulse (HIGH)
         while (ch_cursor < SUPPORT_PWM_CHANNELS_COUNT) {
             if (pwm_channels_ptr[ch_cursor]->ticks > TIM17->ARR) {
-                break; // D'not process unreached channels
+                break; // Don't process unreachable channels
             }
             while (TIM17->CNT < pwm_channels_ptr[ch_cursor]->ticks);
             gpio_reset(pwm_channels_ptr[ch_cursor]->gpio_port, pwm_channels_ptr[ch_cursor]->gpio_pin);

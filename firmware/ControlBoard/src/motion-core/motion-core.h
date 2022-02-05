@@ -41,29 +41,10 @@ typedef enum {
 } motion_script_id_t;
 
 
-/// ***************************************************************************
-/// @brief  Motion core initialization
-/// ***************************************************************************
+
 extern void motion_core_init(void);
-
-/// ***************************************************************************
-/// @brief  Start/stop main motion
-/// @param  motion: motion description, may be NULL. @ref motion_t
-/// @param  id: script for run. @ref motion_script_id_t
-/// ***************************************************************************
 extern void motion_core_move(const motion_t* motion, motion_script_id_t id);
-extern void motion_core_reset_motion(void);
-
-/// ***************************************************************************
-/// @brief  Get current motion parameters
-/// @return Copy of motion parameters
-/// ***************************************************************************
 extern motion_t motion_core_get_current_motion(void);
-
-/// ***************************************************************************
-/// @brief  Motion core process
-/// @note   Call each PWM period from main loop
-/// ***************************************************************************
 extern void motion_core_process(void);
 
 
