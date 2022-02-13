@@ -15,7 +15,7 @@ LifeCycleDefinitionGUID=
 RevisionNamingSchemeGUID=
 
 [OutputGroup1]
-Name=Doc.OutJob
+Name=Documentation.OutJob
 Description=
 TargetOutputMedium=PDF
 VariantName=[No Variations]
@@ -46,7 +46,7 @@ OutputEnabled1_OutputMedium4=0
 OutputDefault1=0
 PageOptions1=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=1.00|XCorrection=1.00|YCorrection=1.00|PrintKind=0|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-4|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=A4|PaperIndex=9
 Configuration1_Name1=OutputConfigurationParameter1
-Configuration1_Item1=Record=SchPrintView|ShowNoERC=True|ShowParamSet=True|ShowProbe=True|ShowBlanket=True|NoERCSymbolsToShow="Thin Cross","Thick Cross","Small Cross",Checkbox,Triangle|ShowNote=True|ShowNoteCollapsed=True|ShowOpenEnds=True|ExpandDesignator=True|ExpandNetLabel=False|ExpandPort=False|ExpandSheetNum=False|ExpandDocNum=False|PrintArea=0|PrintAreaRect.X1=0|PrintAreaRect.Y1=0|PrintAreaRect.X2=0|PrintAreaRect.Y2=0
+Configuration1_Item1=Record=SchPrintView|ShowNoERC=True|ShowParamSet=True|ShowProbe=True|ShowBlanket=True|NoERCSymbolsToShow="Thin Cross","Thick Cross","Small Cross",Checkbox,Triangle|ShowNote=True|ShowNoteCollapsed=True|ShowOpenEnds=True|ExpandDesignator=True|ExpandNetLabel=False|ExpandPort=False|ExpandSheetNum=False|ExpandDocNum=False|PrintArea=0|PrintAreaRect.X1=0|PrintAreaRect.Y1=0|PrintAreaRect.X2=0|PrintAreaRect.Y2=0|DocumentPath=[Project Physical Documents]
 OutputType2=PCB Print
 OutputName2=PCB
 OutputCategory2=Documentation
@@ -119,21 +119,21 @@ Configuration4_Name1=OutputConfigurationParameter1
 Configuration4_Item1=Record=ExportPDF3DSetting|Version=110|Format=0|Flags=8158|Scheme=6|ViewColorR0=255|ViewColorG0=255|ViewColorB0=255|ViewLignt0=9|ViewColorR1=255|ViewColorG1=255|ViewColorB1=255|ViewLignt1=9|ViewColorR2=255|ViewColorG2=255|ViewColorB2=255|ViewLignt2=9|ViewColorR3=255|ViewColorG3=255|ViewColorB3=255|ViewLignt3=9
 
 [PublishSettings]
-OutputFilePath2=D:\Techart\TA PG Leakage detector\HW\OEM-Prototype\ProcessorBoard\.\
+OutputFilePath2=D:\Projects\AIWM_hexapod\hardware\ControlBoard\..\
 ReleaseManaged2=0
-OutputBasePath2=.\
-OutputPathMedia2=Doc
+OutputBasePath2=..\
+OutputPathMedia2=
 OutputPathMediaValue2=Doc
 OutputPathOutputer2=
 OutputPathOutputerPrefix2=
 OutputPathOutputerValue2=
-OutputFileName2=SCH-Prototype-LaserBoard.pdf
+OutputFileName2=ControlBoardpdf
 OutputFileNameMulti2=
-UseOutputNameForMulti2=1
+UseOutputNameForMulti2=0
 OutputFileNameSpecial2=
 OpenOutput2=0
 PromptOverwrite2=1
-PublishMethod2=1
+PublishMethod2=0
 ZoomLevel2=50
 FitSCHPrintSizeToDoc2=0
 FitPCBPrintSizeToDoc2=0
@@ -198,7 +198,7 @@ WmvVideoCodecName4=Windows Media Video V7
 WmvQuality4=80
 
 [GeneratedFilesSettings]
-RelativeOutputPath2=D:\Techart\TA PG Leakage detector\HW\OEM-Prototype\ProcessorBoard\.\
+RelativeOutputPath2=D:\Projects\AIWM_hexapod\hardware\ControlBoard\..\
 OpenOutputs2=0
 RelativeOutputPath3=
 OpenOutputs3=1

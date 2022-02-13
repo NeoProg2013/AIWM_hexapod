@@ -119,21 +119,21 @@ Configuration4_Name1=OutputConfigurationParameter1
 Configuration4_Item1=Record=ExportPDF3DSetting|Version=110|Format=0|Flags=8158|Scheme=6|ViewColorR0=255|ViewColorG0=255|ViewColorB0=255|ViewLignt0=9|ViewColorR1=255|ViewColorG1=255|ViewColorB1=255|ViewLignt1=9|ViewColorR2=255|ViewColorG2=255|ViewColorB2=255|ViewLignt2=9|ViewColorR3=255|ViewColorG3=255|ViewColorB3=255|ViewLignt3=9
 
 [PublishSettings]
-OutputFilePath2=D:\Techart\TA PG Leakage detector\HW\OEM-Prototype\ProcessorBoard\.\
+OutputFilePath2=D:\Projects\AIWM_hexapod\hardware\PowerBoard\..\Doc\
 ReleaseManaged2=0
-OutputBasePath2=.\
-OutputPathMedia2=Doc
+OutputBasePath2=..\
+OutputPathMedia2=
 OutputPathMediaValue2=Doc
 OutputPathOutputer2=
 OutputPathOutputerPrefix2=
 OutputPathOutputerValue2=
-OutputFileName2=SCH-Prototype-LaserBoard.pdf
+OutputFileName2=PowerBoard.pdf
 OutputFileNameMulti2=
-UseOutputNameForMulti2=1
+UseOutputNameForMulti2=0
 OutputFileNameSpecial2=
 OpenOutput2=0
 PromptOverwrite2=1
-PublishMethod2=1
+PublishMethod2=0
 ZoomLevel2=50
 FitSCHPrintSizeToDoc2=0
 FitPCBPrintSizeToDoc2=0
@@ -198,7 +198,7 @@ WmvVideoCodecName4=Windows Media Video V7
 WmvQuality4=80
 
 [GeneratedFilesSettings]
-RelativeOutputPath2=D:\Techart\TA PG Leakage detector\HW\OEM-Prototype\ProcessorBoard\.\
+RelativeOutputPath2=D:\Projects\AIWM_hexapod\hardware\PowerBoard\..\Doc\
 OpenOutputs2=0
 RelativeOutputPath3=
 OpenOutputs3=1
