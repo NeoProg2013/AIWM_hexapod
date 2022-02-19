@@ -116,9 +116,7 @@ void swlp_process(void) {
                 break;
             
             case SWLP_CMD_NONE: {
-                    motion_t motion = motion_core_get_current_motion();
-                    motion.cfg.distance = 0;
-                    motion.cfg.speed = 0;
+                    motion_t motion = {0};
                     motion.user_surface_point.x = request->surface_point_x;
                     motion.user_surface_point.y = request->surface_point_y;
                     motion.user_surface_point.z = request->surface_point_z;
@@ -129,7 +127,7 @@ void swlp_process(void) {
                 }
                 break;
             case SWLP_CMD_MOVE: {
-                    motion_t motion = motion_core_get_current_motion();
+                    motion_t motion = {0};
                     motion.cfg.speed = request->speed;
                     motion.cfg.curvature = request->curvature;
                     motion.cfg.distance = request->distance;
@@ -157,7 +155,7 @@ void swlp_process(void) {
         response->battery_charge = sysmon_battery_charge;
         
         // Gathering current motion surface
-        motion_t motion = motion_core_get_current_motion();
+        motion_t motion = motion_core_get_cur_motion();
         response->surface_point_x = (int16_t)motion.surface_point.x;
         response->surface_point_y = (int16_t)motion.surface_point.y;
         response->surface_point_z = (int16_t)motion.surface_point.z;

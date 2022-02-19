@@ -44,7 +44,7 @@ typedef enum {
 
 extern void motion_core_init(void);
 extern void motion_core_move(const motion_t* motion, motion_script_id_t id);
-extern motion_t motion_core_get_current_motion(void);
+extern motion_t motion_core_get_cur_motion(void);
 extern void motion_core_process(void);
 
 

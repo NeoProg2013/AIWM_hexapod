@@ -105,8 +105,10 @@ void motion_core_init() {
 /// @param  id: script for run. @ref motion_script_id_t
 /// ***************************************************************************
 void motion_core_move(const motion_t* motion, motion_script_id_t id) {
-    if (motion) {
-        g_dst_motion = *motion;
+    if (motion) { // Copy surface parameters from user. Don't copy surface parameters for internal usage
+        g_dst_motion.user_surface_point = motion->user_surface_point;
+        g_dst_motion.user_surface_rotate = motion->user_surface_rotate;
+        g_dst_motion.cfg = motion->cfg;
     }
     
     // Inhibit any motions if hexapod is down
@@ -128,8 +130,8 @@ void motion_core_move(const motion_t* motion, motion_script_id_t id) {
 /// @brief  Get current motion parameters
 /// @return Copy of motion parameters
 /// ***************************************************************************
-motion_t motion_core_get_current_motion(void) {
-    return g_dst_motion;
+motion_t motion_core_get_cur_motion(void) {
+    return g_cur_motion;
 }
 
 /// ***************************************************************************
