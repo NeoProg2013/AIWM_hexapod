@@ -12,10 +12,7 @@
 #include "display.h"
 #include "pwm.h"
 #include "systimer.h"
-
-#define DEBUG_TP_PIN_SET                   (GPIOC->BSRR = 0x01 << 9)
-#define DEBUG_TP_PIN_CLR                   (GPIOC->BRR  = 0x01 << 9)
-#define DEBUG_TP_PIN_TOGGLE                (GPIOC->ODR ^= 0x01 << 9)
+#include "pca9555.h"
 
 
 static void system_init(void);
@@ -43,11 +40,17 @@ void main() {
     indication_init();
     display_init();
     
+    pca9555_init();
+    
     // Motion core nitializaion  
     servo_driver_init();
     motion_core_init();
     
     while (true) {
+        
+        if (pca9555_is_input_changed()) {
+            asm("nop");
+        }
         
         // Check system failure
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
@@ -85,8 +88,6 @@ void main() {
 
 /// ***************************************************************************
 /// @brief  Emergency loop
-/// @param  none
-/// @return none
 /// ***************************************************************************
 static void emergency_loop(void) {
     while (true) {
@@ -100,8 +101,6 @@ static void emergency_loop(void) {
 
 /// ***************************************************************************
 /// @brief  System initialization
-/// @param  none
-/// @return none
 /// ***************************************************************************
 static void system_init(void) {
     
@@ -161,7 +160,7 @@ static void system_init(void) {
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_I2C1EN) == 0);
     
-    // Enable clocks for I2C1
+    // Enable clocks for I2C2
     RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
     while ((RCC->APB1ENR & RCC_APB1ENR_I2C2EN) == 0);
     
@@ -172,7 +171,6 @@ static void system_init(void) {
 }
 
 static void debug_gpio_init(void) {
-    
     // TP1 pin: output mode, push-pull, low speed, no pull
     gpio_reset           (DEBUG_TP1_PIN);
     gpio_set_mode        (DEBUG_TP1_PIN, GPIO_MODE_OUTPUT);
@@ -192,6 +190,20 @@ static void debug_gpio_init(void) {
     gpio_set_output_type (DEBUG_TP3_PIN, GPIO_TYPE_PUSH_PULL);
     gpio_set_output_speed(DEBUG_TP3_PIN, GPIO_SPEED_LOW);
     gpio_set_pull        (DEBUG_TP3_PIN, GPIO_PULL_NO);
+    
+    // TP4 pin: output mode, push-pull, low speed, no pull
+    gpio_reset           (DEBUG_TP4_PIN);
+    gpio_set_mode        (DEBUG_TP4_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (DEBUG_TP4_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(DEBUG_TP4_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (DEBUG_TP4_PIN, GPIO_PULL_NO);
+    
+    // TP5 pin: output mode, push-pull, low speed, no pull
+    gpio_reset           (DEBUG_TP5_PIN);
+    gpio_set_mode        (DEBUG_TP5_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (DEBUG_TP5_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(DEBUG_TP5_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (DEBUG_TP5_PIN, GPIO_PULL_NO);
 }
 
 #pragma call_graph_root="interrupt"

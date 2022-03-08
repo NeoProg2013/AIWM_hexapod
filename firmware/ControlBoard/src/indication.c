@@ -7,12 +7,11 @@
 #include "system-monitor.h"
 #include "systimer.h"
 
-#define LED_R_PIN                   GPIOC, 13
-#define LED_G_PIN                   GPIOC, 14
-#define LED_B_PIN                   GPIOC, 15
+#define LED_R_PIN                   GPIOC, 13 // PC13
+#define LED_G_PIN                   GPIOC, 14 // PC14
+#define LED_B_PIN                   GPIOC, 15 // PC15
 
-#define LED_TURN_OFF(pin)           gpio_reset(pin)
-#define LED_TURN_ON(pin)            gpio_set  (pin)
+#define ACTIVE_LED_PIN              GPIOA, 15 // PA15
 
 
 static bool is_external_control = false;
@@ -23,6 +22,7 @@ static void blink_green_led(uint32_t period);
 static void blink_blue_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
 static void blink_red_yellow_led(uint32_t period);
+static void blink_active_led(void);
 
 CLI_CMD_HANDLER(indication_cli_cmd_help);
 CLI_CMD_HANDLER(indication_cli_cmd_ext_ctrl);
@@ -55,12 +55,19 @@ void indication_init(void) {
     gpio_set_output_type (LED_B_PIN, GPIO_TYPE_PUSH_PULL);
     gpio_set_output_speed(LED_B_PIN, GPIO_SPEED_LOW);
     gpio_set_pull        (LED_B_PIN, GPIO_PULL_NO);
+    
+    gpio_reset           (ACTIVE_LED_PIN);
+    gpio_set_mode        (ACTIVE_LED_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_output_type (ACTIVE_LED_PIN, GPIO_TYPE_PUSH_PULL);
+    gpio_set_output_speed(ACTIVE_LED_PIN, GPIO_SPEED_LOW);
+    gpio_set_pull        (ACTIVE_LED_PIN, GPIO_PULL_NO);
 
     
     // Disable all
-    LED_TURN_OFF(LED_R_PIN);
-    LED_TURN_OFF(LED_G_PIN);
-    LED_TURN_OFF(LED_B_PIN);
+    gpio_reset(LED_R_PIN);
+    gpio_reset(LED_G_PIN);
+    gpio_reset(LED_B_PIN);
+    gpio_reset(ACTIVE_LED_PIN);
 }
 
 /// ***************************************************************************
@@ -69,12 +76,13 @@ void indication_init(void) {
 /// @return none
 /// ***************************************************************************
 void indication_process(void) {
+    blink_active_led();
     if (is_external_control) return;
     
     if (!sysmon_is_error_set(SYSMON_ANY_ERROR)) {
-        LED_TURN_OFF(LED_R_PIN);
-        LED_TURN_ON(LED_G_PIN);
-        LED_TURN_OFF(LED_B_PIN);
+        gpio_reset(LED_R_PIN);
+        gpio_set(LED_G_PIN);
+        gpio_reset(LED_B_PIN);
     } else {
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR)) {
             blink_red_led(100);
@@ -94,17 +102,17 @@ void indication_process(void) {
             }
         } else {
             if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR)) {
-                LED_TURN_ON(LED_R_PIN);
-                LED_TURN_OFF(LED_G_PIN);
-                LED_TURN_OFF(LED_B_PIN);
+                gpio_set(LED_R_PIN);
+                gpio_reset(LED_G_PIN);
+                gpio_reset(LED_B_PIN);
             } else if (sysmon_is_error_set(SYSMON_I2C_ERROR)) {
-                LED_TURN_ON(LED_R_PIN);
-                LED_TURN_ON(LED_G_PIN);
-                LED_TURN_OFF(LED_B_PIN);
+                gpio_set(LED_R_PIN);
+                gpio_set(LED_G_PIN);
+                gpio_reset(LED_B_PIN);
             } else if (sysmon_is_error_set(SYSMON_SYNC_ERROR)) {
-                LED_TURN_OFF(LED_R_PIN);
-                LED_TURN_ON(LED_G_PIN);
-                LED_TURN_OFF(LED_B_PIN);
+                gpio_reset(LED_R_PIN);
+                gpio_set(LED_G_PIN);
+                gpio_reset(LED_B_PIN);
             } else if (sysmon_is_error_set(SYSMON_MATH_ERROR)) {
                 blink_red_yellow_led(500);
             }
@@ -136,12 +144,12 @@ static void blink_red_led(uint32_t period) {
     
     if (get_time_ms() - start_time > period) {
         if (state == false) {
-            LED_TURN_ON(LED_R_PIN);
+            gpio_set(LED_R_PIN);
         } else {
-            LED_TURN_OFF(LED_R_PIN);
+            gpio_reset(LED_R_PIN);
         }
-        LED_TURN_OFF(LED_G_PIN);
-        LED_TURN_OFF(LED_B_PIN);
+        gpio_reset(LED_G_PIN);
+        gpio_reset(LED_B_PIN);
         
         state = !state;
         start_time = get_time_ms();
@@ -158,12 +166,12 @@ static void blink_green_led(uint32_t period) {
     
     if (get_time_ms() - start_time > period) {
         if (state == false) {
-            LED_TURN_OFF(LED_G_PIN);
+            gpio_reset(LED_G_PIN);
         } else {
-            LED_TURN_ON(LED_G_PIN);
+            gpio_set(LED_G_PIN);
         }
-        LED_TURN_ON(LED_R_PIN);
-        LED_TURN_OFF(LED_B_PIN);
+        gpio_set(LED_R_PIN);
+        gpio_reset(LED_B_PIN);
         
         state = !state;
         start_time = get_time_ms();
@@ -181,13 +189,13 @@ static void blink_yellow_led(uint32_t period) {
     
     if (get_time_ms() - start_time > period) {
         if (state == false) {
-            LED_TURN_OFF(LED_R_PIN);
-            LED_TURN_OFF(LED_G_PIN);
+            gpio_reset(LED_R_PIN);
+            gpio_reset(LED_G_PIN);
         } else {
-            LED_TURN_ON(LED_R_PIN);
-            LED_TURN_ON(LED_G_PIN);
+            gpio_set(LED_R_PIN);
+            gpio_set(LED_G_PIN);
         }
-        LED_TURN_OFF(LED_B_PIN);
+        gpio_reset(LED_B_PIN);
         
         state = !state;
         start_time = get_time_ms();
@@ -204,12 +212,12 @@ static void blink_blue_led(uint32_t period) {
     
     if (get_time_ms() - start_time > period) {
         if (state == false) {
-            LED_TURN_OFF(LED_B_PIN);
+            gpio_reset(LED_B_PIN);
         } else {
-            LED_TURN_ON(LED_B_PIN);
+            gpio_set(LED_B_PIN);
         }
-        LED_TURN_OFF(LED_R_PIN);
-        LED_TURN_OFF(LED_G_PIN);
+        gpio_reset(LED_R_PIN);
+        gpio_reset(LED_G_PIN);
         
         state = !state;
         start_time = get_time_ms();
@@ -226,16 +234,27 @@ static void blink_red_yellow_led(uint32_t period) {
     
     if (get_time_ms() - start_time > period) {
         if (state == false) {
-            LED_TURN_OFF(LED_G_PIN);
-            LED_TURN_ON(LED_R_PIN);
+            gpio_reset(LED_G_PIN);
+            gpio_set(LED_R_PIN);
         } else {
-            LED_TURN_ON(LED_G_PIN);
-            LED_TURN_ON(LED_R_PIN);
+            gpio_set(LED_G_PIN);
+            gpio_set(LED_R_PIN);
         }
-        LED_TURN_OFF(LED_B_PIN);
+        gpio_reset(LED_B_PIN);
         
         state = !state;
         start_time = get_time_ms();
+    }
+}
+
+/// ***************************************************************************
+/// @brief  Blink onboard active LED
+/// ***************************************************************************
+static void blink_active_led(void) {
+    static uint64_t last_time = 0;
+    if (get_time_ms() - last_time > 1000) {
+        gpio_toggle(ACTIVE_LED_PIN);
+        last_time = get_time_ms();
     }
 }
 
@@ -265,9 +284,9 @@ CLI_CMD_HANDLER(indication_cli_cmd_ext_ctrl) {
         return false;
     }
     is_external_control = atoi(argv[0]);
-    LED_TURN_OFF(LED_R_PIN);
-    LED_TURN_OFF(LED_G_PIN);
-    LED_TURN_OFF(LED_B_PIN);
+    gpio_reset(LED_R_PIN);
+    gpio_reset(LED_G_PIN);
+    gpio_reset(LED_B_PIN);
     if (is_external_control) {
         strcpy(response, CLI_OK("Indication now is under control by CLI"));
     } else {
@@ -284,12 +303,12 @@ CLI_CMD_HANDLER(indication_cli_cmd_set) {
         return false;
     }
     
-    if (r == '1') LED_TURN_ON(LED_R_PIN);
-    else          LED_TURN_OFF(LED_R_PIN);
-    if (g == '1') LED_TURN_ON(LED_G_PIN);
-    else          LED_TURN_OFF(LED_G_PIN);
-    if (b == '1') LED_TURN_ON(LED_B_PIN);
-    else          LED_TURN_OFF(LED_B_PIN);
+    if (r == '1') gpio_set(LED_R_PIN);
+    else          gpio_reset(LED_R_PIN);
+    if (g == '1') gpio_set(LED_G_PIN);
+    else          gpio_reset(LED_G_PIN);
+    if (b == '1') gpio_set(LED_B_PIN);
+    else          gpio_reset(LED_B_PIN);
     
     return true;
 }

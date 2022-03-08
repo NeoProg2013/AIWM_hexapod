@@ -22,30 +22,21 @@
 #define APB2_CLOCK_FREQUENCY                (72000000)
 
 
-#define DEBUG_TP1_PIN                       GPIOC, 6    // PC6
-#define DEBUG_TP2_PIN                       GPIOA, 8    // PA8
-#define DEBUG_TP3_PIN                       GPIOA, 12   // PA12
-
-#define DEBUG_TP1_PIN_SET                   gpio_set(DEBUG_TP1_PIN)
-#define DEBUG_TP1_PIN_CLR                   gpio_reset(DEBUG_TP1_PIN)
-#define DEBUG_TP1_PIN_TOGGLE                gpio_toggle(DEBUG_TP1_PIN)
-                                                                                                                          
-#define DEBUG_TP3_PIN_SET                   gpio_set(DEBUG_TP3_PIN)
-#define DEBUG_TP3_PIN_CLR                   gpio_reset(DEBUG_TP3_PIN)
-#define DEBUG_TP3_PIN_TOGGLE                gpio_toggle(DEBUG_TP3_PIN)
+#define DEBUG_TP1_PIN                       GPIOC, 6   // PC6
+#define DEBUG_TP2_PIN                       GPIOC, 7   // PC7
+#define DEBUG_TP3_PIN                       GPIOC, 8   // PC8
+#define DEBUG_TP4_PIN                       GPIOC, 9   // PC9
+#define DEBUG_TP5_PIN                       GPIOA, 8   // PA8 (MCO)
 
 #define USART1_TX_BUFFER_SIZE               (3072)
 
 #define TIM17_IRQ_PRIORITY                  (0)        // 18-channels PWM driver
 #define USART2_IRQ_PRIORITY                 (2)        // SWLP communication
 #define USART1_IRQ_PRIORITY                 (7)        // CLI communication
-#define USART3_IRQ_PRIORITY                 (3)        // Camera communication
 #define I2C2_IRQ_PRIORITY                   (4)        // Display communication
 #define ADC_IRQ_PRIORITY                    (4)        // Battery voltage measurements
 
 
-
-#define constrain(amt,low,high)             ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 #define GPIO_MODE_INPUT                     (0x00)
 #define GPIO_MODE_OUTPUT                    (0x01)
