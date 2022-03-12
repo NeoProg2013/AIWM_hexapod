@@ -120,9 +120,9 @@ uint16_t i2c2_read16(uint8_t i2c_address, uint32_t internal_address, uint8_t int
         return 0;
     }
     if (is_msbf) {
-        return (uint16_t)(((uint16_t)data[0] << 8) | ((uint16_t)data[1] << 0));
+        return make16(data[0], data[1]);
     }
-    return (uint16_t)(((uint16_t)data[1] << 8) | ((uint16_t)data[0] << 0));
+    return make16(data[1], data[0]);
 }
 
 /// ***************************************************************************

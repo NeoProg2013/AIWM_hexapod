@@ -109,4 +109,11 @@ static inline float constrain_float(float v, float min, float max) {
 }
 
 
+static inline uint16_t make16(uint8_t high, uint8_t low) {
+    uint16_t u16h = high;
+    uint16_t u16l = low;
+    return ((u16h << 8) & 0xFF00) | ((u16l << 0) & 0x00FF);
+}
+
+
 #endif // _PROJECT_BASE_H_

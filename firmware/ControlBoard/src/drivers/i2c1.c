@@ -102,6 +102,30 @@ bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_
 }
 
 /// ***************************************************************************
+/// @brief  Wrappers for read function
+/// @param  i2c_address: device address
+/// @param  internal_address: device internal register address
+/// @return readed value, 0 - error
+/// ***************************************************************************
+uint8_t i2c1_read8(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size) {
+    uint8_t data = 0;
+    if (!i2c1_read(i2c_address, internal_address, internal_address_size, &data, 1)) {
+        return 0;
+    }
+    return data;
+}
+uint16_t i2c1_read16(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, bool is_msbf) {
+    uint8_t data[2] = {0};
+    if (!i2c1_read(i2c_address, internal_address, internal_address_size, data, 2)) {
+        return 0;
+    }
+    if (is_msbf) {
+        return make16(data[0], data[1]);
+    }
+    return make16(data[1], data[0]);
+}
+
+/// ***************************************************************************
 /// @brief  Write data to I2C device
 /// @param  i2c_address: device address
 /// @param  internal_address: device internal register address
@@ -146,6 +170,20 @@ bool i2c1_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal
     // Disable I2C
     I2C1->CR1 &= ~I2C_CR1_PE;
     return result;
+}
+
+/// ***************************************************************************
+/// @brief  Wrappers for write function
+/// @param  i2c_address: device address
+/// @param  internal_address: device internal register address
+/// @param  data: data for write
+/// @return true - success, false - error
+/// ***************************************************************************
+bool i2c1_write8(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t data) {
+    return i2c1_write(i2c_address, internal_address, internal_address_size, &data, 1);
+}
+bool i2c1_write16(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint16_t data) {
+    return i2c1_write(i2c_address, internal_address, internal_address_size, (uint8_t*)&data, 2);
 }
 
 

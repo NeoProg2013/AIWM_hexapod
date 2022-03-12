@@ -19,10 +19,8 @@
 #define PCA9555_CFG_PORT_1_ADDR             (0x07)
 
 
-
 /// ***************************************************************************
 /// @brief  PCA9555 initialization
-/// @param  none
 /// @return true - success, false - error
 /// ***************************************************************************
 bool pca9555_init(void) {
@@ -31,50 +29,52 @@ bool pca9555_init(void) {
     gpio_set_output_speed(INTERRUPT_PIN, GPIO_SPEED_HIGH);
     gpio_set_pull        (INTERRUPT_PIN, GPIO_PULL_UP);
     
-    uint8_t wdata[2] = {0};
-    uint8_t rdata[2] = {0};
-    
     // Reset all outputs
-    wdata[0] = 0x00;
-    wdata[1] = 0x00;
-    if (!i2c1_write(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, (uint8_t*)&wdata, 2)) return false;
-    if (!i2c1_read(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, rdata, 2)) return false;
-    if (rdata[0] != wdata[0] || rdata[1] != wdata[1]) {
+    if (!pca9555_set_outputs(0xFFFF, 0x0000)) {
         return false;
     }
-    memset(wdata, 0x00, sizeof(wdata));
-    memset(rdata, 0x00, sizeof(rdata));
     
     // Configure IO0.1 IO0.3 IO0.5 as outputs
     // Configure IO1.2 IO1.4 IO1.6 as outputs
-    wdata[0] = 0xD5;
-    wdata[1] = 0xAB;
-    if (!i2c1_write(PCA9555_I2C_ADDRESS, PCA9555_CFG_PORT_0_ADDR, 1, wdata, 2)) return false;
-    if (!i2c1_read(PCA9555_I2C_ADDRESS, PCA9555_CFG_PORT_0_ADDR, 1, rdata, 2)) return false;
-    if (rdata[0] != wdata[0] || rdata[1] != wdata[1]) {
+    uint16_t cfg = make16(0xAB, 0xD5);
+    if (!i2c1_write16(PCA9555_I2C_ADDRESS, PCA9555_CFG_PORT_0_ADDR, 1, cfg)) {
         return false;
     }
-    memset(wdata, 0x00, sizeof(wdata));
-    memset(rdata, 0x00, sizeof(rdata));
+    if (i2c1_read16(PCA9555_I2C_ADDRESS, PCA9555_CFG_PORT_0_ADDR, 1, false) != cfg) {
+        return false;
+    }
     
-    return pca9555_read(rdata);
+    // Reset INT pin
+    pca9555_read_inputs(0xFFFF);
+    return true;
 }
 
+/// ***************************************************************************
+/// @brief  Check input data changed
+/// @return true - data changed, false - no
+/// ***************************************************************************
 bool pca9555_is_input_changed(void) {
     return gpio_read_input(INTERRUPT_PIN) == 0;
 }
 
-bool pca9555_read(uint8_t* data) {
-    return i2c1_read(PCA9555_I2C_ADDRESS, PCA9555_INPUT_PORT_0_ADDR, 1, data, 2);
+/// ***************************************************************************
+/// @brief  Read inputs
+/// @param  inputs: inputs
+/// @return true - pin is HIGH, false - pin is LOW
+/// ***************************************************************************
+uint16_t pca9555_read_inputs(uint16_t inputs) {
+    return i2c1_read16(PCA9555_I2C_ADDRESS, PCA9555_INPUT_PORT_0_ADDR, 1, false) & inputs;
 }
 
-bool pca9555_write(uint16_t data) {
-    uint8_t wdata[2] = {(data >> 0) & 0x00FF, (data >> 8) & 0x00FF};
-    uint8_t rdata[2] = {0};
-    if (!i2c1_write(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, wdata, 2))  return false;
-    if (!i2c1_read(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, rdata, 2)) return false;
-    if (rdata[0] != wdata[0] || rdata[1] != wdata[1]) {
-        return false;
-    }
-    return true;
+/// ***************************************************************************
+/// @brief  Set outputs state
+/// @param  outputs: outputs
+/// @param  new_states: new outputs state
+/// @return true - pin is HIGH, false - pin is LOW
+/// ***************************************************************************
+bool pca9555_set_outputs(uint16_t outputs, uint16_t new_states) {
+    uint16_t cur_states = i2c1_read16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, false);
+    cur_states &= ~outputs;   // Reset requested outputs
+    cur_states |= new_states; // Apply new outputs state
+    return i2c1_write16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, cur_states);
 }

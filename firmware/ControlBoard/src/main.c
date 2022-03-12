@@ -41,19 +41,18 @@ void main() {
     i2c1_init(I2C1_SPEED_400KHZ);
     i2c2_init(I2C2_SPEED_400KHZ);
     
-    // 
     bool res = mpu6050_init();
-    mpu6050_set_state(true);
+    //mpu6050_set_state(true);
     //mpu6050_calibration();
     
-    while (true) {
+    /*while (true) {
         
         if (mpu6050_is_data_ready()) {
             if (!mpu6050_read_data(data)) {
                 asm("nop");
             }
         }
-    }
+    }*/
     
     // Base module initialation
     sysmon_init();
@@ -68,15 +67,22 @@ void main() {
     servo_driver_init();
     motion_core_init();
     
-    //i2c2_init(I2C_SPEED_400KHZ);
-    //uint8_t reg = 0;
-    //bool res = i2c2_read(0x68 << 1, 0x75, 1, &reg, 1);
+    while (true) {
+        delay_ms(100);
+        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_1);
+        delay_ms(100);
+        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_2);
+        delay_ms(100);
+        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_3);
+        delay_ms(100);
+        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_1);
+    }
     
     while (true) {
         
-        //if (pca9555_is_input_changed()) {
-        //    asm("nop");
-        //}
+        if (pca9555_is_input_changed()) {
+            asm("nop");
+        }
         
         // Check system failure
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
