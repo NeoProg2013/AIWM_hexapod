@@ -26,8 +26,6 @@
 /// @return true - success, false - error
 /// ***************************************************************************
 bool pca9555_init(void) {
-    i2c1_init(I2C_SPEED_400KHZ);
-
     gpio_reset           (INTERRUPT_PIN);
     gpio_set_mode        (INTERRUPT_PIN, GPIO_MODE_INPUT);
     gpio_set_output_speed(INTERRUPT_PIN, GPIO_SPEED_HIGH);

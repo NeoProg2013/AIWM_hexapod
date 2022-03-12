@@ -2,13 +2,12 @@
 /// @file    display.c
 /// @author  NeoProg
 /// ***************************************************************************
-#include "display.h"
 #include "project-base.h"
+#include "display.h"
 #include "oled-gl.h"
 #include "system-monitor.h"
 #include "systimer.h"
 #include "version.h"
-
 #define DISPLAY_UPDATE_PERIOD                   (500)
 
 
@@ -119,14 +118,13 @@ void display_init(void) {
 /// @return none
 /// ***************************************************************************
 void display_process(void) {
-    if (sysmon_is_module_disable(SYSMON_MODULE_DISPLAY) == true) return;
+    if (sysmon_is_module_disable(SYSMON_MODULE_DISPLAY)) return;
     
     
     static uint32_t prev_update_time = 0;
     static bool is_system_active_indicator_visible = false;
     
     switch (module_state) {
-        
         case STATE_UPDATE_BATTERY_CHARGE:
             oled_gl_clear_fragment(0, 18, 0, 17, 8);
             oled_gl_draw_dec_number(0, 18, sysmon_battery_charge);

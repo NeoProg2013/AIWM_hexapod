@@ -185,33 +185,19 @@ bool oled_gl_async_process(void) {
     static uint32_t current_row = 0;
     
     switch (driver_state) {
-        case STATE_IDLE:
-            break;
-            
-        case STATE_UPDATE_ROW:
-            if (!ssd1306_128x64_start_async_update_row(current_row)) {
-                return false;
-            }
-            if (++current_row >= DISPLAY_MAX_ROW_COUNT) {
-                current_row = 0;
-                driver_state = STATE_IDLE;
-                break;
-            }
-            driver_state = STATE_WAIT;
-            break;
-            
-        case STATE_WAIT:
-            if (ssd1306_128x64_is_async_operation_complete()) {
-                if (!ssd1306_128x64_is_async_operation_success()) {
-                    return false;
-                }
-                driver_state = STATE_UPDATE_ROW;
-            }
-            break;
-            
-        case STATE_NOINIT:
-        default:
+    case STATE_IDLE:
+        break;
+        
+    case STATE_UPDATE_ROW:
+        if (!ssd1306_128x64_update_row(current_row)) {
             return false;
+        }
+        if (++current_row >= DISPLAY_MAX_ROW_COUNT) {
+            current_row = 0;
+            driver_state = STATE_IDLE;
+            break;
+        }
+        break;
     }
     return true;
 }

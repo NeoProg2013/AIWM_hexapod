@@ -2,11 +2,10 @@
 /// @file    ssd1306-128x64.c
 /// @author  NeoProg
 /// ***************************************************************************
+#include "project-base.h"
 #include "ssd1306-128x64.h"
 #include "i2c2.h"
 #include <string.h>
-
-
 #define DISPLAY_I2C_ADDRESS                 (0x3C << 1)
 
 #define FRAME_BEGIN_DEAD_ZONE               (2)
@@ -54,8 +53,6 @@ static bool ssd1306_send_bytes(uint8_t* data, uint32_t bytes_count);
 /// @return true - success, false - error
 /// ***************************************************************************
 bool ssd1306_128x64_init(void) {
-    i2c2_init(I2C_SPEED_400KHZ);
-    
     // Disable display
     if (!ssd1306_128x64_set_state(false)) return false;
     
@@ -122,36 +119,17 @@ bool ssd1306_128x64_set_state(bool is_enable) {
 /// @param  row: row index [0; 7]
 /// @return true - success, false - error
 /// ***************************************************************************
-bool ssd1306_128x64_start_async_update_row(uint32_t row) {
+bool ssd1306_128x64_update_row(uint32_t row) {
     if (!ssd1306_send_command(SET_PAGE_START + row, 0x00, false)) return false;
     if (!ssd1306_send_command(SET_LOW_COLUMN, 0x00, false)) return false;
     if (!ssd1306_send_command(SET_HIGH_COLUMN, 0x00, false)) return false;
     
     uint8_t* row_buffer = &frame_buffer[row * FRAME_COLUMN_COUNT];
-    return i2c2_async_write(DISPLAY_I2C_ADDRESS, 0x40, 1, row_buffer, FRAME_COLUMN_COUNT);
-}
-
-/// ***************************************************************************
-/// @brief  Check asynchronous operation state
-/// @param  none
-/// @return true - operation complete, false - operation in progress
-/// ***************************************************************************
-bool ssd1306_128x64_is_async_operation_complete(void) {
-    return i2c2_is_async_operation_completed();
-}
-
-/// ***************************************************************************
-/// @brief  Check asynchronous operation status
-/// @param  none
-/// @return true - success, false - error
-/// ***************************************************************************
-bool ssd1306_128x64_is_async_operation_success(void) {
-    return i2c2_get_async_operation_result();
+    return i2c2_write(DISPLAY_I2C_ADDRESS, 0x40, 1, row_buffer, FRAME_COLUMN_COUNT);
 }
 
 /// ***************************************************************************
 /// @brief  Transfer display frame
-/// @param  none
 /// @return true - success, false - error
 /// ***************************************************************************
 bool ssd1306_128x64_full_update(void) {
@@ -174,6 +152,9 @@ bool ssd1306_128x64_full_update(void) {
 uint8_t* ssd1306_128x64_get_frame_buffer(uint32_t row, uint32_t column) {
     return &frame_buffer[row * FRAME_COLUMN_COUNT + column + FRAME_BEGIN_DEAD_ZONE];
 }
+
+
+
 
 
 /// ***************************************************************************

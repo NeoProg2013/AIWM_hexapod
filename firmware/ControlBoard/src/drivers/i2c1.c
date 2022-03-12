@@ -2,13 +2,11 @@
 /// @file    i2c1.c
 /// @author  NeoProg
 /// ***************************************************************************
-#include "i2c1.h"
 #include "project-base.h"
+#include "i2c1.h"
 #include "systimer.h"
-
 #define I2C_SCL_PIN                     GPIOB, 8
 #define I2C_SDA_PIN                     GPIOB, 9
-
 #define I2C_WAIT_TIMEOUT_VALUE          (2) // ms
 
 
@@ -22,7 +20,7 @@ static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask);
 /// @param  speed: I2C speed. @Ref i2c_speed_t
 /// @return none
 /// ***************************************************************************
-void i2c1_init(i2c_speed_t speed) {
+void i2c1_init(i2c1_speed_t speed) {
     // Send pulses on SCL
     gpio_set_mode        (I2C_SCL_PIN, GPIO_MODE_OUTPUT);
     gpio_set_output_type (I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
@@ -39,7 +37,6 @@ void i2c1_init(i2c_speed_t speed) {
     gpio_set_mode(I2C_SCL_PIN, GPIO_MODE_AF);
     gpio_set_af  (I2C_SCL_PIN, 4);
     
-    
     // Setup SDA pin
     gpio_set_mode        (I2C_SDA_PIN, GPIO_MODE_AF);
     gpio_set_output_type (I2C_SDA_PIN, GPIO_TYPE_OPEN_DRAIN);
@@ -47,7 +44,6 @@ void i2c1_init(i2c_speed_t speed) {
     gpio_set_pull        (I2C_SDA_PIN, GPIO_PULL_NO);
     gpio_set_af          (I2C_SDA_PIN, 4);
    
-    
     // Setup I2C1
     RCC->APB1RSTR |= RCC_APB1RSTR_I2C1RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C1RST;
@@ -72,7 +68,7 @@ bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_
     // Send internal address
     // Configure bytes count for send and send START condition
     I2C1->CR2 |= (internal_address_size << I2C_CR2_NBYTES_Pos) | I2C_CR2_START;
-    if (send_internal_address(internal_address, internal_address_size) == false) {
+    if (!send_internal_address(internal_address, internal_address_size)) {
         result = false;
         goto _i2c_read_operation_end;
     }
@@ -81,9 +77,8 @@ bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_
     I2C1->CR2 &= ~I2C_CR2_NBYTES;
     I2C1->CR2 |= I2C_CR2_RD_WRN | (bytes_count << I2C_CR2_NBYTES_Pos) | I2C_CR2_START;
     for (uint32_t i = 0; i < bytes_count; ++i) {
-
         // Wait RX register is not empty event
-        if (wait_set_bit(&I2C1->ISR, I2C_ISR_RXNE) == false) {
+        if (!wait_set_bit(&I2C1->ISR, I2C_ISR_RXNE)) {
             result = false;
             goto _i2c_read_operation_end;
         }
@@ -97,7 +92,7 @@ bool i2c1_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_
 
     // Send STOP condition
     I2C1->CR2 |= I2C_CR2_STOP;
-    if (wait_clear_bit(&I2C1->CR2, I2C_CR2_STOP) == false) {
+    if (!wait_clear_bit(&I2C1->CR2, I2C_CR2_STOP)) {
         result = false;
     }
 
@@ -123,19 +118,18 @@ bool i2c1_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal
     
     // Configure bytes count for send and send START condition
     I2C1->CR2 |= ((internal_address_size + bytes_count) << I2C_CR2_NBYTES_Pos) | I2C_CR2_START;
-    if (send_internal_address(internal_address, internal_address_size) == false) {
+    if (!send_internal_address(internal_address, internal_address_size)) {
         result = false;
         goto _i2c_write_operation_end;
     }
 
     // Send data
     for (uint32_t i = 0; i < bytes_count; ++i) {
-
         I2C1->TXDR = *data;
         ++data;
         
         // Wait TX register empty event
-        if (wait_set_bit(&I2C1->ISR, I2C_ISR_TXE) == false) {
+        if (!wait_set_bit(&I2C1->ISR, I2C_ISR_TXE)) {
             result = false;
             goto _i2c_write_operation_end;
         }
@@ -145,7 +139,7 @@ bool i2c1_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal
 
     // Send STOP condition
     I2C1->CR2 |= I2C_CR2_STOP;
-    if (wait_clear_bit(&I2C1->CR2, I2C_CR2_STOP) == false) {
+    if (!wait_clear_bit(&I2C1->CR2, I2C_CR2_STOP)) {
         result = false;
     }
 
@@ -196,13 +190,16 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
     uint64_t start_time = get_time_ms();
     do {
-        if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
-            return false;
+        if (get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) {
+            return false; // Timeout
         }
-    }
-    while ((*reg & mask) == 0);
+        if (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) {
+            return false; // I2C bus error
+        }
+    } while ((*reg & mask) == 0);
     return true;
 }
+
 
 /// ***************************************************************************
 /// @brief  Wait bit clear in register with timeout
@@ -213,10 +210,12 @@ static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
 static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask) {
     uint64_t start_time = get_time_ms();
     do {
-        if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
-            return false;
+        if (get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) {
+            return false; // Timeout
         }
-    }
-    while (*reg & mask);
+        if (I2C1->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) {
+            return false; // I2C bus error
+        }
+    } while (*reg & mask);
     return true;
 }

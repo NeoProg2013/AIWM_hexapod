@@ -11,13 +11,20 @@
 #include "indication.h"
 #include "display.h"
 #include "pwm.h"
-#include "systimer.h"
 #include "pca9555.h"
+#include "mpu6050.h"
+#include "i2c1.h"
+#include "i2c2.h"
+#include "systimer.h"
 
 
 static void system_init(void);
 static void debug_gpio_init(void);
 static void emergency_loop(void);
+
+
+static bool is_ready = false;
+static float data[2] = {0};
 
 
 
@@ -27,11 +34,26 @@ static void emergency_loop(void);
 /// @return none
 /// ***************************************************************************
 void main() {
-
     // System initialization
     system_init();
     systimer_init();
     debug_gpio_init();
+    i2c1_init(I2C1_SPEED_400KHZ);
+    i2c2_init(I2C2_SPEED_400KHZ);
+    
+    // 
+    bool res = mpu6050_init();
+    mpu6050_set_state(true);
+    //mpu6050_calibration();
+    
+    while (true) {
+        
+        if (mpu6050_is_data_ready()) {
+            if (!mpu6050_read_data(data)) {
+                asm("nop");
+            }
+        }
+    }
     
     // Base module initialation
     sysmon_init();
@@ -46,11 +68,15 @@ void main() {
     servo_driver_init();
     motion_core_init();
     
+    //i2c2_init(I2C_SPEED_400KHZ);
+    //uint8_t reg = 0;
+    //bool res = i2c2_read(0x68 << 1, 0x75, 1, &reg, 1);
+    
     while (true) {
         
-        if (pca9555_is_input_changed()) {
-            asm("nop");
-        }
+        //if (pca9555_is_input_changed()) {
+        //    asm("nop");
+        //}
         
         // Check system failure
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
@@ -103,7 +129,6 @@ static void emergency_loop(void) {
 /// @brief  System initialization
 /// ***************************************************************************
 static void system_init(void) {
-    
     // Enable HSE
     RCC->CR |= RCC_CR_HSEON;
     while ((RCC->CR & RCC_CR_HSERDY) != RCC_CR_HSERDY);
