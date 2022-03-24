@@ -14,12 +14,6 @@ bool Swlp::startService() {
     m_isReady = false;
     m_isError = false;
 
-    // Clear payload
-    m_payloadMutex.lock();
-    memset(&m_commandPayload, 0, sizeof(m_commandPayload));
-    m_commandPayload.command = SWLP_CMD_NONE;
-    m_payloadMutex.unlock();
-
     // Init thread
     stopService();
     QThread::start();
@@ -106,10 +100,39 @@ void Swlp::sendStopMoveCommand(QVariant surfacePointX, QVariant surfacePointY, Q
     m_payloadMutex.unlock();
 }
 
+void Swlp::sendStopMoveCommand() {
+    m_payloadMutex.lock();
+    m_commandPayload.command = SWLP_CMD_NONE;
+    m_commandPayload.speed = 0;
+    m_commandPayload.curvature = 0;
+    m_commandPayload.distance = 0;
+    m_commandPayload.step_height = 0;
+
+    qDebug() << "[sendStopMoveCommand] speed" << m_commandPayload.speed;
+    qDebug() << "[sendStopMoveCommand] curvature" << m_commandPayload.curvature;
+    qDebug() << "[sendStopMoveCommand] distance" << m_commandPayload.distance;
+    qDebug() << "[sendStopMoveCommand] step_height" << m_commandPayload.step_height;
+    qDebug() << "[sendStopMoveCommand] surface_point_x" << m_commandPayload.surface_point_x;
+    qDebug() << "[sendStopMoveCommand] surface_point_y" << m_commandPayload.surface_point_y;
+    qDebug() << "[sendStopMoveCommand] surface_point_z" << m_commandPayload.surface_point_z;
+    qDebug() << "[sendStopMoveCommand] surface_rotate_x" << m_commandPayload.surface_rotate_x;
+    qDebug() << "[sendStopMoveCommand] surface_rotate_y" << m_commandPayload.surface_rotate_y;
+    qDebug() << "[sendStopMoveCommand] surface_rotate_z" << m_commandPayload.surface_rotate_z;
+
+    m_payloadMutex.unlock();
+}
+
 
 
 void Swlp::run() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread started";
+
+    // Clear payload
+    m_payloadMutex.lock();
+    memset(&m_commandPayload, 0, sizeof(m_commandPayload));
+    m_commandPayload.command = SWLP_CMD_NONE;
+    m_payloadMutex.unlock();
+
     do {
         // Setup UDP socket (callbacks call from this thread)
         m_socket = new (std::nothrow) QUdpSocket();

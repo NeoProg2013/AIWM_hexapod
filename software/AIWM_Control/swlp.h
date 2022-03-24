@@ -37,6 +37,8 @@ public:
                                             QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ);
     Q_INVOKABLE void sendStopMoveCommand(QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
                                          QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ);
+    Q_INVOKABLE void sendStopMoveCommand();
+
 signals:
     void frameReceived();
     void systemStatusUpdated(QVariant newSystemStatus, QVariant newModuleStatus);
@@ -53,18 +55,18 @@ protected slots:
     virtual void sendCommandPayloadEvent();
 
 protected:
-    std::atomic<bool> m_isReady     {false};
-    std::atomic<bool> m_isError     {false};
+    std::atomic<bool> m_isReady                 {false};
+    std::atomic<bool> m_isError                 {false};
 
     QMutex m_stopServiceMutex;
-    QUdpSocket* m_socket            {nullptr};
-    QTimer* m_timeoutTimer          {nullptr};
+    QUdpSocket* m_socket                        {nullptr};
+    QTimer* m_timeoutTimer                      {nullptr};
 
     QMutex m_eventLoopMutex;
-    QEventLoop* m_eventLoop         {nullptr};
+    QEventLoop* m_eventLoop                     {nullptr};
 
     QMutex m_payloadMutex;
-    swlp_command_payload_t m_commandPayload;
+    swlp_command_payload_t m_commandPayload     {0};
 };
 
 

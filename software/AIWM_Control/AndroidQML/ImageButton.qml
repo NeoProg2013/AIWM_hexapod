@@ -52,7 +52,6 @@ Button {
         root.buttonClicked()
     }
     onPressedChanged: {
-
         if (pressed) {
             frameRectangle.border.color = "#00FFFF"
             root.buttonPressed()
