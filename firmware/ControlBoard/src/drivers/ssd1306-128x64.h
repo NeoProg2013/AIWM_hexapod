@@ -14,7 +14,9 @@ extern bool ssd1306_128x64_init(void);
 extern bool ssd1306_128x64_set_contrast(uint8_t contrast);
 extern bool ssd1306_128x64_set_inverse(bool is_inverse);
 extern bool ssd1306_128x64_set_state(bool is_enable);
-extern bool ssd1306_128x64_update_row(uint32_t row);
+extern bool ssd1306_128x64_start_row_update(uint32_t row);
+extern bool ssd1306_128x64_send_row_data(uint32_t row, uint32_t count);
+extern bool ssd1306_128x64_is_row_updated(void);
 extern bool ssd1306_128x64_full_update(void);
 extern uint8_t* ssd1306_128x64_get_frame_buffer(uint32_t row, uint32_t column);
 

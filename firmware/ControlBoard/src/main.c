@@ -41,7 +41,7 @@ void main() {
     i2c1_init(I2C1_SPEED_400KHZ);
     i2c2_init(I2C2_SPEED_400KHZ);
     
-    bool res = mpu6050_init();
+    //bool res = mpu6050_init();
     //mpu6050_set_state(true);
     //mpu6050_calibration();
     
@@ -61,28 +61,36 @@ void main() {
     indication_init();
     display_init();
     
-    pca9555_init();
+    //pca9555_init();
     
     // Motion core nitializaion  
     servo_driver_init();
     motion_core_init();
     
-    while (true) {
-        delay_ms(100);
+    
+    //pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_3 | PCA9555_GPIO_LED_LEFT_1);
+    
+    //while (true) {
+        /*delay_ms(120);
         pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_1);
-        delay_ms(100);
+        delay_ms(120);
         pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_2);
-        delay_ms(100);
+        delay_ms(120);
         pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_3);
-        delay_ms(100);
-        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_1);
-    }
+        
+        delay_ms(120);
+        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_3);
+        delay_ms(120);
+        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_2);
+        delay_ms(120);
+        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_1);*/
+    //}
     
     while (true) {
         
-        if (pca9555_is_input_changed()) {
+       /* if (pca9555_is_input_changed()) {
             asm("nop");
-        }
+        }*/
         
         // Check system failure
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {

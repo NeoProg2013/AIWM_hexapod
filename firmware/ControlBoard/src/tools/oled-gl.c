@@ -17,7 +17,7 @@ typedef enum {
     STATE_NOINIT,
     STATE_IDLE,
     STATE_UPDATE_ROW,
-    STATE_WAIT
+    STATE_SEND_ROW_DATA
 } driver_state_t;
 
 
@@ -189,13 +189,23 @@ bool oled_gl_async_process(void) {
         break;
         
     case STATE_UPDATE_ROW:
-        if (!ssd1306_128x64_update_row(current_row)) {
+        if (!ssd1306_128x64_start_row_update(current_row)) {
             return false;
         }
-        if (++current_row >= DISPLAY_MAX_ROW_COUNT) {
-            current_row = 0;
-            driver_state = STATE_IDLE;
-            break;
+        driver_state = STATE_SEND_ROW_DATA;
+        break;
+        
+    case STATE_SEND_ROW_DATA:
+        if (!ssd1306_128x64_send_row_data(current_row, 33)) {
+            return false;
+        }
+        if (ssd1306_128x64_is_row_updated()) {
+            driver_state = STATE_UPDATE_ROW;
+            if (++current_row >= DISPLAY_MAX_ROW_COUNT) {
+                current_row = 0;
+                driver_state = STATE_IDLE;
+                break;
+            }
         }
         break;
     }

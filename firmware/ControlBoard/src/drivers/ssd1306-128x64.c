@@ -42,6 +42,7 @@
 
 
 static uint8_t frame_buffer[FRAME_BUFFER_SIZE] = {0};
+static uint8_t cursor = 0;
     
 static bool ssd1306_send_command(uint8_t cmd, uint8_t data, bool is_data);
 static bool ssd1306_send_bytes(uint8_t* data, uint32_t bytes_count);
@@ -115,17 +116,45 @@ bool ssd1306_128x64_set_state(bool is_enable) {
 }
 
 /// ***************************************************************************
-/// @brief  Start asynchronous update row
+/// @brief  Start update row
 /// @param  row: row index [0; 7]
 /// @return true - success, false - error
 /// ***************************************************************************
-bool ssd1306_128x64_update_row(uint32_t row) {
+bool ssd1306_128x64_start_row_update(uint32_t row) {
+    if (row >= FRAME_ROW_COUNT) {
+        return false;
+    }
     if (!ssd1306_send_command(SET_PAGE_START + row, 0x00, false)) return false;
     if (!ssd1306_send_command(SET_LOW_COLUMN, 0x00, false)) return false;
     if (!ssd1306_send_command(SET_HIGH_COLUMN, 0x00, false)) return false;
-    
-    uint8_t* row_buffer = &frame_buffer[row * FRAME_COLUMN_COUNT];
-    return i2c2_write(DISPLAY_I2C_ADDRESS, 0x40, 1, row_buffer, FRAME_COLUMN_COUNT);
+    cursor = 0;
+    return true;
+}
+
+/// ***************************************************************************
+/// @brief  Send row data
+/// @param  row: row index [0; 7]
+/// @param  count: column count for update
+/// @return true - success, false - error
+/// ***************************************************************************
+bool ssd1306_128x64_send_row_data(uint32_t row, uint32_t count) {
+    if (cursor + count > FRAME_COLUMN_COUNT) {
+        count = FRAME_COLUMN_COUNT - cursor;
+    }
+    uint8_t* row_buffer = &frame_buffer[row * FRAME_COLUMN_COUNT + cursor];
+    if (!i2c2_write(DISPLAY_I2C_ADDRESS, 0x40, 1, row_buffer, count)) {
+        return false;
+    }
+    cursor += count;
+    return true;
+}
+
+/// ***************************************************************************
+/// @brief  Check row update completed
+/// @return true - row updated, false - no
+/// ***************************************************************************
+bool ssd1306_128x64_is_row_updated(void) {
+    return cursor >= FRAME_COLUMN_COUNT;
 }
 
 /// ***************************************************************************

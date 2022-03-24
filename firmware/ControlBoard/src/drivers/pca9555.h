@@ -7,12 +7,12 @@
 #define _PCA9555_H_
 
 typedef enum {
-    PCA9555_GPIO_LED_RIGHT_1 = 0x0020, // IO05
-    PCA9555_GPIO_LED_RIGHT_2 = 0x0008, // IO03
-    PCA9555_GPIO_LED_RIGHT_3 = 0x0002, // IO01
-    PCA9555_GPIO_LED_LEFT_1  = 0x0400, // IO12
-    PCA9555_GPIO_LED_LEFT_2  = 0x1000, // IO14
-    PCA9555_GPIO_LED_LEFT_3  = 0x4002, // IO16
+    PCA9555_GPIO_LED_LEFT_1  = 0x0002, // IO01
+    PCA9555_GPIO_LED_LEFT_2  = 0x0008, // IO03
+    PCA9555_GPIO_LED_LEFT_3  = 0x0020, // IO05
+    PCA9555_GPIO_LED_RIGHT_1 = 0x4000, // IO16
+    PCA9555_GPIO_LED_RIGHT_2 = 0x1000, // IO14
+    PCA9555_GPIO_LED_RIGHT_3 = 0x0400, // IO12
 } pca9555_gpio_t;
 
 /// ***************************************************************************
