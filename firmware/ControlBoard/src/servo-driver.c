@@ -2,8 +2,8 @@
 /// @file    servo-driver.c
 /// @author  NeoProg
 /// ***************************************************************************
-#include "servo-driver.h"
 #include "project-base.h"
+#include "servo-driver.h"
 #include "cli.h"
 #include "pwm.h"
 #include "system-monitor.h"
@@ -71,7 +71,6 @@ static float calculate_physic_angle(float logic_angle, const servo_t* servo);
 
 /// ***************************************************************************
 /// @brief  Servo driver initialization
-/// @return none
 /// ***************************************************************************
 void servo_driver_init(void) {
     // Init servo power enable pin: output mode, push-pull, high speed, no pull
@@ -90,7 +89,6 @@ void servo_driver_init(void) {
 /// @brief  Start move servo to new angle
 /// @param  ch: servo channel
 /// @param  angle: new angle
-/// @return none
 /// ***************************************************************************
 void servo_driver_move(uint32_t ch, float angle) {
     if (ch >= SUPPORT_SERVO_COUNT) {

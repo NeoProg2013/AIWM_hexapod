@@ -27,7 +27,7 @@ static monitor_state_t monitor_state = STATE_NO_INIT;
 static uint32_t acc_adc_bins = 0;
 
 
-uint8_t  sysmon_system_status = 0;
+uint8_t  sysmon_system_status = SYSMON_CALIBRATION;
 uint8_t  sysmon_module_status = 0;
 uint16_t sysmon_battery_voltage = 12600; // mV
 uint8_t  sysmon_battery_charge = 99; // %

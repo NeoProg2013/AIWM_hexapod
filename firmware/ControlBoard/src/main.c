@@ -8,6 +8,7 @@
 #include "cli.h"
 #include "servo-driver.h"
 #include "motion-core.h"
+#include "sensors-core.h"
 #include "indication.h"
 #include "display.h"
 #include "pwm.h"
@@ -17,14 +18,9 @@
 #include "i2c2.h"
 #include "systimer.h"
 
-
 static void system_init(void);
 static void debug_gpio_init(void);
 static void emergency_loop(void);
-
-
-static bool is_ready = false;
-static float data[2] = {0};
 
 
 
@@ -40,30 +36,28 @@ void main() {
     debug_gpio_init();
     i2c1_init(I2C1_SPEED_400KHZ);
     i2c2_init(I2C2_SPEED_400KHZ);
+    pca9555_init();
     
-    //bool res = mpu6050_init();
-    //mpu6050_set_state(true);
-    //mpu6050_calibration();
-    
-    /*while (true) {
-        
-        if (mpu6050_is_data_ready()) {
-            if (!mpu6050_read_data(data)) {
-                asm("nop");
-            }
-        }
-    }*/
-    
-    // Base module initialation
+    // Basic modules initialation
     sysmon_init();
     swlp_init();
     cli_init();
     indication_init();
     display_init();
     
-    //pca9555_init();
+    // Sensors core initializaion
+    sensors_core_init();
+    sysmon_set_error(SYSMON_CALIBRATION);
+    do { // Calibration loop
+        if (sysmon_is_error_set(SYSMON_FATAL_ERROR)) { // Check system failure
+            emergency_loop();
+        }
+        indication_process();
+        display_process();
+    } while (sensors_core_calibration_process());
+    sysmon_clear_error(SYSMON_CALIBRATION);
     
-    // Motion core nitializaion  
+    // Motion core initializaion
     servo_driver_init();
     motion_core_init();
     
@@ -88,13 +82,8 @@ void main() {
     
     while (true) {
         
-       /* if (pca9555_is_input_changed()) {
-            asm("nop");
-        }*/
-        
         // Check system failure
-        if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
-            servo_driver_power_off();
+        if (sysmon_is_error_set(SYSMON_FATAL_ERROR)) {
             emergency_loop();
         }
         
@@ -115,8 +104,7 @@ void main() {
             motion_core_process();
             servo_driver_process();
             pwm_set_lock_state(false);
-        } 
-        else { // Here is other operations
+        } else { // Here is other operations
             sysmon_process();
             swlp_process();
             indication_process();
@@ -130,6 +118,7 @@ void main() {
 /// @brief  Emergency loop
 /// ***************************************************************************
 static void emergency_loop(void) {
+    servo_driver_power_off();
     while (true) {
         sysmon_process();
         swlp_process();

@@ -13,6 +13,8 @@ typedef enum {
     PCA9555_GPIO_LED_RIGHT_1 = 0x4000, // IO16
     PCA9555_GPIO_LED_RIGHT_2 = 0x1000, // IO14
     PCA9555_GPIO_LED_RIGHT_3 = 0x0400, // IO12
+    PCA9555_GPIO_LED_ALL = PCA9555_GPIO_LED_LEFT_1  | PCA9555_GPIO_LED_LEFT_2  | PCA9555_GPIO_LED_LEFT_3 | 
+                           PCA9555_GPIO_LED_RIGHT_1 | PCA9555_GPIO_LED_RIGHT_2 | PCA9555_GPIO_LED_RIGHT_3,
 } pca9555_gpio_t;
 
 /// ***************************************************************************

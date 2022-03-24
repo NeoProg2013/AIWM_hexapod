@@ -285,7 +285,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>00000000</state>
+                    <state>10010100</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -370,7 +370,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>0</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -379,7 +379,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>0</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>CompilerMisraRules98</name>
@@ -2531,6 +2531,12 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\project-base.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\sensors-core.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\sensors-core.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\servo-driver.c</name>

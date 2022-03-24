@@ -157,6 +157,12 @@ void display_process(void) {
                     oled_gl_draw_string(2, 67, "LOW");
                     oled_gl_draw_string(4, 67, "VOLTAGE");
                 }
+            } else if (sysmon_is_error_set(SYSMON_CALIBRATION) == true) {
+                if (is_system_active_indicator_visible == true) {
+                    oled_gl_draw_string(0, 67, "SYSTEM");
+                    oled_gl_draw_string(2, 67, "CALIBRATE");
+                    oled_gl_draw_string(4, 67, "MODE");
+                }
             } else {
                 oled_gl_draw_string(0, 67, "SYSTEM");
                 oled_gl_draw_string(2, 67, "STANDART");

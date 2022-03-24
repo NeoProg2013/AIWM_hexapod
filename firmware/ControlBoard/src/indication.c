@@ -5,6 +5,7 @@
 #include "indication.h"
 #include "project-base.h"
 #include "system-monitor.h"
+#include "pca9555.h"
 #include "systimer.h"
 
 #define LED_R_PIN                   GPIOC, 13 // PC13
@@ -22,6 +23,9 @@ static void blink_green_led(uint32_t period);
 static void blink_blue_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
 static void blink_red_yellow_led(uint32_t period);
+static void limb_leds_draw_circle(uint32_t period);
+static void limb_leds_enable_all(void);
+static void limb_leds_disable_all(void);
 static void blink_active_led(void);
 
 CLI_CMD_HANDLER(indication_cli_cmd_help);
@@ -68,6 +72,7 @@ void indication_init(void) {
     gpio_reset(LED_G_PIN);
     gpio_reset(LED_B_PIN);
     gpio_reset(ACTIVE_LED_PIN);
+    limb_leds_disable_all();
 }
 
 /// ***************************************************************************
@@ -115,6 +120,8 @@ void indication_process(void) {
                 gpio_reset(LED_B_PIN);
             } else if (sysmon_is_error_set(SYSMON_MATH_ERROR)) {
                 blink_red_yellow_led(500);
+            } if (sysmon_is_error_set(SYSMON_CALIBRATION)) {
+                limb_leds_draw_circle(120);
             }
         }
     }
@@ -143,9 +150,11 @@ static void blink_red_led(uint32_t period) {
     static bool state = false;
     
     if (get_time_ms() - start_time > period) {
-        if (state == false) {
+        if (!state) {
+            limb_leds_enable_all();
             gpio_set(LED_R_PIN);
         } else {
+            limb_leds_disable_all();
             gpio_reset(LED_R_PIN);
         }
         gpio_reset(LED_G_PIN);
@@ -246,6 +255,49 @@ static void blink_red_yellow_led(uint32_t period) {
         start_time = get_time_ms();
     }
 }
+
+/// ***************************************************************************
+/// @brief  Draw circle
+/// @param  period: LED switch time
+/// ***************************************************************************
+static void limb_leds_draw_circle(uint32_t period) {
+    if (sysmon_is_module_disable(SYSMON_MODULE_PCA9555)) return;  // Module disabled
+    
+    static uint32_t start_time = 0;
+    if (get_time_ms() - start_time > period) {
+        static uint32_t iteration = 0;
+        bool res = false;
+        switch (++iteration) {
+            default: iteration = 0; // No break
+            case 0: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_RIGHT_1); break;
+            case 1: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_RIGHT_2); break;
+            case 2: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_RIGHT_3); break;
+            case 3: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_LEFT_3);  break;
+            case 4: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_LEFT_2);  break;
+            case 5: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_LEFT_1);  break;
+        }
+        if (!res) {
+            sysmon_set_error(SYSMON_I2C_ERROR);
+            sysmon_disable_module(SYSMON_MODULE_PCA9555);
+        }
+        start_time = get_time_ms();
+    }
+}
+static void limb_leds_enable_all(void) {
+    if (sysmon_is_module_disable(SYSMON_MODULE_PCA9555)) return;  // Module disabled
+    if (!pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_ALL)) {
+        sysmon_set_error(SYSMON_I2C_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_PCA9555);
+    }
+}
+static void limb_leds_disable_all(void) {
+    if (sysmon_is_module_disable(SYSMON_MODULE_PCA9555)) return;  // Module disabled
+    if (!pca9555_set_outputs(PCA9555_GPIO_LED_ALL, 0x0000)) {
+        sysmon_set_error(SYSMON_I2C_ERROR);
+        sysmon_disable_module(SYSMON_MODULE_PCA9555);
+    }
+}
+
 
 /// ***************************************************************************
 /// @brief  Blink onboard active LED

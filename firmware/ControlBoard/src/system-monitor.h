@@ -16,7 +16,7 @@
 #define SYSMON_SYNC_ERROR               (0x08)                          // Not resettable
 #define SYSMON_MATH_ERROR               (0x10)                          // Resettable
 #define SYSMON_I2C_ERROR                (0x20)                          // Not resettable
-//#define RESERVED                (0x40)
+#define SYSMON_CALIBRATION              (0x40)                          // Resettable
 #define SYSMON_CONN_LOST_ERROR          (0x80)                          // Resettable
 
 
@@ -29,7 +29,7 @@
 #define SYSMON_MODULE_SYSTEM_MONITOR    (0x04)
 #define SYSMON_MODULE_DISPLAY           (0x08)
 #define SYSMON_MODULE_MPU6050           (0x10)
-#define SYSMON_MODULE_STEP_DETECTOR     (0x20)
+#define SYSMON_MODULE_PCA9555           (0x20)
 //#define RESERVED              (0x40)
 //#define RESERVED              (0x80)
 

@@ -5,7 +5,6 @@
 /// ***************************************************************************
 #ifndef _SERVO_DRIVER_H_
 #define _SERVO_DRIVER_H_
-#include <stdint.h>
 #include "cli.h"
 
 #define SUPPORT_SERVO_COUNT                         (18)
