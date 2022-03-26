@@ -47,14 +47,13 @@ void main() {
     
     // Sensors core initializaion
     sensors_core_init();
-    sysmon_set_error(SYSMON_CALIBRATION);
-    do { // Calibration loop
+    /*do { // Calibration loop
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR)) { // Check system failure
             emergency_loop();
         }
         indication_process();
         display_process();
-    } while (sensors_core_calibration_process());
+    } while (sensors_core_calibration_process());*/
     sysmon_clear_error(SYSMON_CALIBRATION);
     
     // Motion core initializaion
@@ -111,6 +110,7 @@ void main() {
             display_process();
             cli_process();
         }
+        sensors_core_process();
     }
 }
 

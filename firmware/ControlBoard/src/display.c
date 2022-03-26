@@ -34,11 +34,13 @@ static const uint8_t module_bitmap[] = {
 
 typedef enum {
     STATE_NOINIT,
+    STATE_WAIT,
     STATE_UPDATE_BATTERY_CHARGE,
     STATE_UPDATE_SYSTEM_STATUS,
     STATE_UPDATE_MODULE_STATUS,
     STATE_UPDATE_SYSTEM_MODE,
-    STATE_UPDATE_DISPLAY
+    STATE_UPDATE_DISPLAY_START,
+    STATE_UPDATE_DISPLAY_PROCESS,
 } state_t;
 
 static state_t module_state = STATE_NOINIT;
@@ -109,7 +111,7 @@ void display_init(void) {
         sysmon_disable_module(SYSMON_MODULE_DISPLAY);
         return;
     }
-    module_state = STATE_UPDATE_BATTERY_CHARGE;
+    module_state = STATE_WAIT;
 }
 
 /// ***************************************************************************
@@ -125,8 +127,14 @@ void display_process(void) {
     static bool is_system_active_indicator_visible = false;
     
     switch (module_state) {
+        case STATE_WAIT:
+            if (get_time_ms() - prev_update_time >= DISPLAY_UPDATE_PERIOD) {
+                module_state = STATE_UPDATE_BATTERY_CHARGE;
+            }  
+            break;
+        
         case STATE_UPDATE_BATTERY_CHARGE:
-            oled_gl_clear_fragment(0, 18, 0, 17, 8);
+            oled_gl_clear_fragment(0, 18, 17);
             oled_gl_draw_dec_number(0, 18, sysmon_battery_charge);
             module_state = STATE_UPDATE_SYSTEM_STATUS;
             break;
@@ -142,9 +150,9 @@ void display_process(void) {
             break;
             
         case STATE_UPDATE_SYSTEM_MODE:
-            oled_gl_clear_fragment(0, 67, 0, 50, 8);
-            oled_gl_clear_fragment(2, 67, 0, 67, 8);
-            oled_gl_clear_fragment(4, 67, 0, 67, 8);
+            oled_gl_clear_fragment(0, 67, 67);
+            oled_gl_clear_fragment(2, 67, 67);
+            oled_gl_clear_fragment(4, 67, 67);
             if (sysmon_is_error_set(SYSMON_FATAL_ERROR) == true) {
                 if (is_system_active_indicator_visible == true) {
                     oled_gl_draw_string(0, 67, "SYSTEM");
@@ -168,23 +176,26 @@ void display_process(void) {
                 oled_gl_draw_string(2, 67, "STANDART");
                 oled_gl_draw_string(4, 67, "MODE");
             }
-            module_state = STATE_UPDATE_DISPLAY;
+            
+            if (is_system_active_indicator_visible) {
+                oled_gl_draw_rect(0, 120, 0, 8, 8);
+            } else {
+                oled_gl_clear_fragment(0, 120, 8);
+            }
+            
+            is_system_active_indicator_visible = !is_system_active_indicator_visible;
+            module_state = STATE_UPDATE_DISPLAY_START;
             break;
             
-        case STATE_UPDATE_DISPLAY:
-            if (get_time_ms() - prev_update_time >= DISPLAY_UPDATE_PERIOD) {
-                if (is_system_active_indicator_visible) {
-                    oled_gl_clear_fragment(0, 120, 0, 8, 8);
-                } else {
-                    oled_gl_draw_rect(0, 120, 0, 8, 8);
-                }
-                is_system_active_indicator_visible = !is_system_active_indicator_visible;
-                
-                // Start display update
-                oled_gl_async_update();
+        case STATE_UPDATE_DISPLAY_START:
+            oled_gl_async_update();
+            module_state = STATE_UPDATE_DISPLAY_PROCESS;           
+            break;
+            
+        case STATE_UPDATE_DISPLAY_PROCESS:
+            if (oled_gl_is_async_update_completed()) {
                 prev_update_time = get_time_ms();
-                
-                module_state = STATE_UPDATE_BATTERY_CHARGE;
+                module_state = STATE_WAIT;
             }
             break;
         

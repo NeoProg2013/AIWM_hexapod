@@ -228,42 +228,42 @@ static void load_config(void) {
     servo_list[1].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
     servo_list[1].zero_trim = 0;
     servo_list[2].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
-    servo_list[2].zero_trim = 0;
+    servo_list[2].zero_trim = -2;
     
     servo_list[3].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[3].zero_trim = 1;
     servo_list[4].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
-    servo_list[4].zero_trim = 0;
+    servo_list[4].zero_trim = 1;
     servo_list[5].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
-    servo_list[5].zero_trim = -1;
+    servo_list[5].zero_trim = -2;
     
     servo_list[6].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[6].zero_trim = 2;
     servo_list[7].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
-    servo_list[7].zero_trim = 1;
+    servo_list[7].zero_trim = -1;
     servo_list[8].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
-    servo_list[8].zero_trim = -1;
+    servo_list[8].zero_trim = 0;
     
     servo_list[9].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[9].zero_trim = 3;
     servo_list[10].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[10].zero_trim = 0;
     servo_list[11].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
-    servo_list[11].zero_trim = 4;
+    servo_list[11].zero_trim = 2;
     
     servo_list[12].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[12].zero_trim = -1;
     servo_list[13].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[13].zero_trim = 2;
     servo_list[14].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
-    servo_list[14].zero_trim = 4;
+    servo_list[14].zero_trim = 0;
     
     servo_list[15].config = SERVO_CONFIG_REVERSE_DIRECTION_MASK;
     servo_list[15].zero_trim = 1;
     servo_list[16].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
     servo_list[16].zero_trim = 0;
     servo_list[17].config = SERVO_CONFIG_DIRECT_DIRECTION_MASK;
-    servo_list[17].zero_trim = 0;
+    servo_list[17].zero_trim = 10;
 }
 
 /// ***************************************************************************

@@ -47,8 +47,6 @@ void swlp_init(void) {
     callbacks.frame_error_callback = frame_transmitted_or_error_callback;
     usart2_init(COMMUNICATION_BAUD_RATE, &callbacks);
     
-    sysmon_set_error(SYSMON_CONN_LOST_ERROR);
-    
     state = STATE_WAIT_FRAME;
     usart2_start_rx();
 }
@@ -179,9 +177,9 @@ void swlp_process(void) {
     //
     // Process communication timeout feature
     //
-    sysmon_clear_error(SYSMON_CONN_LOST_ERROR);
+    sysmon_clear_error(SYSMON_CONN_LOST);
     if (get_time_ms() - frame_receive_time > COMMUNICATION_TIMEOUT || frame_receive_time == 0) {
-        sysmon_set_error(SYSMON_CONN_LOST_ERROR);
+        sysmon_set_error(SYSMON_CONN_LOST);
     }
 }
 

@@ -7,9 +7,6 @@
 #define _SYSTEM_MONITOR_H_
 
 
-#define SYSMON_NO_ERROR                 (0x00)
-#define SYSMON_ANY_ERROR                (0xFF)                          // Not resettable (enter to emergency loop)
-
 #define SYSMON_FATAL_ERROR              (0x01)                          // Not resettable (enter to emergency loop)
 #define SYSMON_INTERNAL_ERROR           (0x02 | SYSMON_FATAL_ERROR)     // Not resettable (enter to emergency loop)
 #define SYSMON_VOLTAGE_ERROR            (0x04)                          // Not resettable
@@ -17,12 +14,11 @@
 #define SYSMON_MATH_ERROR               (0x10)                          // Resettable
 #define SYSMON_I2C_ERROR                (0x20)                          // Not resettable
 #define SYSMON_CALIBRATION              (0x40)                          // Resettable
-#define SYSMON_CONN_LOST_ERROR          (0x80)                          // Resettable
+#define SYSMON_CONN_LOST                (0x80)                          // Resettable
 
+#define SYSMON_ANY_ERROR                (SYSMON_FATAL_ERROR | SYSMON_INTERNAL_ERROR | SYSMON_VOLTAGE_ERROR | \
+                                         SYSMON_SYNC_ERROR | SYSMON_MATH_ERROR | SYSMON_I2C_ERROR)
 
-
-#define SYSMON_MODULE_ALL               (0xFF)
-#define SYSMON_MODULE_NO                (0x00)
 
 #define SYSMON_MODULE_MOTION_CORE       (0x01)
 #define SYSMON_MODULE_SERVO_DRIVER      (0x02)

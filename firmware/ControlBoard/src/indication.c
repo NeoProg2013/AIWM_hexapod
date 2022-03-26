@@ -19,13 +19,12 @@ static bool is_external_control = false;
 
 
 static void blink_red_led(uint32_t period);
-static void blink_green_led(uint32_t period);
-static void blink_blue_led(uint32_t period);
 static void blink_yellow_led(uint32_t period);
 static void blink_red_yellow_led(uint32_t period);
 static void limb_leds_draw_circle(uint32_t period);
 static void limb_leds_enable_all(void);
 static void limb_leds_disable_all(void);
+static void blink_limb_leds(uint32_t period);
 static void blink_active_led(void);
 
 CLI_CMD_HANDLER(indication_cli_cmd_help);
@@ -93,37 +92,28 @@ void indication_process(void) {
             blink_red_led(100);
             return;
         }
-        if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR)) {
-            if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR)) {
-                blink_red_led(500);
-            } else if (sysmon_is_error_set(SYSMON_I2C_ERROR)) {
-                blink_yellow_led(500);
-            } else if (sysmon_is_error_set(SYSMON_SYNC_ERROR)) {
-                blink_green_led(500);
-            } else if (sysmon_is_error_set(SYSMON_MATH_ERROR)) {
-                blink_red_yellow_led(500);
-            } else {
-                blink_blue_led(500);
-            }
-        } else {
-            if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR)) {
-                gpio_set(LED_R_PIN);
-                gpio_reset(LED_G_PIN);
-                gpio_reset(LED_B_PIN);
-            } else if (sysmon_is_error_set(SYSMON_I2C_ERROR)) {
-                gpio_set(LED_R_PIN);
-                gpio_set(LED_G_PIN);
-                gpio_reset(LED_B_PIN);
-            } else if (sysmon_is_error_set(SYSMON_SYNC_ERROR)) {
-                gpio_reset(LED_R_PIN);
-                gpio_set(LED_G_PIN);
-                gpio_reset(LED_B_PIN);
-            } else if (sysmon_is_error_set(SYSMON_MATH_ERROR)) {
-                blink_red_yellow_led(500);
-            } if (sysmon_is_error_set(SYSMON_CALIBRATION)) {
-                limb_leds_draw_circle(120);
-            }
+        
+        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR)) {
+            gpio_set(LED_R_PIN);
+            gpio_reset(LED_G_PIN);
+            gpio_reset(LED_B_PIN);
+        } else if (sysmon_is_error_set(SYSMON_I2C_ERROR)) {
+            gpio_set(LED_R_PIN);
+            gpio_set(LED_G_PIN);
+            gpio_reset(LED_B_PIN);
+        } else if (sysmon_is_error_set(SYSMON_SYNC_ERROR)) {
+            blink_yellow_led(500);
+        } else if (sysmon_is_error_set(SYSMON_MATH_ERROR)) {
+            blink_red_yellow_led(500);
         }
+    }
+
+    if (sysmon_is_error_set(SYSMON_CALIBRATION)) {
+        limb_leds_draw_circle(120);
+    } else if (sysmon_is_error_set(SYSMON_CONN_LOST)) {
+        blink_limb_leds(500);
+    } else {
+        limb_leds_enable_all();
     }
 }
 
@@ -166,28 +156,6 @@ static void blink_red_led(uint32_t period) {
 }
 
 /// ***************************************************************************
-/// @brief  Blink green LED
-/// @param  period: LED switch time
-/// ***************************************************************************
-static void blink_green_led(uint32_t period) {
-    static uint32_t start_time = 0;
-    static bool state = false;
-    
-    if (get_time_ms() - start_time > period) {
-        if (state == false) {
-            gpio_reset(LED_G_PIN);
-        } else {
-            gpio_set(LED_G_PIN);
-        }
-        gpio_set(LED_R_PIN);
-        gpio_reset(LED_B_PIN);
-        
-        state = !state;
-        start_time = get_time_ms();
-    }
-}
-
-/// ***************************************************************************
 /// @brief  Blink yellow LED
 /// @param  period: LED switch time
 /// @return none
@@ -205,28 +173,6 @@ static void blink_yellow_led(uint32_t period) {
             gpio_set(LED_G_PIN);
         }
         gpio_reset(LED_B_PIN);
-        
-        state = !state;
-        start_time = get_time_ms();
-    }
-}
-
-/// ***************************************************************************
-/// @brief  Blink blue LED
-/// @param  period: LED switch time
-/// ***************************************************************************
-static void blink_blue_led(uint32_t period) {
-    static uint32_t start_time = 0;
-    static bool state = false;
-    
-    if (get_time_ms() - start_time > period) {
-        if (state == false) {
-            gpio_reset(LED_B_PIN);
-        } else {
-            gpio_set(LED_B_PIN);
-        }
-        gpio_reset(LED_R_PIN);
-        gpio_reset(LED_G_PIN);
         
         state = !state;
         start_time = get_time_ms();
@@ -295,6 +241,25 @@ static void limb_leds_disable_all(void) {
     if (!pca9555_set_outputs(PCA9555_GPIO_LED_ALL, 0x0000)) {
         sysmon_set_error(SYSMON_I2C_ERROR);
         sysmon_disable_module(SYSMON_MODULE_PCA9555);
+    }
+}
+
+/// ***************************************************************************
+/// @brief  Blink limb LEDs
+/// @param  period: switch time
+/// ***************************************************************************
+static void blink_limb_leds(uint32_t period) {
+    static uint32_t start_time = 0;
+    static bool state = false;
+    
+    if (get_time_ms() - start_time > period) {
+        if (state == false) {
+            limb_leds_enable_all();
+        } else {
+            limb_leds_disable_all();
+        }
+        state = !state;
+        start_time = get_time_ms();
     }
 }
 

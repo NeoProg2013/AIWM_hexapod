@@ -12,7 +12,7 @@
 extern bool oled_gl_init(void);
 
 extern void oled_gl_clear_display(void);
-extern void oled_gl_clear_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+extern void oled_gl_clear_fragment(uint32_t row, uint32_t x, uint32_t width);
 
 extern void oled_gl_draw_float_number(uint32_t row, uint32_t x, float number);
 extern void oled_gl_draw_dec_number(uint32_t row, uint32_t x, int32_t number);
@@ -25,6 +25,7 @@ extern bool oled_gl_draw_bitmap(uint32_t row, uint32_t x, uint32_t bitmap_width,
 extern bool oled_gl_sync_update(void);
 extern void oled_gl_async_update(void);
 extern bool oled_gl_async_process(void);
+extern bool oled_gl_is_async_update_completed(void);
 
 
 #endif /* _OLED_GL_H_ */

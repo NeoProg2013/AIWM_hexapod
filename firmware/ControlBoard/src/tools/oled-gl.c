@@ -50,20 +50,13 @@ void oled_gl_clear_display(void) {
 /// ***************************************************************************
 /// @brief  Clear row fragment
 /// @param  row: display row [0; 7]
-/// @param  x, y: left top angle of rectangle (relative row)
-/// @param  width, height: rectangle size (relative row)
+/// @param  x: start pos by X
+/// @param  width: fragment width for clear
 /// ***************************************************************************
-void oled_gl_clear_fragment(uint32_t row, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
-    uint8_t mask = 0;
-    int32_t cursor = height - 1;
-    while (cursor >= 0) {
-        mask |= (1 << (y + cursor));
-        --cursor;
-    }
-    
+void oled_gl_clear_fragment(uint32_t row, uint32_t x, uint32_t width) {
     uint8_t* frame_buffer = ssd1306_128x64_get_frame_buffer(row, x);
     for (uint32_t i = 0; i < width; ++i) {
-        frame_buffer[i] &= ~mask;
+        frame_buffer[i] = 0x00;
     }
 }
 
@@ -210,4 +203,8 @@ bool oled_gl_async_process(void) {
         break;
     }
     return true;
+}
+
+bool oled_gl_is_async_update_completed(void) {
+    return driver_state == STATE_IDLE;
 }
