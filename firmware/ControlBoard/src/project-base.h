@@ -31,10 +31,9 @@
 #define USART1_TX_BUFFER_SIZE               (3072)
 
 #define TIM17_IRQ_PRIORITY                  (0)        // 18-channels PWM driver
-#define USART2_IRQ_PRIORITY                 (2)        // SWLP communication
+#define USART2_IRQ_PRIORITY                 (1)        // SWLP communication
 #define USART1_IRQ_PRIORITY                 (7)        // CLI communication
-#define I2C2_IRQ_PRIORITY                   (4)        // Display communication
-#define ADC_IRQ_PRIORITY                    (4)        // Battery voltage measurements
+#define ADC_IRQ_PRIORITY                    (6)        // Battery voltage measurements
 
 
 
@@ -80,32 +79,20 @@ static inline void gpio_set_af(GPIO_TypeDef* port, uint32_t pin, uint32_t af) {
     }
 }
 
-static inline void gpio_set(GPIO_TypeDef* port, uint32_t pin) {
-    port->BSRR |= 0x01u << pin;
-}
-static inline void gpio_reset(GPIO_TypeDef* port, uint32_t pin) {
-    port->BRR |= 0x01u << pin;
-}
-static inline void gpio_toggle(GPIO_TypeDef* port, uint32_t pin) {
-    port->ODR ^= 0x01u << pin;
-}
-static inline bool gpio_read_input(GPIO_TypeDef* port, uint32_t pin) {
-    return port->IDR & (0x01u << pin);
-}
-static inline bool gpio_read_output(GPIO_TypeDef* port, uint32_t pin) {
-    return port->ODR & (0x01u << pin);
-}
+static inline void gpio_set(GPIO_TypeDef* port, uint32_t pin)         { port->BSRR |= 0x01u << pin;        }
+static inline void gpio_reset(GPIO_TypeDef* port, uint32_t pin)       { port->BRR  |= 0x01u << pin;        }
+static inline void gpio_toggle(GPIO_TypeDef* port, uint32_t pin)      { port->ODR  ^= 0x01u << pin;        }
+static inline bool gpio_read_input(GPIO_TypeDef* port, uint32_t pin)  { return port->IDR & (0x01u << pin); }
+static inline bool gpio_read_output(GPIO_TypeDef* port, uint32_t pin) { return port->ODR & (0x01u << pin); }
 
 
-static inline uint16_t constrain_u16(uint16_t v, uint16_t min, uint16_t max) {
-    if (v < min) return min;
-    if (v > max) return max;
-    return v;
+static inline void constrain_u16(uint16_t* v, uint16_t min, uint16_t max) {
+    if (*v < min) *v = min;
+    if (*v > max) *v = max;
 }
-static inline float constrain_float(float v, float min, float max) {
-    if (isless(v, min)) return min;
-    if (isgreater(v, max)) return max;
-    return v;
+static inline void constrain_float(float* v, float min, float max) {
+    if (isless(*v, min)) *v = min;
+    if (isgreater(*v, max)) *v = max;
 }
 
 

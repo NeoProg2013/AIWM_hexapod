@@ -1,9 +1,7 @@
 /* ================================================================================================ *
 | FIFO packet structure:
-| [QUAT W][      ][QUAT X][      ][QUAT Y][      ][QUAT Z][      ]
-|  00  01  02  03  04  05  06  07  08  09  10  11  12  13  14  15      
-| [GYRO X][GYRO X][GYRO Y][GYRO Y][GYRO Z][GYRO Z][      ]
-|  16  17  18  19  20  21  22  23  24  25  28  27  28  29  
+| [QUAT W][      ][QUAT X][      ][QUAT Y][      ][QUAT Z][      ][      ]
+|  00  01  02  03  04  05  06  07  08  09  10  11  12  13  14  15  16  17    
 * ================================================================================================ */
 #include "project-base.h"
 #include "mpu6050.h"
@@ -12,7 +10,7 @@
 #define MPU6050_I2C_ADDRESS                 (0x68 << 1)
 #define INTERRUPT_PIN                       GPIOA, 12
 #define CHIP_ID                             (0x34)
-#define FIFO_PACKET_SIZE                    (30)
+#define FIFO_PACKET_SIZE                    (18)
 #define M_PI                                (3.14159265f)
 
 
@@ -169,7 +167,6 @@ static const uint8_t DMP_CONFIG_BINARY[] = {
     0x07,0x46,0x01,0x9A,                              // CFG_GYRO_SOURCE inv_send_gyro
 	//0x07,0x47,0x04,0xF1,0x28,0x30,0x38,               // CFG_9 inv_send_gyro -> inv_construct3_fifo
     //0x07,0x6C,0x04,0xF1,0x28,0x30,0x38,               // CFG_12 inv_send_accel -> inv_construct3_fifo
-    0x07,0x47,0x04,0xF1,0x28,0x30,0x38,               // CFG_9 inv_send_gyro -> inv_construct3_fifo
 
     0x02,0x16,0x02,0x00,0x00                          // D_0_22  inv_set_fifo_rate 
 	// DMP output frequency is calculated easily using this equation: (200Hz / (1 + value))
@@ -242,6 +239,11 @@ static const uint8_t DMP_CONFIG_BINARY[] = {
 
 static bool write_memory_block(const uint8_t* data, uint32_t address, uint32_t bank, uint32_t data_size);
 static bool write_dmp_config();
+
+// For debug using SWD
+static uint32_t mpu6050_read_calls_count = 0;
+static uint32_t mpu6050_read_fifo_count = 0;
+static uint32_t mpu6050_overrun_fifo_count = 0;
 
 
 /// ***************************************************************************
@@ -373,6 +375,8 @@ bool mpu6050_is_data_ready(void) {
 /// @return true - success, false - error
 /// ***************************************************************************
 bool mpu6050_read_data(float* xy_angles) {
+    ++mpu6050_read_calls_count;
+    
     // Check FIFO buffer size
     uint16_t fifo_bytes_count = i2c2_read16(MPU6050_I2C_ADDRESS, REG_FIFO_COUNTH, 1, true);
     if (fifo_bytes_count == 0) {
@@ -385,12 +389,14 @@ bool mpu6050_read_data(float* xy_angles) {
         reg &= ~USERCTRL_FIFO_RESET_MASK;
         reg |= USERCTRL_FIFO_RESET;
         i2c2_write8(MPU6050_I2C_ADDRESS, REG_USER_CTRL, 1, reg);
+        ++mpu6050_overrun_fifo_count;
         return false;
     }
     
     // Read latest data from FIFO buffer
     uint8_t fifo_data[FIFO_PACKET_SIZE] = {0};
     while (fifo_bytes_count) { 
+        ++mpu6050_read_fifo_count;
         if (!i2c2_read(MPU6050_I2C_ADDRESS, REG_FIFO_R_W, 1, fifo_data, FIFO_PACKET_SIZE)) return false;
         
         // Get FIFO buffer size

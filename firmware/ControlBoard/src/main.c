@@ -36,65 +36,46 @@ void main() {
     debug_gpio_init();
     i2c1_init(I2C1_SPEED_400KHZ);
     i2c2_init(I2C2_SPEED_400KHZ);
-    pca9555_init();
     
-    // Basic modules initialation
+    // Modules initializaion (part 1)
     sysmon_init();
     swlp_init();
     cli_init();
-    indication_init();
     display_init();
+    sensors_core_init(); // Don't change call order sensors_core_init() and indication_init()
+    indication_init();
     
-    // Sensors core initializaion
+    // Sensors core calibration
     sensors_core_init();
-    /*do { // Calibration loop
+    do { // Calibration loop
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR)) { // Check system failure
             emergency_loop();
         }
+        sysmon_process();
         indication_process();
         display_process();
-    } while (sensors_core_calibration_process());*/
+    } while (sensors_core_calibration_process());
     sysmon_clear_error(SYSMON_CALIBRATION);
     
     // Motion core initializaion
     servo_driver_init();
     motion_core_init();
     
-    
-    //pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_3 | PCA9555_GPIO_LED_LEFT_1);
-    
-    //while (true) {
-        /*delay_ms(120);
-        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_1);
-        delay_ms(120);
-        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_2);
-        delay_ms(120);
-        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_RIGHT_3);
-        
-        delay_ms(120);
-        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_3);
-        delay_ms(120);
-        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_2);
-        delay_ms(120);
-        pca9555_set_outputs(0xFFFF, PCA9555_GPIO_LED_LEFT_1);*/
-    //}
-    
     while (true) {
-        
         // Check system failure
         if (sysmon_is_error_set(SYSMON_FATAL_ERROR)) {
             emergency_loop();
         }
         
         // Override select sequence if need
-        /*if (sysmon_is_error_set(SYSMON_CONN_LOST_ERROR) == true) {
-            motion_core_select_script(MOTION_SCRIPT_DOWN);
-        }*/
+        if (sysmon_is_error_set(SYSMON_CONN_LOST)) {
+            motion_core_move(NULL);
+        }
         // Disable servo power if low supply voltage
-        /*if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR) == true) {
-            motion_core_select_script(MOTION_SCRIPT_DOWN);
+        if (sysmon_is_error_set(SYSMON_VOLTAGE_ERROR)) {
+            motion_core_move(NULL);
             servo_driver_power_off();
-        }*/
+        }
         
         // Motion process
         // This 2 functions should be call in this sequence

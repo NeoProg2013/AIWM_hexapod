@@ -4,9 +4,9 @@
 /// ***************************************************************************
 #include "project-base.h"
 #include "motion-core.h"
-#include "motion-scripts.h"
 #include "motion-math.h"
 #include "servo-driver.h"
+#include "sensors-core.h"
 #include "pwm.h"
 #include "system-monitor.h"
 #include "pca9555.h"
@@ -28,24 +28,23 @@
 #define MOTION_TIME_STEP                        (20)
 
 
-
 typedef enum {
     HEXAPOD_STATE_DOWN,
     HEXAPOD_STATE_RDY,
     HEXAPOD_STATE_MOTION_INIT,
     HEXAPOD_STATE_MOTION_EXEC,
-    HEXAPOD_STATE_MOTION_DEINIT,
-    HEXAPOD_STATE_SCRIPT_INIT,
-    HEXAPOD_STATE_SCRIPT_EXEC,
-    HEXAPOD_STATE_SCRIPT_DEINIT,
+    HEXAPOD_STATE_MOTION_DEINIT
 } g_hexapod_state_t;
 
+typedef struct {
+    motion_cfg_t cfg;
+    p3d_t surface_point;
+    r3d_t surface_rotate;
+} motion_t;
 
 
 static void load_config(void);
 static void main_motion_process(void);
-static void script_motion_process(void);
-
 
 
 static const v3d_t g_limbs_base_pos[] = {
@@ -54,8 +53,7 @@ static const v3d_t g_limbs_base_pos[] = {
 };
 static limb_t g_limbs[SUPPORT_LIMBS_COUNT] = {0};
 static motion_t g_cur_motion = {0};
-static motion_t g_dst_motion = {0};
-static motion_script_id_t g_motion_script = MOTION_SCRIPT_NONE;
+static ext_motion_t g_ext_motion = {0};
 static g_hexapod_state_t g_hexapod_state = HEXAPOD_STATE_DOWN;
 static bool g_is_surface_move_completed = false;
 
@@ -73,11 +71,10 @@ void motion_core_init() {
     }
 
     // Init motion
-    g_dst_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
-    g_dst_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
-    g_cur_motion = g_dst_motion;
+    g_cur_motion.surface_point.y = g_ext_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
+    g_cur_motion.cfg.step_height = g_ext_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
 
-    // Calculate limbs offset by regarding surface
+    /*// Calculate limbs offset by regarding surface
     if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
         sysmon_set_error(SYSMON_MATH_ERROR | SYSMON_FATAL_ERROR);
         sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
@@ -96,43 +93,40 @@ void motion_core_init() {
         servo_driver_move(i * 3 + 0, g_limbs[i].coxa.angle);
         servo_driver_move(i * 3 + 1, g_limbs[i].femur.angle);
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
-    }
+    }*/
     servo_driver_power_on();
 }
 
 /// ***************************************************************************
-/// @brief  Start/stop main motion
-/// @param  motion: motion description, may be NULL. @ref motion_t
-/// @param  id: script for run. @ref motion_script_id_t
+/// @brief  Main motion control
+/// @param  ext_motion: user_motion description, may be NULL. @ref ext_motion_t
 /// ***************************************************************************
-void motion_core_move(const motion_t* motion, motion_script_id_t id) {
-    if (motion) { // Copy surface parameters from user. Don't copy surface parameters for internal usage
-        g_dst_motion.user_surface_point = motion->user_surface_point;
-        g_dst_motion.user_surface_rotate = motion->user_surface_rotate;
-        g_dst_motion.cfg = motion->cfg;
+void motion_core_move(const ext_motion_t* ext_motion) {
+    if (!ext_motion) { 
+        memset(&g_ext_motion, 0, sizeof(g_ext_motion));
+        return;
     }
+    g_ext_motion = *ext_motion;
     
-    // Inhibit any motions if hexapod is down
+    // Inhibit any motions if hexapod is down except change height for stand up
     if (g_hexapod_state == HEXAPOD_STATE_DOWN) {
-        memset(&g_dst_motion, 0, sizeof(g_dst_motion));
-    }
-    
-    // Handle script ID
-    if (g_hexapod_state != HEXAPOD_STATE_RDY && id != MOTION_SCRIPT_NONE) {
-        if (g_hexapod_state == HEXAPOD_STATE_DOWN && id == MOTION_SCRIPT_UP) {
-            g_motion_script = id; // Inhibit any scripts for DOWN state except UP script
+        memset(&g_ext_motion, 0, sizeof(g_ext_motion));
+        if (ext_motion->surface_point.y <= MOTION_SURFACE_UP_HEIGHT_THRESHOLD) {
+            g_ext_motion.surface_point.y = ext_motion->surface_point.y;
         }
-        return; // Inhibit select script if current motion or script is not completed
     }
-    g_motion_script = id;
 }
 
 /// ***************************************************************************
 /// @brief  Get current motion parameters
 /// @return Copy of motion parameters
 /// ***************************************************************************
-motion_t motion_core_get_cur_motion(void) {
-    return g_cur_motion;
+ext_motion_t motion_core_get_motion(void) {
+    ext_motion_t ext_motion = {0};
+    ext_motion.cfg = g_cur_motion.cfg;
+    ext_motion.surface_point = g_cur_motion.surface_point;
+    ext_motion.surface_rotate = g_cur_motion.surface_rotate;
+    return ext_motion;
 }
 
 /// ***************************************************************************
@@ -144,42 +138,50 @@ void motion_core_process(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_MOTION_CORE)) return;  // Module disabled
     sysmon_clear_error(SYSMON_MATH_ERROR);
     
+    //
+    // Motion section
+    //
     // Constrain step height before motions
-    g_dst_motion.cfg.step_height = constrain_u16(g_dst_motion.cfg.step_height, MOTION_MIN_STEP_HEIGHT, MOTION_MAX_STEP_HEIGHT); 
+    constrain_u16(&g_ext_motion.cfg.step_height, MOTION_MIN_STEP_HEIGHT, MOTION_MAX_STEP_HEIGHT); 
+    
+    // Change motion speed 
+    servo_driver_set_speed(g_ext_motion.cfg.speed);
 
-    // Motions process
+    // Motion iteration process
     main_motion_process();
-    script_motion_process();
-    
-    // Change motion speed (inhibit change if some script is running, script control speed self)
-    if (g_hexapod_state < HEXAPOD_STATE_SCRIPT_INIT) {
-        servo_driver_set_speed(g_dst_motion.cfg.speed);
-    }
-    
-    // Add user offsets (inhibit offsets if some script is running)
-    v3d_t dst_surface_point = g_dst_motion.surface_point;
-    r3d_t dst_surface_rotate = g_dst_motion.surface_rotate;
-    if (g_hexapod_state < HEXAPOD_STATE_SCRIPT_INIT) {
-        dst_surface_point.x += g_dst_motion.user_surface_point.x;
-        dst_surface_point.y += g_dst_motion.user_surface_point.y;
-        dst_surface_point.z += g_dst_motion.user_surface_point.z;
-        dst_surface_rotate.x += g_dst_motion.user_surface_rotate.x;
-        dst_surface_rotate.y += g_dst_motion.user_surface_rotate.y;
-        dst_surface_rotate.z += g_dst_motion.user_surface_rotate.z;
-    }
     
     //
-    // TODO: contrain rotate and offset
+    // Make result surface
     //
+    // Apply external surface
+    v3d_t dst_surface_point  = g_ext_motion.surface_point;
+    r3d_t dst_surface_rotate = g_ext_motion.surface_rotate;
     
+    // Apply hull rotate surface
+    float xz[2] = {0};
+    sensors_core_get_orientation(xz);
+    if (g_ext_motion.ctrl & MOTION_CTRL_EN_STAB && g_hexapod_state != HEXAPOD_STATE_DOWN) {
+        dst_surface_rotate.x -= xz[0];
+        dst_surface_rotate.z -= xz[1];
+    }
+    
+    // Contrain surface rotate
+    const float max_rotate_angle = 6.4f;
+    constrain_float(&dst_surface_rotate.x, -max_rotate_angle, max_rotate_angle);
+    constrain_float(&dst_surface_rotate.z, -max_rotate_angle, max_rotate_angle);
+
     // Constrain surface Y offset. Inhibit move hexapod to down while motion is progress
     float min_y_surface_point = (g_hexapod_state == HEXAPOD_STATE_MOTION_EXEC) ? MOTION_SURFACE_UP_HEIGHT_THRESHOLD : MOTION_SURFACE_MIN_HEIGHT;
-    dst_surface_point.y = constrain_float(dst_surface_point.y, MOTION_SURFACE_MAX_HEIGHT, min_y_surface_point);
+    constrain_float(&dst_surface_point.y, MOTION_SURFACE_MAX_HEIGHT, min_y_surface_point);
 
+    //
     // Move surface
+    //
     g_is_surface_move_completed = mm_move_surface(&g_cur_motion.surface_point, &dst_surface_point, &g_cur_motion.surface_rotate, &dst_surface_rotate, CHANGE_SURFACE_POS_MAX_STEP);
     
+    //
     // Change hexapod state relatively reached MOTION_SURFACE_UP_HEIGHT_THRESHOLD by axis Y
+    //
     if (islessequal(g_cur_motion.surface_point.y, MOTION_SURFACE_UP_HEIGHT_THRESHOLD)) { // We reach MOTION_SURFACE_UP_HEIGHT_THRESHOLD by axis Y
         if (g_is_surface_move_completed && g_hexapod_state == HEXAPOD_STATE_DOWN) {
             g_hexapod_state = HEXAPOD_STATE_RDY;
@@ -209,15 +211,15 @@ void motion_core_process(void) {
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
     }
     
-    /*void* tx_buffer = cli_get_tx_buffer();
-    sprintf(tx_buffer, "[MCORE]: %d %d,%d,%d %d,%d,%d   %d,%d,%d,%d,%d,%d   %d,%d,%d\r\n", 
+    void* tx_buffer = cli_get_tx_buffer();
+    sprintf(tx_buffer, "[MCORE]: %d sensors: %d,%d,%d %d,%d,%d  pos: %d,%d,%d,%d,%d,%d  rotate: %d,%d,%d  mpu: %d,%d\r\n", 
             (int32_t)get_time_ms(), 
             (sensors_inputs & PCA9555_GPIO_SENSOR_LEFT_1) != 0, (sensors_inputs & PCA9555_GPIO_SENSOR_LEFT_2) != 0, (sensors_inputs & PCA9555_GPIO_SENSOR_LEFT_3) != 0,
             (sensors_inputs & PCA9555_GPIO_SENSOR_RIGHT_1) != 0, (sensors_inputs & PCA9555_GPIO_SENSOR_RIGHT_2) != 0, (sensors_inputs & PCA9555_GPIO_SENSOR_RIGHT_3) != 0,
             (int32_t)(g_limbs[0].pos.y), (int32_t)(g_limbs[1].pos.y), (int32_t)(g_limbs[2].pos.y),
             (int32_t)(g_limbs[3].pos.y), (int32_t)(g_limbs[4].pos.y), (int32_t)(g_limbs[5].pos.y),
-            (int32_t)g_cur_motion.surface_rotate.x, (int32_t)g_cur_motion.surface_rotate.y, (int32_t)g_cur_motion.surface_rotate.z);
-    cli_send_data(NULL);*/
+            (int32_t)g_cur_motion.surface_rotate.x, (int32_t)g_cur_motion.surface_rotate.y, (int32_t)g_cur_motion.surface_rotate.z, (int32_t)xz[0], (int32_t)xz[1]);
+    cli_send_data(NULL);
 }
 
 
@@ -229,8 +231,8 @@ static void main_motion_process(void) {
     static int32_t motion_time = MOTION_TIME_MIN_VALUE;
     static int32_t motion_loop = 0;
 
-    if (g_hexapod_state == HEXAPOD_STATE_RDY && g_dst_motion.cfg.distance) {
-        g_cur_motion.cfg = g_dst_motion.cfg; // Update motion configuration
+    if (g_hexapod_state == HEXAPOD_STATE_RDY && g_ext_motion.cfg.distance) {
+        g_cur_motion.cfg = g_ext_motion.cfg; // Update motion configuration
         g_hexapod_state = HEXAPOD_STATE_MOTION_INIT;
     } 
     
@@ -249,8 +251,8 @@ static void main_motion_process(void) {
         }
     } 
     else if (g_hexapod_state == HEXAPOD_STATE_MOTION_EXEC) {
-        if (motion_time == MOTION_TIME_MID_VALUE) { // Update motion configuration time
-            g_cur_motion.cfg = g_dst_motion.cfg;
+        if (motion_time == MOTION_TIME_MID_VALUE) { // Reached update motion configuration time
+            g_cur_motion.cfg = g_ext_motion.cfg;
         }
         
         static uint64_t last_exec_time = 0;
@@ -275,7 +277,7 @@ static void main_motion_process(void) {
         }
     } 
     else if (g_hexapod_state == HEXAPOD_STATE_MOTION_DEINIT) {
-        if (g_dst_motion.cfg.distance == 0) {
+        if (g_ext_motion.cfg.distance == 0) {
             // Move all limbs to down state
             bool is_completed = true;
             for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) { 
@@ -291,46 +293,6 @@ static void main_motion_process(void) {
         } else {
             g_hexapod_state = HEXAPOD_STATE_MOTION_INIT;
         }
-    }
-}
-
-/// ***************************************************************************
-/// @brief  Script motion process. @see motion-script.h
-/// ***************************************************************************
-static void script_motion_process(void) {
-    static motion_t save_motion = {0};
-    static motion_script_id_t save_script_id = MOTION_SCRIPT_NONE;
-
-    if (g_hexapod_state == HEXAPOD_STATE_RDY || g_hexapod_state == HEXAPOD_STATE_DOWN) {
-        if (g_motion_script != MOTION_SCRIPT_NONE) {
-            save_motion = g_cur_motion;
-            save_script_id = g_motion_script;
-            g_hexapod_state = HEXAPOD_STATE_SCRIPT_INIT;
-        }
-    }
-
-    if (g_hexapod_state == HEXAPOD_STATE_SCRIPT_INIT) {
-        if (motion_scripts[g_motion_script].init != NULL) {
-            motion_scripts[g_motion_script].init(&g_dst_motion);
-            servo_driver_set_speed(g_dst_motion.cfg.speed);
-        }
-        g_hexapod_state = HEXAPOD_STATE_SCRIPT_EXEC;
-    }
-    else if (g_hexapod_state == HEXAPOD_STATE_SCRIPT_EXEC) {
-        if (g_motion_script == MOTION_SCRIPT_NONE) {
-            if (save_script_id != MOTION_SCRIPT_DOWN && save_script_id != MOTION_SCRIPT_UP) {
-                g_dst_motion = save_motion; // Restore previous state
-            }
-            g_hexapod_state = HEXAPOD_STATE_SCRIPT_DEINIT;
-        } else {
-            if (g_is_surface_move_completed) {
-                motion_scripts[g_motion_script].exec(&g_dst_motion);
-                servo_driver_set_speed(g_dst_motion.cfg.speed);
-            }
-        }
-    }
-    else if (g_hexapod_state == HEXAPOD_STATE_SCRIPT_DEINIT && g_is_surface_move_completed) {
-        g_hexapod_state = HEXAPOD_STATE_DOWN; // Core select corrent state automatically after this function call
     }
 }
 

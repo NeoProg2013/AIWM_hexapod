@@ -248,7 +248,7 @@
                 </option>
                 <option>
                     <name>CCListCMessages</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCListAssFile</name>
@@ -405,7 +405,7 @@
                 </option>
                 <option>
                     <name>IccLang</name>
-                    <state>2</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IccCDialect</name>
@@ -2485,12 +2485,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\src\motion-core\motion-math.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\motion-core\motion-scripts.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\src\motion-core\motion-scripts.h</name>
             </file>
         </group>
         <group>

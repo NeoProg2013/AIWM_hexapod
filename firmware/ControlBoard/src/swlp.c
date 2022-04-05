@@ -85,7 +85,7 @@ void swlp_process(void) {
         // Process command
         response->command_status = SWLP_CMD_STATUS_OK;
         switch (request->command) {
-            case SWLP_CMD_SELECT_SCRIPT_UP:
+            /*case SWLP_CMD_SELECT_SCRIPT_UP:
                 motion_core_move(NULL, MOTION_SCRIPT_UP);
                 break;
             case SWLP_CMD_SELECT_SCRIPT_DOWN:
@@ -111,32 +111,32 @@ void swlp_process(void) {
                 break;
             case SWLP_CMD_SELECT_SCRIPT_SQUARE:
                 motion_core_move(NULL, MOTION_SCRIPT_SQUARE);
-                break;
+                break;*/
             
             case SWLP_CMD_NONE: {
-                    motion_t motion = {0};
-                    motion.user_surface_point.x = request->surface_point_x;
-                    motion.user_surface_point.y = request->surface_point_y;
-                    motion.user_surface_point.z = request->surface_point_z;
-                    motion.user_surface_rotate.x = request->surface_rotate_x;
-                    motion.user_surface_rotate.y = request->surface_rotate_y;
-                    motion.user_surface_rotate.z = request->surface_rotate_z;
-                    motion_core_move(&motion, MOTION_SCRIPT_NONE);
+                    ext_motion_t motion = {0};
+                    motion.surface_point.x = request->surface_point_x;
+                    motion.surface_point.y = request->surface_point_y;
+                    motion.surface_point.z = request->surface_point_z;
+                    motion.surface_rotate.x = request->surface_rotate_x;
+                    motion.surface_rotate.y = request->surface_rotate_y;
+                    motion.surface_rotate.z = request->surface_rotate_z;
+                    motion_core_move(&motion);
                 }
                 break;
             case SWLP_CMD_MOVE: {
-                    motion_t motion = {0};
+                    ext_motion_t motion = {0};
                     motion.cfg.speed = request->speed;
                     motion.cfg.curvature = request->curvature;
                     motion.cfg.distance = request->distance;
                     motion.cfg.step_height = request->step_height;
-                    motion.user_surface_point.x = request->surface_point_x;
-                    motion.user_surface_point.y = request->surface_point_y;
-                    motion.user_surface_point.z = request->surface_point_z;
-                    motion.user_surface_rotate.x = request->surface_rotate_x;
-                    motion.user_surface_rotate.y = request->surface_rotate_y;
-                    motion.user_surface_rotate.z = request->surface_rotate_z;
-                    motion_core_move(&motion, MOTION_SCRIPT_NONE);
+                    motion.surface_point.x = request->surface_point_x;
+                    motion.surface_point.y = request->surface_point_y;
+                    motion.surface_point.z = request->surface_point_z;
+                    motion.surface_rotate.x = request->surface_rotate_x;
+                    motion.surface_rotate.y = request->surface_rotate_y;
+                    motion.surface_rotate.z = request->surface_rotate_z;
+                    motion_core_move(&motion);
                 }
                 break;  
                 
@@ -153,7 +153,7 @@ void swlp_process(void) {
         response->battery_charge = sysmon_battery_charge;
         
         // Gathering current motion surface
-        motion_t motion = motion_core_get_cur_motion();
+        ext_motion_t motion = motion_core_get_motion();
         response->surface_point_x = (int16_t)motion.surface_point.x;
         response->surface_point_y = (int16_t)motion.surface_point.y;
         response->surface_point_z = (int16_t)motion.surface_point.z;
@@ -164,7 +164,7 @@ void swlp_process(void) {
         // Prepare response
         swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
         swlp_tx_frame->version = SWLP_CURRENT_VERSION;
-        swlp_tx_frame->crc16 = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - 2);
+        swlp_tx_frame->crc16 = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - sizeof(swlp_tx_frame->crc16));
         
         // Transmit response
         state = STATE_TRANSMIT;
