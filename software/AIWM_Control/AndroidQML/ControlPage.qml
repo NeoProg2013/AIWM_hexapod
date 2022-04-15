@@ -39,9 +39,9 @@ Item {
 
     function sendMotionCmd() {
         CppSwlpService.sendMotionCommand(joystick.speed, joystick.distance, joystick.curvature, joystick.stepHeight,
-                                         surfaceCtrl.px, surfaceCtrl.py, surfaceCtrl.pz,
-                                         surfaceCtrl.rx, surfaceCtrl.ry, surfaceCtrl.rz,
-                                         surfaceCtrl.isStabEnabled)
+                                         offsetCtrl.px, offsetCtrl.py, offsetCtrl.pz,
+                                         rotateCtrl.rx, rotateCtrl.ry, rotateCtrl.rz,
+                                         rotateCtrl.isStabEnabled)
     }
 
 
@@ -102,20 +102,19 @@ Item {
             }
         }
         Item {
-            CP_ScriptsPanel {
-                id: scriptPanel
-                anchors.right: parent.right
-                anchors.left: parent.left
-                anchors.top: parent.top
+            CP_RotateCtrl {
+                id : rotateCtrl
+                anchors.fill: parent
+                anchors.topMargin: 5
+                onParametersChanged: {
+                    sendMotionCmd()
+                }
             }
-
-
-            CP_SurfaceCtrl {
-                id : surfaceCtrl
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: scriptPanel.bottom
-                anchors.bottom: parent.bottom
+        }
+        Item {
+            CP_OffsetCtrl {
+                id : offsetCtrl
+                anchors.fill: parent
                 anchors.topMargin: 5
                 onParametersChanged: {
                     sendMotionCmd()
@@ -129,6 +128,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:6}
+    D{i:0;formeditorColor:"#000000"}
 }
 ##^##*/

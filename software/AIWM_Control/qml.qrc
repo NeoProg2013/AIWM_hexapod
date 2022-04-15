@@ -25,7 +25,6 @@
         <file>images/swayX.svg</file>
         <file>images/upDown.svg</file>
         <file>images/pushPull.svg</file>
-        <file>AndroidQML/CP_ScriptsPanel.qml</file>
         <file>AndroidQML/ImageButton.qml</file>
         <file>images/status/DisplayError.svg</file>
         <file>images/status/FatalError.svg</file>
@@ -41,7 +40,9 @@
         <file>images/status/VoltageError.svg</file>
         <file>AndroidQML/CP_StatusPanel.qml</file>
         <file>AndroidQML/CP_Joystick.qml</file>
-        <file>AndroidQML/CP_SurfaceCtrl.qml</file>
+        <file>AndroidQML/RoundJoystick.qml</file>
+        <file>AndroidQML/CP_RotateCtrl.qml</file>
+        <file>AndroidQML/CP_OffsetCtrl.qml</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

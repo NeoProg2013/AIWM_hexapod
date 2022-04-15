@@ -67,7 +67,7 @@ void Swlp::sendMotionCommand(QVariant speed, QVariant distance, QVariant curvatu
     qDebug() << "[sendMotionCommand] curvature" << m_swlpRequst.curvature;
     qDebug() << "[sendMotionCommand] distance" << m_swlpRequst.distance;
     qDebug() << "[sendMotionCommand] step_height" << m_swlpRequst.step_height;
-    qDebug() << "[sendMotionCommand] step_height" << m_swlpRequst.motion_ctrl;
+    qDebug() << "[sendMotionCommand] motion_ctrl" << m_swlpRequst.motion_ctrl;
     qDebug() << "[sendMotionCommand] surface_point_x" << m_swlpRequst.surface_point_x;
     qDebug() << "[sendMotionCommand] surface_point_y" << m_swlpRequst.surface_point_y;
     qDebug() << "[sendMotionCommand] surface_point_z" << m_swlpRequst.surface_point_z;
