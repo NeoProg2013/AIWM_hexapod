@@ -38,13 +38,10 @@ Item {
     }
 
     function sendMotionCmd() {
-        CppSwlpService.sendStartMotionCommand(joystick.speed, joystick.distance, joystick.curvature, joystick.stepHeight,
-                                              surfaceCtrl.px, surfaceCtrl.py, surfaceCtrl.pz,
-                                              surfaceCtrl.rx, surfaceCtrl.ry, surfaceCtrl.rz)
-    }
-    function sendStopMotionCmd() {
-        CppSwlpService.sendStopMoveCommand(surfaceCtrl.px, surfaceCtrl.py, surfaceCtrl.pz,
-                                           surfaceCtrl.rx, surfaceCtrl.ry, surfaceCtrl.rz)
+        CppSwlpService.sendMotionCommand(joystick.speed, joystick.distance, joystick.curvature, joystick.stepHeight,
+                                         surfaceCtrl.px, surfaceCtrl.py, surfaceCtrl.pz,
+                                         surfaceCtrl.rx, surfaceCtrl.ry, surfaceCtrl.rz,
+                                         surfaceCtrl.isStabEnabled)
     }
 
 
@@ -121,7 +118,7 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.topMargin: 5
                 onParametersChanged: {
-                    sendStopMotionCmd()
+                    sendMotionCmd()
                 }
             }
         }

@@ -1,4 +1,5 @@
 #include "swlp.h"
+#include <cstring>
 #include <QHostAddress>
 #include <QNetworkDatagram>
 
@@ -13,6 +14,7 @@ bool Swlp::startService() {
     // Reset state
     m_isReady = false;
     m_isError = false;
+    std::memset(&m_swlpRequst, 0, sizeof(m_swlpRequst));
 
     // Init thread
     stopService();
@@ -37,101 +39,53 @@ void Swlp::stopService() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread stopped";
 }
 
-void Swlp::sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
-                                  QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
-                                  QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ) {
-    m_payloadMutex.lock();
-    m_commandPayload.command = SWLP_CMD_MOVE;
-    m_commandPayload.speed = speed.toInt();
-    m_commandPayload.curvature = curvature.toInt();
-    m_commandPayload.distance = distance.toInt();
-    m_commandPayload.step_height = stepHeight.toInt();
+void Swlp::sendMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
+                             QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
+                             QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ,
+                             QVariant isStabEnabled) {
+    m_requestMutex.lock();
+    m_swlpRequst.speed = speed.toInt();
+    m_swlpRequst.curvature = curvature.toInt();
+    m_swlpRequst.distance = distance.toInt();
+    m_swlpRequst.step_height = stepHeight.toInt();
 
-    m_commandPayload.surface_point_x = surfacePointX.toInt();
-    m_commandPayload.surface_point_y = surfacePointY.toInt();
-    m_commandPayload.surface_point_z = surfacePointZ.toInt();
+    if (isStabEnabled.toBool()) {
+        m_swlpRequst.motion_ctrl |= SWLP_MOTION_CTRL_EN_STAB;
+    } else {
+        m_swlpRequst.motion_ctrl &= ~SWLP_MOTION_CTRL_EN_STAB;
+    }
 
-    m_commandPayload.surface_rotate_x = surfaceRotateX.toInt();
-    m_commandPayload.surface_rotate_y = surfaceRotateY.toInt();
-    m_commandPayload.surface_rotate_z = surfaceRotateZ.toInt();
+    m_swlpRequst.surface_point_x = surfacePointX.toInt();
+    m_swlpRequst.surface_point_y = surfacePointY.toInt();
+    m_swlpRequst.surface_point_z = surfacePointZ.toInt();
 
-    qDebug() << "[sendStartMotionCommand] speed" << m_commandPayload.speed;
-    qDebug() << "[sendStartMotionCommand] curvature" << m_commandPayload.curvature;
-    qDebug() << "[sendStartMotionCommand] distance" << m_commandPayload.distance;
-    qDebug() << "[sendStartMotionCommand] step_height" << m_commandPayload.step_height;
-    qDebug() << "[sendStartMotionCommand] surface_point_x" << m_commandPayload.surface_point_x;
-    qDebug() << "[sendStartMotionCommand] surface_point_y" << m_commandPayload.surface_point_y;
-    qDebug() << "[sendStartMotionCommand] surface_point_z" << m_commandPayload.surface_point_z;
-    qDebug() << "[sendStartMotionCommand] surface_rotate_x" << m_commandPayload.surface_rotate_x;
-    qDebug() << "[sendStartMotionCommand] surface_rotate_y" << m_commandPayload.surface_rotate_y;
-    qDebug() << "[sendStartMotionCommand] surface_rotate_z" << m_commandPayload.surface_rotate_z;
+    m_swlpRequst.surface_rotate_x = surfaceRotateX.toInt();
+    m_swlpRequst.surface_rotate_y = surfaceRotateY.toInt();
+    m_swlpRequst.surface_rotate_z = surfaceRotateZ.toInt();
 
-    m_payloadMutex.unlock();
+    qDebug() << "[sendMotionCommand] speed" << m_swlpRequst.speed;
+    qDebug() << "[sendMotionCommand] curvature" << m_swlpRequst.curvature;
+    qDebug() << "[sendMotionCommand] distance" << m_swlpRequst.distance;
+    qDebug() << "[sendMotionCommand] step_height" << m_swlpRequst.step_height;
+    qDebug() << "[sendMotionCommand] step_height" << m_swlpRequst.motion_ctrl;
+    qDebug() << "[sendMotionCommand] surface_point_x" << m_swlpRequst.surface_point_x;
+    qDebug() << "[sendMotionCommand] surface_point_y" << m_swlpRequst.surface_point_y;
+    qDebug() << "[sendMotionCommand] surface_point_z" << m_swlpRequst.surface_point_z;
+    qDebug() << "[sendMotionCommand] surface_rotate_x" << m_swlpRequst.surface_rotate_x;
+    qDebug() << "[sendMotionCommand] surface_rotate_y" << m_swlpRequst.surface_rotate_y;
+    qDebug() << "[sendMotionCommand] surface_rotate_z" << m_swlpRequst.surface_rotate_z;
+
+    m_requestMutex.unlock();
 }
-
-void Swlp::sendStopMoveCommand(QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
-                               QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ) {
-    m_payloadMutex.lock();
-    m_commandPayload.command = SWLP_CMD_NONE;
-    m_commandPayload.speed = 0;
-    m_commandPayload.curvature = 0;
-    m_commandPayload.distance = 0;
-    m_commandPayload.step_height = 0;
-
-    m_commandPayload.surface_point_x = surfacePointX.toInt();
-    m_commandPayload.surface_point_y = surfacePointY.toInt();
-    m_commandPayload.surface_point_z = surfacePointZ.toInt();
-
-    m_commandPayload.surface_rotate_x = surfaceRotateX.toInt();
-    m_commandPayload.surface_rotate_y = surfaceRotateY.toInt();
-    m_commandPayload.surface_rotate_z = surfaceRotateZ.toInt();
-
-    qDebug() << "[sendStopMoveCommand] speed" << m_commandPayload.speed;
-    qDebug() << "[sendStopMoveCommand] curvature" << m_commandPayload.curvature;
-    qDebug() << "[sendStopMoveCommand] distance" << m_commandPayload.distance;
-    qDebug() << "[sendStopMoveCommand] step_height" << m_commandPayload.step_height;
-    qDebug() << "[sendStopMoveCommand] surface_point_x" << m_commandPayload.surface_point_x;
-    qDebug() << "[sendStopMoveCommand] surface_point_y" << m_commandPayload.surface_point_y;
-    qDebug() << "[sendStopMoveCommand] surface_point_z" << m_commandPayload.surface_point_z;
-    qDebug() << "[sendStopMoveCommand] surface_rotate_x" << m_commandPayload.surface_rotate_x;
-    qDebug() << "[sendStopMoveCommand] surface_rotate_y" << m_commandPayload.surface_rotate_y;
-    qDebug() << "[sendStopMoveCommand] surface_rotate_z" << m_commandPayload.surface_rotate_z;
-
-    m_payloadMutex.unlock();
-}
-
-void Swlp::sendStopMoveCommand() {
-    m_payloadMutex.lock();
-    m_commandPayload.command = SWLP_CMD_NONE;
-    m_commandPayload.speed = 0;
-    m_commandPayload.curvature = 0;
-    m_commandPayload.distance = 0;
-    m_commandPayload.step_height = 0;
-
-    qDebug() << "[sendStopMoveCommand] speed" << m_commandPayload.speed;
-    qDebug() << "[sendStopMoveCommand] curvature" << m_commandPayload.curvature;
-    qDebug() << "[sendStopMoveCommand] distance" << m_commandPayload.distance;
-    qDebug() << "[sendStopMoveCommand] step_height" << m_commandPayload.step_height;
-    qDebug() << "[sendStopMoveCommand] surface_point_x" << m_commandPayload.surface_point_x;
-    qDebug() << "[sendStopMoveCommand] surface_point_y" << m_commandPayload.surface_point_y;
-    qDebug() << "[sendStopMoveCommand] surface_point_z" << m_commandPayload.surface_point_z;
-    qDebug() << "[sendStopMoveCommand] surface_rotate_x" << m_commandPayload.surface_rotate_x;
-    qDebug() << "[sendStopMoveCommand] surface_rotate_y" << m_commandPayload.surface_rotate_y;
-    qDebug() << "[sendStopMoveCommand] surface_rotate_z" << m_commandPayload.surface_rotate_z;
-
-    m_payloadMutex.unlock();
-}
-
 
 
 void Swlp::run() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread started";
 
     // Clear payload
-    m_payloadMutex.lock();
-    memset(&m_commandPayload, 0, sizeof(m_commandPayload));
-    m_commandPayload.command = SWLP_CMD_NONE;
-    m_payloadMutex.unlock();
+    m_requestMutex.lock();
+    memset(&m_swlpRequst, 0, sizeof(m_swlpRequst));
+    m_requestMutex.unlock();
 
     do {
         // Setup UDP socket (callbacks call from this thread)
@@ -222,11 +176,11 @@ void Swlp::datagramReceivedEvent() {
     }
 
     // Process status payload
-    swlp_status_payload_t statusPayload;
-    memcpy(&statusPayload, swlp_frame.payload, sizeof(statusPayload));
+    swlp_response_t response;
+    memcpy(&response, swlp_frame.payload, sizeof(response));
     emit frameReceived();
-    emit systemStatusUpdated(statusPayload.system_status, statusPayload.module_status);
-    emit batteryStatusUpdated(statusPayload.battery_charge, statusPayload.battery_voltage);
+    emit systemStatusUpdated(response.system_status, response.module_status);
+    emit batteryStatusUpdated(response.battery_charge, response.battery_voltage);
 }
 void Swlp::sendCommandPayloadEvent() {
     //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call sendCommandPayloadEvent() ";
@@ -237,9 +191,9 @@ void Swlp::sendCommandPayloadEvent() {
     frame.version = SWLP_CURRENT_VERSION;
 
     // Copy payload to frame
-    m_payloadMutex.lock();
-    memcpy(frame.payload, &m_commandPayload, sizeof(m_commandPayload));
-    m_payloadMutex.unlock();
+    m_requestMutex.lock();
+    memcpy(frame.payload, &m_swlpRequst, sizeof(m_swlpRequst));
+    m_requestMutex.unlock();
 
     // Calculate CRC16
     uint16_t crc = this->calculateCRC16(reinterpret_cast<const uint8_t*>(&frame), sizeof(frame) - 2);
@@ -250,11 +204,6 @@ void Swlp::sendCommandPayloadEvent() {
     datagram.setDestination(QHostAddress(SERVER_IP_ADDRESS), SERVER_PORT);
     datagram.setData(QByteArray(reinterpret_cast<const char*>(&frame), sizeof(frame)));
     m_socket->writeDatagram(datagram);
-}
-void Swlp::setCommand(uint8_t command) {
-    m_payloadMutex.lock();
-    m_commandPayload.command = command;
-    m_payloadMutex.unlock();
 }
 uint16_t Swlp::calculateCRC16(const uint8_t* frame, int size) {
     uint16_t crc16 = 0xFFFF;

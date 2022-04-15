@@ -1,6 +1,7 @@
 #ifndef SWLP_H
 #define SWLP_H
 #include <QObject>
+#include <QVariant>
 #include <QUdpSocket>
 #include <QEventLoop>
 #include <QThread>
@@ -22,22 +23,10 @@ public:
     Q_INVOKABLE bool startService();
     Q_INVOKABLE void stopService();
 
-    Q_INVOKABLE void sendGetUpCommand()    { setCommand(SWLP_CMD_SELECT_SCRIPT_UP);          }
-    Q_INVOKABLE void sendGetDownCommand()  { setCommand(SWLP_CMD_SELECT_SCRIPT_DOWN);        }
-    Q_INVOKABLE void sendXRotateCommand()  { setCommand(SWLP_CMD_SELECT_SCRIPT_X_ROTATE);    }
-    Q_INVOKABLE void sendZRotateCommand()  { setCommand(SWLP_CMD_SELECT_SCRIPT_Z_ROTATE);    }
-    Q_INVOKABLE void sendXYRotateCommand() { setCommand(SWLP_CMD_SELECT_SCRIPT_XY_ROTATE);   }
-    Q_INVOKABLE void sendUpDownCommand()   { setCommand(SWLP_CMD_SELECT_SCRIPT_UP_DOWN);     }
-    Q_INVOKABLE void sendPushPullCommand() { setCommand(SWLP_CMD_SELECT_SCRIPT_Z_PUSH_PULL); }
-    Q_INVOKABLE void sendXSwayCommand()    { setCommand(SWLP_CMD_SELECT_SCRIPT_X_SWAY);      }
-    Q_INVOKABLE void sendSquareCommand()   { setCommand(SWLP_CMD_SELECT_SCRIPT_SQUARE);      }
-
-    Q_INVOKABLE void sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
-                                            QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
-                                            QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ);
-    Q_INVOKABLE void sendStopMoveCommand(QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
-                                         QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ);
-    Q_INVOKABLE void sendStopMoveCommand();
+    Q_INVOKABLE void sendMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
+                                       QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
+                                       QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ,
+                                       QVariant isStabEnabled);
 
 signals:
     void frameReceived();
@@ -47,7 +36,6 @@ signals:
 
 protected:
     virtual void run() override;
-    virtual void setCommand(uint8_t command);
     virtual uint16_t calculateCRC16(const uint8_t* frameByteArray, int size);
 
 protected slots:
@@ -65,8 +53,8 @@ protected:
     QMutex m_eventLoopMutex;
     QEventLoop* m_eventLoop                     {nullptr};
 
-    QMutex m_payloadMutex;
-    swlp_command_payload_t m_commandPayload     {0};
+    QMutex m_requestMutex;
+    swlp_request_t m_swlpRequst;
 };
 
 

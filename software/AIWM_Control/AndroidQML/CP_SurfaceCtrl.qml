@@ -1,5 +1,5 @@
 import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
 import QtQuick.Extras 1.4
@@ -18,6 +18,8 @@ Item {
     property int px: 0
     property int py: 0
     property int pz: 0
+
+    property bool isStabEnabled: false
 
     signal parametersChanged
 
@@ -187,8 +189,8 @@ Item {
         anchors.right: sliderPointZ.left
         anchors.top: labelRotate.bottom
         anchors.bottom: parent.bottom
-        to: 150
-        from: -150
+        to: -150
+        from: 150
         stepSize: 1
         anchors.rightMargin: 5
         value: 0
@@ -251,12 +253,60 @@ Item {
             sliderPointZ.value = 0;
         }
     }
+
+    Button {
+        y: 499
+        height: 48
+        text: qsTr("DOWN")
+        anchors.left: parent.horizontalCenter
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 53
+        anchors.leftMargin: 5
+        anchors.rightMargin: 90
+        onClicked: {
+            sliderPointY.value = 0;
+        }
+    }
+
+    Button {
+        y: 499
+        height: 48
+        text: qsTr("UP")
+        anchors.left: parent.left
+        anchors.right: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: 5
+        anchors.bottomMargin: 53
+        anchors.leftMargin: 90
+        onClicked: {
+            sliderPointY.value = -85;
+        }
+    }
+
+    Switch {
+        id: stabSwitch
+        y: 446
+        width: 220
+        height: 48
+        text: qsTr("Стабилизация")
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: 90
+        anchors.leftMargin: 90
+        anchors.bottomMargin: 106
+        onCheckedChanged: {
+            isStabEnabled = checked
+            parametersChanged()
+        }
+    }
 }
 
 
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:1}D{i:9}D{i:11}D{i:15}
+    D{i:0;formeditorColor:"#000000"}D{i:16}D{i:17}D{i:18}
 }
 ##^##*/
