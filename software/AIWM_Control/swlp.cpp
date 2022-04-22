@@ -40,8 +40,7 @@ void Swlp::stopService() {
 }
 
 void Swlp::sendMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
-                             QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
-                             QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ,
+                             QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz,
                              QVariant isStabEnabled) {
     m_requestMutex.lock();
     m_swlpRequst.speed = speed.toInt();
@@ -55,13 +54,13 @@ void Swlp::sendMotionCommand(QVariant speed, QVariant distance, QVariant curvatu
         m_swlpRequst.motion_ctrl &= ~SWLP_MOTION_CTRL_EN_STAB;
     }
 
-    m_swlpRequst.surface_point_x = surfacePointX.toInt();
-    m_swlpRequst.surface_point_y = surfacePointY.toInt();
-    m_swlpRequst.surface_point_z = surfacePointZ.toInt();
+    m_swlpRequst.surface_point_x = px.toInt();
+    m_swlpRequst.surface_point_y = py.toInt();
+    m_swlpRequst.surface_point_z = pz.toInt();
 
-    m_swlpRequst.surface_rotate_x = surfaceRotateX.toInt();
-    m_swlpRequst.surface_rotate_y = surfaceRotateY.toInt();
-    m_swlpRequst.surface_rotate_z = surfaceRotateZ.toInt();
+    m_swlpRequst.surface_rotate_x = rx.toInt();
+    m_swlpRequst.surface_rotate_y = ry.toInt();
+    m_swlpRequst.surface_rotate_z = rz.toInt();
 
     qDebug() << "[sendMotionCommand] speed" << m_swlpRequst.speed;
     qDebug() << "[sendMotionCommand] curvature" << m_swlpRequst.curvature;
@@ -181,6 +180,8 @@ void Swlp::datagramReceivedEvent() {
     emit frameReceived();
     emit systemStatusUpdated(response.system_status, response.module_status);
     emit batteryStatusUpdated(response.battery_charge, response.battery_voltage);
+    emit surfaceParametersUpdated(response.surface_point_x, response.surface_point_y, response.surface_point_z,
+                                  response.surface_rotate_x, response.surface_rotate_y, response.surface_rotate_z);
 }
 void Swlp::sendCommandPayloadEvent() {
     //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call sendCommandPayloadEvent() ";

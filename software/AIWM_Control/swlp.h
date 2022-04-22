@@ -24,14 +24,15 @@ public:
     Q_INVOKABLE void stopService();
 
     Q_INVOKABLE void sendMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
-                                       QVariant surfacePointX, QVariant surfacePointY, QVariant surfacePointZ,
-                                       QVariant surfaceRotateX, QVariant surfaceRotateY, QVariant surfaceRotateZ,
+                                       QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz,
                                        QVariant isStabEnabled);
 
 signals:
     void frameReceived();
     void systemStatusUpdated(QVariant newSystemStatus, QVariant newModuleStatus);
     void batteryStatusUpdated(QVariant newBatteryCharge, QVariant newBatteryVoltage);
+    void surfaceParametersUpdated(QVariant px, QVariant py, QVariant pz,
+                                  QVariant rx, QVariant ry, QVariant rz);
     void connectionClosed();
 
 protected:

@@ -60,19 +60,22 @@ Item {
             height: 17
             font.family: fixedFont.name
             text: batteryCharge + "% (" + batteryVoltage / 1000.0 + "V)"
-            color: (batteryCharge < 20) ? "#DD0000" : ((batteryCharge < 60) ? "#DDDD00" : "#00DD00")
             anchors.right: parent.right
-            anchors.top: parent.top
-            horizontalAlignment: Text.AlignRight
+            anchors.bottom: parent.bottom
+            color: (batteryCharge < 20) ? "#DD0000" : ((batteryCharge < 60) ? "#DDDD00" : "#00DD00")
+            horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
-            anchors.topMargin: 5
-            anchors.rightMargin: 5
         }
         CP_StatusPanel {
-            anchors.left: parent.left
-            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.top: parent.top
             systemStatus: root.systemStatus
             moduleStatus: root.moduleStatus
+        }
+
+        CP_Orientation {
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
         }
     }
 
@@ -102,8 +105,8 @@ Item {
             }
         }
         Item {
-            CP_RotateCtrl {
-                id : rotateCtrl
+            CP_OffsetCtrl {
+                id : offsetCtrl
                 anchors.fill: parent
                 anchors.topMargin: 5
                 onParametersChanged: {
@@ -112,8 +115,8 @@ Item {
             }
         }
         Item {
-            CP_OffsetCtrl {
-                id : offsetCtrl
+            CP_RotateCtrl {
+                id : rotateCtrl
                 anchors.fill: parent
                 anchors.topMargin: 5
                 onParametersChanged: {
@@ -128,6 +131,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}
+    D{i:0;formeditorColor:"#000000"}D{i:4}D{i:5}
 }
 ##^##*/

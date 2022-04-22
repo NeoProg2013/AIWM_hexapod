@@ -18,8 +18,7 @@ Item {
 
     Label {
         id: labelTitle
-        width: 85
-        height: 20
+        width: 85; height: 20
         text: qsTr("Вращение")
         anchors.left: parent.left
         anchors.top: parent.top
@@ -30,8 +29,7 @@ Item {
 
     Label {
         id: labelX
-        width: 25
-        height: 20
+        width: 25; height: 20
         text: roundJoystick.posX
         anchors.left: parent.left
         anchors.top: labelTitle.bottom
@@ -42,8 +40,7 @@ Item {
 
     Label {
         id: labelY
-        width: 25
-        height: 20
+        width: 25; height: 20
         text: sliderY.value
         anchors.left: parent.left
         anchors.top: labelTitle.bottom
@@ -74,8 +71,7 @@ Item {
 
     Label {
         id: labelZ
-        width: 25
-        height: 20
+        width: 25; height: 20
         text: roundJoystick.posZ
         anchors.left: parent.left
         anchors.top: labelTitle.bottom
@@ -85,8 +81,7 @@ Item {
     }
 
     Button {
-        width: 140
-        height: 45
+        width: 140; height: 45
         text: qsTr("Сброс")
         anchors.left: parent.left
         anchors.top: parent.top
@@ -101,8 +96,7 @@ Item {
     RoundJoystick {
         id: roundJoystick
         y: 150
-        width: 200
-        height: 200
+        width: 200; height: 200
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         maxValue: 15
@@ -114,8 +108,7 @@ Item {
     }
 
     Switch {
-        x: 306
-        y: 252
+        x: 306; y: 252
         text: qsTr("СТАБ")
         anchors.right: parent.right
         anchors.bottom: parent.bottom

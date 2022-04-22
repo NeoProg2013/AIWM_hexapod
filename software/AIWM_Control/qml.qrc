@@ -43,6 +43,7 @@
         <file>AndroidQML/RoundJoystick.qml</file>
         <file>AndroidQML/CP_RotateCtrl.qml</file>
         <file>AndroidQML/CP_OffsetCtrl.qml</file>
+        <file>AndroidQML/CP_Orientation.qml</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>
