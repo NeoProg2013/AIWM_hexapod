@@ -89,7 +89,6 @@ Item {
         anchors.leftMargin: 90
         anchors.topMargin: 0
         onClicked: {
-            sliderY.value = 0;
             roundJoystick.move(0, 0)
         }
     }
@@ -110,7 +109,7 @@ Item {
 
     Button {
         x: 260; y: 255
-        width: 140; height: 45
+        width: 70; height: 45
         text: qsTr("DOWN")
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -121,7 +120,7 @@ Item {
 
     Button {
         x: 260; y: 205
-        width: 140; height: 45
+        width: 70; height: 45
         text: qsTr("UP")
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -136,6 +135,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:8}D{i:9}
+    D{i:0;formeditorColor:"#000000"}
 }
 ##^##*/

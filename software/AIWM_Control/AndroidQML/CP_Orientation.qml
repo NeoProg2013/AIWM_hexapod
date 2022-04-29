@@ -4,7 +4,7 @@ import QtQuick.Layouts 1.3
 
 Item {
     id: root
-    width: 132
+    width: 150
     height: 45
     clip: true
 
@@ -64,6 +64,6 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:2}D{i:3}D{i:4}
+    D{i:0;formeditorColor:"#000000"}
 }
 ##^##*/

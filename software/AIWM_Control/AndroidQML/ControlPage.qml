@@ -56,7 +56,9 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 5
         Label {
-            width: 90
+            x: 265
+            y: 288
+            width: 125
             height: 17
             font.family: fixedFont.name
             text: batteryCharge + "% (" + batteryVoltage / 1000.0 + "V)"
@@ -74,6 +76,9 @@ Item {
         }
 
         CP_Orientation {
+            y: 260
+            width: 153
+            height: 45
             anchors.left: parent.left
             anchors.bottom: parent.bottom
         }
