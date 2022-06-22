@@ -57,7 +57,7 @@ void main() {
     } while (sensors_core_calibration_process());
     sysmon_clear_error(SYSMON_CALIBRATION);
     
-    // Motion core initializaion
+    // Motion core initialization
     servo_driver_init();
     motion_core_init();
     
@@ -88,10 +88,13 @@ void main() {
             sysmon_process();
             swlp_process();
             indication_process();
-            display_process();
             cli_process();
         }
         sensors_core_process();
+
+        if (motion_core_is_down()) {
+            display_process();
+        }
     }
 }
 

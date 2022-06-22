@@ -222,6 +222,14 @@ void motion_core_process(void) {
     cli_send_data(NULL);
 }
 
+/// ***************************************************************************
+/// @brief  Get Hexapod down state
+/// @return true -- hexapod is down
+/// ***************************************************************************
+bool motion_core_is_down(void) {
+    return g_hexapod_state == HEXAPOD_STATE_DOWN;
+}
+
 
 
 /// ***************************************************************************

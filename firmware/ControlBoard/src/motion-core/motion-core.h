@@ -32,6 +32,7 @@ extern void motion_core_init(void);
 extern void motion_core_move(const ext_motion_t* ext_motion);
 extern ext_motion_t motion_core_get_motion(void);
 extern void motion_core_process(void);
+extern bool motion_core_is_down(void);
 
 
 #endif /* _MOTION_CORE_H_ */
