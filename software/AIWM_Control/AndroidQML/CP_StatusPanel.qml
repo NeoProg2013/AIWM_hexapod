@@ -22,68 +22,62 @@ Item {
     }
 
 
-    ImageButton {
-        x: 0
+    StatusImage {
+        x: 280
         y: 0
         width: 35
         height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
+        imageColor: isTimerVisible && (systemStatus & 0x01) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (systemStatus & 0x01) ? "#CC0000" : "#222222"
         imageSrc: "qrc:/images/status/FatalError.svg"
-        visible: isTimerVisible && (systemStatus & 0x01)
     }
-    ImageButton {
-        x: 40
+    StatusImage {
+        x: 240
         y: 0
         width: 35
         height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
+        imageColor: isTimerVisible && (systemStatus & 0x02) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (systemStatus & 0x02) ? "#CC0000" : "#222222"
         imageSrc: "qrc:/images/status/InternalError.svg"
-        visible: isTimerVisible && (systemStatus & 0x02)
     }
-    ImageButton {
-        x: 80
-        y: 0
-        width: 35
-        height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/VoltageError.svg"
-        visible: isTimerVisible && (systemStatus & 0x04)
-    }
-    ImageButton {
-        x: 120
-        y: 0
-        width: 35
-        height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/SyncError.svg"
-        visible: isTimerVisible && (systemStatus & 0x08)
-    }
-    ImageButton {
-        x: 160
-        y: 0
-        width: 35
-        height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/MathError.svg"
-        visible: isTimerVisible && (systemStatus & 0x10)
-    }
-    ImageButton {
+    StatusImage {
         x: 200
         y: 0
         width: 35
         height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/I2CError.svg"
-        visible: isTimerVisible && (systemStatus & 0x20)
+        imageColor: isTimerVisible && (systemStatus & 0x04) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (systemStatus & 0x04) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/VoltageError.svg"
     }
-    ImageButton {
-        x: 240
+    StatusImage {
+        x: 160
+        y: 0
+        width: 35
+        height: 35
+        imageColor: isTimerVisible && (systemStatus & 0x08) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (systemStatus & 0x08) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/SyncError.svg"
+    }
+    StatusImage {
+        x: 120
+        y: 0
+        width: 35
+        height: 35
+        imageColor: isTimerVisible && (systemStatus & 0x10) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (systemStatus & 0x10) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/MathError.svg"
+    }
+    StatusImage {
+        x: 80
+        y: 0
+        width: 35
+        height: 35
+        imageColor: isTimerVisible && (systemStatus & 0x20) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (systemStatus & 0x20) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/I2CError.svg"
+    }
+    StatusImage {
+        x: 40
         y: 0
         width: 35
         height: 35
@@ -92,8 +86,8 @@ Item {
         //imageSrc: "qrc:/images/status/FatalError.svg"
         visible: false
     }
-    ImageButton {
-        x: 280
+    StatusImage {
+        x: 0
         y: 0
         width: 35
         height: 35
@@ -104,68 +98,62 @@ Item {
     }
 
 
-    ImageButton {
-        x: 0
+    StatusImage {
+        x: 280
         y: 40
         width: 35
         height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
+        imageColor: isTimerVisible && (moduleStatus & 0x01) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (moduleStatus & 0x01) ? "#CC0000" : "#222222"
         imageSrc: "qrc:/images/status/MotionCoreError.svg"
-        visible: isTimerVisible && (moduleStatus & 0x01)
     }
-    ImageButton {
-        x: 40
+    StatusImage {
+        x: 240
         y: 40
         width: 35
         height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
+        imageColor: isTimerVisible && (moduleStatus & 0x02) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (moduleStatus & 0x02) ? "#CC0000" : "#222222"
         imageSrc: "qrc:/images/status/ServoDriverError.svg"
-        visible: isTimerVisible && (moduleStatus & 0x02)
     }
-    ImageButton {
-        x: 80
-        y: 40
-        width: 35
-        height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/SystemMonitorError.svg"
-        visible: isTimerVisible && (moduleStatus & 0x04)
-    }
-    ImageButton {
-        x: 120
-        y: 40
-        width: 35
-        height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/DisplayError.svg"
-        visible: isTimerVisible && (moduleStatus & 0x08)
-    }
-    ImageButton {
-        x: 160
-        y: 40
-        width: 35
-        height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/MPU6050Error.svg"
-        visible: isTimerVisible && (moduleStatus & 0x10)
-    }
-    ImageButton {
+    StatusImage {
         x: 200
         y: 40
         width: 35
         height: 35
-        imageColor: "#CC0000"
-        borderColor: "#CC0000"
-        imageSrc: "qrc:/images/status/StepDetectorError.svg"
-        visible: isTimerVisible && (moduleStatus & 0x20)
+        imageColor: isTimerVisible && (moduleStatus & 0x04) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (moduleStatus & 0x04) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/SystemMonitorError.svg"
     }
-    ImageButton {
-        x: 240
+    StatusImage {
+        x: 160
+        y: 40
+        width: 35
+        height: 35
+        imageColor: isTimerVisible && (moduleStatus & 0x08) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (moduleStatus & 0x08) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/DisplayError.svg"
+    }
+    StatusImage {
+        x: 120
+        y: 40
+        width: 35
+        height: 35
+        imageColor: isTimerVisible && (moduleStatus & 0x10) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (moduleStatus & 0x10) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/MPU6050Error.svg"
+    }
+    StatusImage {
+        x: 80
+        y: 40
+        width: 35
+        height: 35
+        imageColor: isTimerVisible && (moduleStatus & 0x20) ? "#CC0000" : "#222222"
+        borderColor: isTimerVisible && (moduleStatus & 0x20) ? "#CC0000" : "#222222"
+        imageSrc: "qrc:/images/status/StepDetectorError.svg"
+    }
+    StatusImage {
+        x: 40
         y: 40
         width: 35
         height: 35
@@ -175,8 +163,8 @@ Item {
         //visible: isTimerVisible && (moduleStatus & 0x40)
         visible: false
     }
-    ImageButton {
-        x: 280
+    StatusImage {
+        x: 0
         y: 40
         width: 35
         height: 35
@@ -187,3 +175,9 @@ Item {
         visible: false
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;formeditorColor:"#000000";formeditorZoom:1.75}
+}
+##^##*/

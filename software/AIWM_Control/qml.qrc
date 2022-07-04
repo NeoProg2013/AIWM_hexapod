@@ -18,7 +18,6 @@
         <file>images/joystick.svg</file>
         <file>fonts/OpenSans-Regular.ttf</file>
         <file>AndroidQML/StreamWidget.qml</file>
-        <file>images/noise.gif</file>
         <file>images/icon.png</file>
         <file>images/rotateXY.svg</file>
         <file>images/square.svg</file>
@@ -44,6 +43,7 @@
         <file>AndroidQML/CP_RotateCtrl.qml</file>
         <file>AndroidQML/CP_OffsetCtrl.qml</file>
         <file>AndroidQML/CP_Orientation.qml</file>
+        <file>AndroidQML/StatusImage.qml</file>
     </qresource>
     <qresource prefix="/QML"/>
 </RCC>

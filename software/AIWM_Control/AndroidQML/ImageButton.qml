@@ -53,7 +53,7 @@ Button {
     }
     onPressedChanged: {
         if (pressed) {
-            frameRectangle.border.color = "#00FFFF"
+            frameRectangle.border.color = borderColor
             root.buttonPressed()
         } else {
             frameRectangle.border.color = "#AAAAAA"

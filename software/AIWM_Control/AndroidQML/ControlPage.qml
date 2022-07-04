@@ -50,37 +50,40 @@ Item {
         anchors.bottom: controlsSwipeView.top
         anchors.bottomMargin: 10
         anchors.right: parent.right
-        anchors.rightMargin: 5
+        anchors.rightMargin: 0
         anchors.left: parent.left
-        anchors.leftMargin: 5
+        anchors.leftMargin: 0
         anchors.top: parent.top
-        anchors.topMargin: 5
+        anchors.topMargin: 0
         Label {
-            x: 265
+            x: 301
             y: 288
-            width: 125
-            height: 17
+            width: 90
+            height: 20
             font.family: fixedFont.name
-            text: batteryCharge + "% (" + batteryVoltage / 1000.0 + "V)"
+            text: batteryCharge + "% " + batteryVoltage / 1000.0 + "V"
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             color: (batteryCharge < 20) ? "#DD0000" : ((batteryCharge < 60) ? "#DDDD00" : "#00DD00")
-            horizontalAlignment: Text.AlignLeft
+            horizontalAlignment: Text.AlignRight
             verticalAlignment: Text.AlignVCenter
+            anchors.rightMargin: 5
         }
         CP_StatusPanel {
             anchors.right: parent.right
             anchors.top: parent.top
+            anchors.rightMargin: 5
+            anchors.topMargin: 5
             systemStatus: root.systemStatus
             moduleStatus: root.moduleStatus
         }
 
         CP_Orientation {
             y: 260
-            width: 153
-            height: 45
+            height: 20
             anchors.left: parent.left
             anchors.bottom: parent.bottom
+            anchors.leftMargin: 5
         }
     }
 
@@ -130,12 +133,13 @@ Item {
             }
         }
     }
+
 }
 
 
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:4}D{i:5}
+    D{i:0;formeditorColor:"#000000";formeditorZoom:1.25}D{i:3}
 }
 ##^##*/
