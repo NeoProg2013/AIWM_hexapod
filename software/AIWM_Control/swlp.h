@@ -23,9 +23,8 @@ public:
     Q_INVOKABLE bool startService();
     Q_INVOKABLE void stopService();
 
-    Q_INVOKABLE void sendMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
-                                       QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz,
-                                       QVariant isStabEnabled);
+    Q_INVOKABLE void setMotionParams(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight, QVariant isStabEnabled);
+    Q_INVOKABLE void setSurfaceParams(QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz);
 
 signals:
     void frameReceived();

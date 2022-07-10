@@ -37,14 +37,6 @@ Item {
         }
     }
 
-    function sendMotionCmd() {
-        CppSwlpService.sendMotionCommand(joystick.speed, joystick.distance, joystick.curvature, joystick.stepHeight,
-                                         offsetCtrl.px, offsetCtrl.py, offsetCtrl.pz,
-                                         rotateCtrl.rx, rotateCtrl.ry, rotateCtrl.rz,
-                                         rotateCtrl.isStabEnabled)
-    }
-
-
     StreamWidget {
         id: streamWidget
         anchors.bottom: controlsSwipeView.top
@@ -77,7 +69,6 @@ Item {
             systemStatus: root.systemStatus
             moduleStatus: root.moduleStatus
         }
-
         CP_Orientation {
             y: 260
             height: 20
@@ -108,7 +99,8 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 onParametersChanged: {
-                    sendMotionCmd()
+                    CppSwlpService.setMotionParams(joystick.speed, joystick.distance, joystick.curvature,
+                                                   joystick.stepHeight, joystick.isStabEnabled);
                 }
             }
         }
@@ -118,7 +110,8 @@ Item {
                 anchors.fill: parent
                 anchors.topMargin: 5
                 onParametersChanged: {
-                    sendMotionCmd()
+                    CppSwlpService.setSurfaceParams(offsetCtrl.px, offsetCtrl.py, offsetCtrl.pz,
+                                                    rotateCtrl.rx, rotateCtrl.ry, rotateCtrl.rz);
                 }
             }
         }
@@ -128,7 +121,8 @@ Item {
                 anchors.fill: parent
                 anchors.topMargin: 5
                 onParametersChanged: {
-                    sendMotionCmd()
+                    CppSwlpService.setSurfaceParams(offsetCtrl.px, offsetCtrl.py, offsetCtrl.pz,
+                                                    rotateCtrl.rx, rotateCtrl.ry, rotateCtrl.rz);
                 }
             }
         }

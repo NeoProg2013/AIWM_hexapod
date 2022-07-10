@@ -11,7 +11,6 @@ Item {
     property int rx: 0
     property int ry: 0
     property int rz: 0
-    property bool isStabEnabled: false
 
     signal parametersChanged
 
@@ -104,17 +103,6 @@ Item {
             rx = roundJoystick.posX
             rz = roundJoystick.posZ
             root.parametersChanged()
-        }
-    }
-
-    Switch {
-        x: 306; y: 252
-        text: qsTr("СТАБ")
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        onCheckedChanged: {
-            isStabEnabled = checked
-            parametersChanged()
         }
     }
 }

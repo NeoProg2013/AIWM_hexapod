@@ -14,6 +14,7 @@ Item {
     property int distance: 0
     property int curvature: 0
     property int stepHeight: stepHeight.value
+    property bool isStabEnabled: false
 
     signal parametersChanged
 
@@ -105,10 +106,13 @@ Item {
     }
     Slider {
         id: motionSpeed
+        x: 370
+        y: 22
         width: 30
-        height: 248
+        height: 195
         stepSize: 1
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: 53
         anchors.right: parent.right
         orientation: Qt.Vertical
         to: 100
@@ -129,10 +133,13 @@ Item {
     }
     Slider {
         id: stepHeight
+        x: 340
+        y: 22
         width: 30
-        height: 248
+        height: 195
         stepSize: 1
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: 53
         anchors.right: motionSpeed.left
         orientation: Qt.Vertical
         from: 15
@@ -143,4 +150,25 @@ Item {
         }
     }
 
+    CheckBox {
+        id: checkBox
+        x: 340
+        y: 222
+        width: 60
+        height: 48
+        text: qsTr("ST")
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        onCheckedChanged: {
+            isStabEnabled = checked
+            parametersChanged()
+        }
+    }
+
 }
+
+/*##^##
+Designer {
+    D{i:0;formeditorColor:"#000000"}
+}
+##^##*/

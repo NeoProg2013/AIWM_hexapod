@@ -39,44 +39,31 @@ void Swlp::stopService() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread stopped";
 }
 
-void Swlp::sendMotionCommand(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight,
-                             QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz,
-                             QVariant isStabEnabled) {
+
+
+void Swlp::setMotionParams(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight, QVariant isStabEnabled) {
     m_requestMutex.lock();
     m_swlpRequst.speed = speed.toInt();
     m_swlpRequst.curvature = curvature.toInt();
     m_swlpRequst.distance = distance.toInt();
     m_swlpRequst.step_height = stepHeight.toInt();
-
     if (isStabEnabled.toBool()) {
         m_swlpRequst.motion_ctrl |= SWLP_MOTION_CTRL_EN_STAB;
     } else {
         m_swlpRequst.motion_ctrl &= ~SWLP_MOTION_CTRL_EN_STAB;
     }
-
+    m_requestMutex.unlock();
+}
+void Swlp::setSurfaceParams(QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz) {
+    m_requestMutex.lock();
     m_swlpRequst.surface_point_x = px.toInt();
     m_swlpRequst.surface_point_y = py.toInt();
     m_swlpRequst.surface_point_z = pz.toInt();
-
     m_swlpRequst.surface_rotate_x = rx.toInt();
     m_swlpRequst.surface_rotate_y = ry.toInt();
     m_swlpRequst.surface_rotate_z = rz.toInt();
-
-    qDebug() << "[sendMotionCommand] speed" << m_swlpRequst.speed;
-    qDebug() << "[sendMotionCommand] curvature" << m_swlpRequst.curvature;
-    qDebug() << "[sendMotionCommand] distance" << m_swlpRequst.distance;
-    qDebug() << "[sendMotionCommand] step_height" << m_swlpRequst.step_height;
-    qDebug() << "[sendMotionCommand] motion_ctrl" << m_swlpRequst.motion_ctrl;
-    qDebug() << "[sendMotionCommand] surface_point_x" << m_swlpRequst.surface_point_x;
-    qDebug() << "[sendMotionCommand] surface_point_y" << m_swlpRequst.surface_point_y;
-    qDebug() << "[sendMotionCommand] surface_point_z" << m_swlpRequst.surface_point_z;
-    qDebug() << "[sendMotionCommand] surface_rotate_x" << m_swlpRequst.surface_rotate_x;
-    qDebug() << "[sendMotionCommand] surface_rotate_y" << m_swlpRequst.surface_rotate_y;
-    qDebug() << "[sendMotionCommand] surface_rotate_z" << m_swlpRequst.surface_rotate_z;
-
     m_requestMutex.unlock();
 }
-
 
 void Swlp::run() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread started";
