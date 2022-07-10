@@ -211,7 +211,7 @@ void motion_core_process(void) {
         servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
     }
     
-    void* tx_buffer = cli_get_tx_buffer();
+    /*void* tx_buffer = cli_get_tx_buffer();
     sprintf(tx_buffer, "[MCORE]: %d sensors: %d,%d,%d %d,%d,%d  pos: %d,%d,%d,%d,%d,%d  rotate: %d,%d,%d  mpu: %d,%d\r\n", 
             (int32_t)get_time_ms(), 
             (sensors_inputs & PCA9555_GPIO_SENSOR_LEFT_1) != 0, (sensors_inputs & PCA9555_GPIO_SENSOR_LEFT_2) != 0, (sensors_inputs & PCA9555_GPIO_SENSOR_LEFT_3) != 0,
@@ -219,7 +219,7 @@ void motion_core_process(void) {
             (int32_t)(g_limbs[0].pos.y), (int32_t)(g_limbs[1].pos.y), (int32_t)(g_limbs[2].pos.y),
             (int32_t)(g_limbs[3].pos.y), (int32_t)(g_limbs[4].pos.y), (int32_t)(g_limbs[5].pos.y),
             (int32_t)g_cur_motion.surface_rotate.x, (int32_t)g_cur_motion.surface_rotate.y, (int32_t)g_cur_motion.surface_rotate.z, (int32_t)xz[0], (int32_t)xz[1]);
-    cli_send_data(NULL);
+    cli_send_data(NULL);*/
 }
 
 /// ***************************************************************************

@@ -73,7 +73,7 @@ uint16_t pca9555_read_inputs(uint16_t inputs) {
 /// @return true - pin is HIGH, false - pin is LOW
 /// ***************************************************************************
 bool pca9555_set_outputs(uint16_t outputs, uint16_t new_states) {
-    uint16_t cur_states = i2c1_read16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, false);
+    uint16_t cur_states = i2c1_read16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, false); // TODO: Need remove
     cur_states &= ~outputs;   // Reset requested outputs
     cur_states |= new_states; // Apply new outputs state
     return i2c1_write16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, cur_states);
