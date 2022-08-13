@@ -215,12 +215,12 @@ static void limb_leds_draw_circle(uint32_t period) {
         bool res = false;
         switch (++iteration) {
             default: iteration = 0; // No break
-            case 0: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_RIGHT_1); break;
-            case 1: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_RIGHT_2); break;
-            case 2: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_RIGHT_3); break;
-            case 3: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_LEFT_3);  break;
-            case 4: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_LEFT_2);  break;
-            case 5: res = pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_LEFT_1);  break;
+            case 0: res = pca9555_set_outputs(PCA9555_GPIO_LED_RIGHT_1); break;
+            case 1: res = pca9555_set_outputs(PCA9555_GPIO_LED_RIGHT_2); break;
+            case 2: res = pca9555_set_outputs(PCA9555_GPIO_LED_RIGHT_3); break;
+            case 3: res = pca9555_set_outputs(PCA9555_GPIO_LED_LEFT_3);  break;
+            case 4: res = pca9555_set_outputs(PCA9555_GPIO_LED_LEFT_2);  break;
+            case 5: res = pca9555_set_outputs(PCA9555_GPIO_LED_LEFT_1);  break;
         }
         if (!res) {
             sysmon_set_error(SYSMON_I2C_ERROR);
@@ -231,14 +231,14 @@ static void limb_leds_draw_circle(uint32_t period) {
 }
 static void limb_leds_enable_all(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_PCA9555)) return;  // Module disabled
-    if (!pca9555_set_outputs(PCA9555_GPIO_LED_ALL, PCA9555_GPIO_LED_ALL)) {
+    if (!pca9555_set_outputs(PCA9555_GPIO_LED_ALL)) {
         sysmon_set_error(SYSMON_I2C_ERROR);
         sysmon_disable_module(SYSMON_MODULE_PCA9555);
     }
 }
 static void limb_leds_disable_all(void) {
     if (sysmon_is_module_disable(SYSMON_MODULE_PCA9555)) return;  // Module disabled
-    if (!pca9555_set_outputs(PCA9555_GPIO_LED_ALL, 0x0000)) {
+    if (!pca9555_set_outputs(0x0000)) {
         sysmon_set_error(SYSMON_I2C_ERROR);
         sysmon_disable_module(SYSMON_MODULE_PCA9555);
     }

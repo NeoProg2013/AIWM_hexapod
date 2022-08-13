@@ -7,6 +7,7 @@
 #define _PCA9555_H_
 
 typedef enum {
+    // Outputs
     PCA9555_GPIO_LED_LEFT_1  = 0x0002, // IO01
     PCA9555_GPIO_LED_LEFT_2  = 0x0008, // IO03
     PCA9555_GPIO_LED_LEFT_3  = 0x0020, // IO05
@@ -15,7 +16,8 @@ typedef enum {
     PCA9555_GPIO_LED_RIGHT_3 = 0x0400, // IO12
     PCA9555_GPIO_LED_ALL = PCA9555_GPIO_LED_LEFT_1  | PCA9555_GPIO_LED_LEFT_2  | PCA9555_GPIO_LED_LEFT_3 | 
                            PCA9555_GPIO_LED_RIGHT_1 | PCA9555_GPIO_LED_RIGHT_2 | PCA9555_GPIO_LED_RIGHT_3,
-                           
+                      
+    // Inputs
     PCA9555_GPIO_SENSOR_LEFT_1  = 0x0001, // IO00
     PCA9555_GPIO_SENSOR_LEFT_2  = 0x0004, // IO02
     PCA9555_GPIO_SENSOR_LEFT_3  = 0x0010, // IO04
@@ -47,10 +49,9 @@ extern uint16_t pca9555_read_inputs(uint16_t inputs);
 
 /// ***************************************************************************
 /// @brief  Set outputs state
-/// @param  outputs: outputs
-/// @param  new_states: new outputs state
+/// @param  states: new outputs state
 /// @return true - pin is HIGH, false - pin is LOW
 /// ***************************************************************************
-extern bool pca9555_set_outputs(uint16_t outputs, uint16_t new_states);
+extern bool pca9555_set_outputs(uint16_t states);
 
 #endif // _PCA9555_H_

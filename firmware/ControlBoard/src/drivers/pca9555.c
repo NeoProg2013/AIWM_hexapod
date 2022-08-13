@@ -19,6 +19,9 @@
 #define PCA9555_CFG_PORT_1_ADDR             (0x07)
 
 
+static uint16_t outputs_cur_state = 0x0000;
+
+
 /// ***************************************************************************
 /// @brief  PCA9555 initialization
 /// @return true - success, false - error
@@ -30,7 +33,7 @@ bool pca9555_init(void) {
     gpio_set_pull        (INTERRUPT_PIN, GPIO_PULL_UP);
     
     // Reset all outputs
-    if (!pca9555_set_outputs(0xFFFF, 0x0000)) {
+    if (!pca9555_set_outputs(0x0000)) {
         return false;
     }
     
@@ -72,9 +75,10 @@ uint16_t pca9555_read_inputs(uint16_t inputs) {
 /// @param  new_states: new outputs state
 /// @return true - pin is HIGH, false - pin is LOW
 /// ***************************************************************************
-bool pca9555_set_outputs(uint16_t outputs, uint16_t new_states) {
-    uint16_t cur_states = i2c1_read16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, false); // TODO: Need remove
-    cur_states &= ~outputs;   // Reset requested outputs
-    cur_states |= new_states; // Apply new outputs state
-    return i2c1_write16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, cur_states);
+bool pca9555_set_outputs(uint16_t states) {
+    if (outputs_cur_state != states) {
+        outputs_cur_state = states;
+        return i2c1_write16(PCA9555_I2C_ADDRESS, PCA9555_OUTPUT_PORT_0_ADDR, 1, outputs_cur_state);
+    }
+    return true;
 }
