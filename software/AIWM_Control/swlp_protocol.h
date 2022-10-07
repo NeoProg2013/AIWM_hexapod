@@ -1,62 +1,70 @@
-#ifndef SWLP_PROTOCOL_H
-#define SWLP_PROTOCOL_H
-
+/// ***************************************************************************
+/// @file    swlp_protocol.h
+/// @author  NeoProg
+/// @brief   Simple wireless protocol definition
+/// ***************************************************************************
+#ifndef _SWLP_PROTOCOL_H_
+#define _SWLP_PROTOCOL_H_
 #include <stdint.h>
 
+#define SWLP_START_MARK_VALUE           (0xAABBCCDD)
+#define SWLP_CURRENT_VERSION            (0x03)
+#define SWLP_CRC16_POLYNOM              (0xA001)
 
-#define SWLP_START_MARK_VALUE                           (0xAABBCCDD)
-#define SWLP_CURRENT_VERSION                            (0x01)
-#define SWLP_CRC16_POLYNOM                              (0xA001)
-
-//
-// SWP command list
-//
-#define SWLP_CMD_NONE                                   (0x00)
-#define SWLP_CMD_SELECT_SEQUENCE_UP                     (0x01)
-#define SWLP_CMD_SELECT_SEQUENCE_DOWN                   (0x02)
-#define SWLP_CMD_SELECT_SEQUENCE_MOVE                   (0x03)
-#define SWLP_CMD_SELECT_SEQUENCE_UP_DOWN                (0x05)
-#define SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL              (0x06)
-#define SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT            (0x07)
-#define SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT           (0x08)
-#define SWLP_CMD_SELECT_SEQUENCE_DANCE                  (0x09)
-#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_X               (0x10)
-#define SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z               (0x11)
-#define SWLP_CMD_SELECT_SEQUENCE_NONE                   (0x90)
-
-//
-// SWLP command status
-//
-#define SWLP_CMD_STATUS_ERROR                           (0x00)
-#define SWLP_CMD_STATUS_OK                              (0x01)
+// Motion ctrl flags
+#define SWLP_MOTION_CTRL_NO             (0x0000u)
+#define SWLP_MOTION_CTRL_EN_STAB        (0x0001u)
 
 
 #pragma pack(push, 1)
-struct swlp_frame_t {
+typedef struct {
     uint32_t start_mark;
     uint8_t  version;
     uint8_t  payload[25];
     uint16_t crc16;
-};
+} swlp_frame_t;
 
-struct swlp_command_payload_t {
-    uint8_t command;
-    int8_t  distance;
+typedef struct {
+    // Basic motion parameters
+    uint8_t speed;
     int16_t curvature;
-    uint8_t motion_speed;
-    uint8_t reserved[20];
-};
+    int8_t  distance;
+    uint8_t step_height;
+    // Advanced motion parameters
+    uint16_t motion_ctrl;
+    int16_t surface_point_x;
+    int16_t surface_point_y;
+    int16_t surface_point_z;
+    int16_t surface_rotate_x;
+    int16_t surface_rotate_y;
+    int16_t surface_rotate_z;
+    uint8_t reserved[6];
+} swlp_request_t;
 
-struct swlp_status_payload_t {
-    uint8_t  command;
-    uint8_t  command_status;
+typedef struct {
     uint8_t  module_status;
     uint8_t  system_status;
     uint16_t battery_voltage;
     uint8_t  battery_charge;
-    uint8_t  reserved[18];
-};
+    // Actual values of basic motion parameters
+    uint8_t speed;
+    int16_t curvature;
+    int8_t  distance;
+    uint8_t step_height;
+    // Actual values of advanced motion parameters
+    uint16_t motion_ctrl;
+    int16_t surface_point_x;
+    int16_t surface_point_y;
+    int16_t surface_point_z;
+    int16_t surface_rotate_x;
+    int16_t surface_rotate_y;
+    int16_t surface_rotate_z;
+    uint8_t reserved[1];
+} swlp_response_t;
 #pragma pack(pop)
 
 
-#endif // SWLP_PROTOCOL_H
+static_assert(sizeof(swlp_request_t) == 25, "size of swlp_request_t is not equal size of swlp_frame_t::payload");
+static_assert(sizeof(swlp_response_t) == 25, "size of swlp_response_t is not equal size of swlp_frame_t::payload");
+
+#endif // _SWLP_PROTOCOL_H_

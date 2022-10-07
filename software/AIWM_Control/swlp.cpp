@@ -1,4 +1,5 @@
 #include "swlp.h"
+#include <cstring>
 #include <QHostAddress>
 #include <QNetworkDatagram>
 
@@ -13,13 +14,7 @@ bool Swlp::startService() {
     // Reset state
     m_isReady = false;
     m_isError = false;
-
-    // Clear payload
-    m_payloadMutex.lock();
-    memset(&m_commandPayload, 0, sizeof(m_commandPayload));
-    m_commandPayload.command = SWLP_CMD_NONE;
-    m_commandPayload.motion_speed = 90;
-    m_payloadMutex.unlock();
+    std::memset(&m_swlpRequst, 0, sizeof(m_swlpRequst));
 
     // Init thread
     stopService();
@@ -43,37 +38,41 @@ void Swlp::stopService() {
     }
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread stopped";
 }
-void Swlp::sendGetUpCommand()       { setCommand(SWLP_CMD_SELECT_SEQUENCE_UP);           }
-void Swlp::sendGetDownCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_DOWN);         }
-void Swlp::sendUpDownCommand()      { setCommand(SWLP_CMD_SELECT_SEQUENCE_UP_DOWN);      }
-void Swlp::sendPushPullCommand()    { setCommand(SWLP_CMD_SELECT_SEQUENCE_PUSH_PULL);    }
-void Swlp::sendAttackLeftCommand()  { setCommand(SWLP_CMD_SELECT_SEQUENCE_ATTACK_LEFT);  }
-void Swlp::sendAttackRightCommand() { setCommand(SWLP_CMD_SELECT_SEQUENCE_ATTACK_RIGHT); }
-void Swlp::sendDanceCommand()       { setCommand(SWLP_CMD_SELECT_SEQUENCE_DANCE);        }
-void Swlp::sendRotateXCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_X);     }
-void Swlp::sendRotateZCommand()     { setCommand(SWLP_CMD_SELECT_SEQUENCE_ROTATE_Z);     }
-void Swlp::sendStopMoveCommand()    { setCommand(SWLP_CMD_SELECT_SEQUENCE_NONE);         }
-void Swlp::sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature) {
-    int distanceInt = distance.toInt();
-    if (distanceInt > INT8_MAX) {
-        distanceInt = INT8_MAX;
-    }
-    if (distanceInt < INT8_MIN) {
-        distanceInt = INT8_MIN;
-    }
 
-    m_payloadMutex.lock();
-    m_commandPayload.command = SWLP_CMD_SELECT_SEQUENCE_MOVE;
-    m_commandPayload.distance = distanceInt;
-    m_commandPayload.curvature = curvature.toInt();
-    m_commandPayload.motion_speed = speed.toInt();
-    m_payloadMutex.unlock();
+
+
+void Swlp::setMotionParams(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight, QVariant isStabEnabled) {
+    m_requestMutex.lock();
+    m_swlpRequst.speed = speed.toInt();
+    m_swlpRequst.curvature = curvature.toInt();
+    m_swlpRequst.distance = distance.toInt();
+    m_swlpRequst.step_height = stepHeight.toInt();
+    if (isStabEnabled.toBool()) {
+        m_swlpRequst.motion_ctrl |= SWLP_MOTION_CTRL_EN_STAB;
+    } else {
+        m_swlpRequst.motion_ctrl &= ~SWLP_MOTION_CTRL_EN_STAB;
+    }
+    m_requestMutex.unlock();
 }
-
-
+void Swlp::setSurfaceParams(QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz) {
+    m_requestMutex.lock();
+    m_swlpRequst.surface_point_x = px.toInt();
+    m_swlpRequst.surface_point_y = py.toInt();
+    m_swlpRequst.surface_point_z = pz.toInt();
+    m_swlpRequst.surface_rotate_x = rx.toInt();
+    m_swlpRequst.surface_rotate_y = ry.toInt();
+    m_swlpRequst.surface_rotate_z = rz.toInt();
+    m_requestMutex.unlock();
+}
 
 void Swlp::run() {
     qDebug() << "[Swlp]" << QThread::currentThreadId() << "thread started";
+
+    // Clear payload
+    m_requestMutex.lock();
+    memset(&m_swlpRequst, 0, sizeof(m_swlpRequst));
+    m_requestMutex.unlock();
+
     do {
         // Setup UDP socket (callbacks call from this thread)
         m_socket = new (std::nothrow) QUdpSocket();
@@ -93,7 +92,7 @@ void Swlp::run() {
         QTimer sendTimer;
         connect(&sendTimer, &QTimer::timeout, this, &Swlp::sendCommandPayloadEvent, Qt::ConnectionType::DirectConnection);
         sendTimer.setSingleShot(false);
-        sendTimer.setInterval(100);
+        sendTimer.setInterval(30);
         sendTimer.start();
 
         // Setup timeout timer (callback call from GUI thread)
@@ -163,14 +162,16 @@ void Swlp::datagramReceivedEvent() {
     }
 
     // Process status payload
-    swlp_status_payload_t statusPayload;
-    memcpy(&statusPayload, swlp_frame.payload, sizeof(statusPayload));
+    swlp_response_t response;
+    memcpy(&response, swlp_frame.payload, sizeof(response));
     emit frameReceived();
-    emit systemStatusUpdated(statusPayload.system_status, statusPayload.module_status);
-    emit batteryStatusUpdated(statusPayload.battery_charge, statusPayload.battery_voltage);
+    emit systemStatusUpdated(response.system_status, response.module_status);
+    emit batteryStatusUpdated(response.battery_charge, response.battery_voltage);
+    emit surfaceParametersUpdated(response.surface_point_x, response.surface_point_y, response.surface_point_z,
+                                  response.surface_rotate_x, response.surface_rotate_y, response.surface_rotate_z);
 }
 void Swlp::sendCommandPayloadEvent() {
-    //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call sendCommandPayloadEvent()";
+    //qDebug() << "[Swlp]" << QThread::currentThreadId() << "call sendCommandPayloadEvent() ";
     // Prepare SWLP frame
     swlp_frame_t frame;
     memset(&frame, 0, sizeof(frame));
@@ -178,9 +179,9 @@ void Swlp::sendCommandPayloadEvent() {
     frame.version = SWLP_CURRENT_VERSION;
 
     // Copy payload to frame
-    m_payloadMutex.lock();
-    memcpy(frame.payload, &m_commandPayload, sizeof(m_commandPayload));
-    m_payloadMutex.unlock();
+    m_requestMutex.lock();
+    memcpy(frame.payload, &m_swlpRequst, sizeof(m_swlpRequst));
+    m_requestMutex.unlock();
 
     // Calculate CRC16
     uint16_t crc = this->calculateCRC16(reinterpret_cast<const uint8_t*>(&frame), sizeof(frame) - 2);
@@ -191,11 +192,6 @@ void Swlp::sendCommandPayloadEvent() {
     datagram.setDestination(QHostAddress(SERVER_IP_ADDRESS), SERVER_PORT);
     datagram.setData(QByteArray(reinterpret_cast<const char*>(&frame), sizeof(frame)));
     m_socket->writeDatagram(datagram);
-}
-void Swlp::setCommand(uint8_t command) {
-    m_payloadMutex.lock();
-    m_commandPayload.command = command;
-    m_payloadMutex.unlock();
 }
 uint16_t Swlp::calculateCRC16(const uint8_t* frame, int size) {
     uint16_t crc16 = 0xFFFF;

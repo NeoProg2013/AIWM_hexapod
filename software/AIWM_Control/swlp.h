@@ -1,6 +1,7 @@
 #ifndef SWLP_H
 #define SWLP_H
 #include <QObject>
+#include <QVariant>
 #include <QUdpSocket>
 #include <QEventLoop>
 #include <QThread>
@@ -22,27 +23,19 @@ public:
     Q_INVOKABLE bool startService();
     Q_INVOKABLE void stopService();
 
-    Q_INVOKABLE void sendGetUpCommand();
-    Q_INVOKABLE void sendGetDownCommand();
-    Q_INVOKABLE void sendUpDownCommand();
-    Q_INVOKABLE void sendPushPullCommand();
-    Q_INVOKABLE void sendAttackLeftCommand();
-    Q_INVOKABLE void sendAttackRightCommand();
-    Q_INVOKABLE void sendDanceCommand();
-    Q_INVOKABLE void sendRotateXCommand();
-    Q_INVOKABLE void sendRotateZCommand();
-    Q_INVOKABLE void sendStopMoveCommand();
-    Q_INVOKABLE void sendStartMotionCommand(QVariant speed, QVariant distance, QVariant curvature);
+    Q_INVOKABLE void setMotionParams(QVariant speed, QVariant distance, QVariant curvature, QVariant stepHeight, QVariant isStabEnabled);
+    Q_INVOKABLE void setSurfaceParams(QVariant px, QVariant py, QVariant pz, QVariant rx, QVariant ry, QVariant rz);
 
 signals:
     void frameReceived();
     void systemStatusUpdated(QVariant newSystemStatus, QVariant newModuleStatus);
     void batteryStatusUpdated(QVariant newBatteryCharge, QVariant newBatteryVoltage);
+    void surfaceParametersUpdated(QVariant px, QVariant py, QVariant pz,
+                                  QVariant rx, QVariant ry, QVariant rz);
     void connectionClosed();
 
 protected:
     virtual void run() override;
-    virtual void setCommand(uint8_t command);
     virtual uint16_t calculateCRC16(const uint8_t* frameByteArray, int size);
 
 protected slots:
@@ -50,18 +43,18 @@ protected slots:
     virtual void sendCommandPayloadEvent();
 
 protected:
-    std::atomic<bool> m_isReady     {false};
-    std::atomic<bool> m_isError     {false};
+    std::atomic<bool> m_isReady                 {false};
+    std::atomic<bool> m_isError                 {false};
 
     QMutex m_stopServiceMutex;
-    QUdpSocket* m_socket            {nullptr};
-    QTimer* m_timeoutTimer          {nullptr};
+    QUdpSocket* m_socket                        {nullptr};
+    QTimer* m_timeoutTimer                      {nullptr};
 
     QMutex m_eventLoopMutex;
-    QEventLoop* m_eventLoop         {nullptr};
+    QEventLoop* m_eventLoop                     {nullptr};
 
-    QMutex m_payloadMutex;
-    swlp_command_payload_t m_commandPayload;
+    QMutex m_requestMutex;
+    swlp_request_t m_swlpRequst;
 };
 
 
