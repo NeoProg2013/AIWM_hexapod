@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.5
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtGraphicalEffects 1.0
 
 Item {
@@ -79,7 +79,7 @@ Item {
         width: 120
         height: 20
         font.family: fixedFont.name
-        text: qsTr("Версия: 1.01")
+        text: qsTr("Версия: 1.02")
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5
         anchors.left: parent.left

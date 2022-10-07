@@ -1,31 +1,25 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    i2c2.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
+#include "project-base.h"
 #include "i2c2.h"
-#include "project_base.h"
 #include "systimer.h"
 #define I2C_SCL_PIN                     GPIOF, 6
 #define I2C_SDA_PIN                     GPIOF, 7
-#define I2C_MAX_TX_BYTE_TIME            (2) // ms
-
-
-static bool is_driver_error = false;
-static uint32_t async_operation_timeout_value = 0;
+#define I2C_WAIT_TIMEOUT_VALUE          (2) // ms
 
 
 static bool send_internal_address(uint32_t internal_address, uint8_t internal_address_size);
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask);
-static void disable_i2c(void);
+static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  I2C initialization
 /// @param  speed: I2C speed. @Ref i2c_speed_t
-/// @return none
-//  ***************************************************************************
-void i2c2_init(i2c_speed_t speed) {
-    
+/// ***************************************************************************
+void i2c2_init(i2c2_speed_t speed) {
     // Send pulses on SCL
     gpio_set_mode        (I2C_SCL_PIN, GPIO_MODE_OUTPUT);
     gpio_set_output_type (I2C_SCL_PIN, GPIO_TYPE_OPEN_DRAIN);
@@ -49,111 +43,160 @@ void i2c2_init(i2c_speed_t speed) {
     gpio_set_pull        (I2C_SDA_PIN, GPIO_PULL_NO);
     gpio_set_af          (I2C_SDA_PIN, 4);
     
-    
     // Setup I2C
     RCC->APB1RSTR |= RCC_APB1RSTR_I2C2RST;
     RCC->APB1RSTR &= ~RCC_APB1RSTR_I2C2RST;
     I2C2->TIMINGR = speed;
-    NVIC_EnableIRQ(I2C2_EV_IRQn);
-    NVIC_SetPriority(I2C2_EV_IRQn, I2C2_IRQ_PRIORITY);
-    NVIC_EnableIRQ(I2C2_ER_IRQn);
-    NVIC_SetPriority(I2C2_ER_IRQn, I2C2_IRQ_PRIORITY);
-    
-    // Setup TX DMA
-    DMA1_Channel4->CCR  &= ~DMA_CCR_EN;
-    DMA1_Channel4->CCR   = DMA_CCR_MINC | DMA_CCR_DIR | DMA_CCR_TEIE;
-    DMA1_Channel4->CPAR  = (uint32_t)(&I2C2->TXDR);
-    DMA1_Channel4->CMAR  = 0;
-    DMA1_Channel4->CNDTR = 0;
-    NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-    NVIC_SetPriority(DMA1_Channel4_IRQn, I2C2_IRQ_PRIORITY);
 }
 
-//  ***************************************************************************
-/// @brief  Async write data to I2C device
-/// @note   Internal address send using sync mode
+/// ***************************************************************************
+/// @brief  Read data from I2C device
 /// @param  i2c_address: device address
 /// @param  internal_address: device internal register address
-/// @param  data: pointer to buffer
-/// @param  bytes_count: bytes count for write
-/// @return true - operation started, false - error
-//  ***************************************************************************
-bool i2c2_async_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
-    if (i2c2_is_async_operation_completed() == false) {
-        return false;
+/// @param  buffer: pointer to buffer
+/// @param  bytes_count: bytes count for read
+/// @return true - success, false - error
+/// ***************************************************************************
+bool i2c2_read(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* buffer, uint8_t bytes_count) {
+    bool result = true;
+
+    // Set basic I2C configuration
+    I2C2->CR1 |= I2C_CR1_PE;
+    I2C2->CR2  = i2c_address;
+    
+    // Send internal address
+    // Configure bytes count for send and send START condition
+    I2C2->CR2 |= (internal_address_size << I2C_CR2_NBYTES_Pos) | I2C_CR2_START;
+    if (!send_internal_address(internal_address, internal_address_size)) {
+        result = false;
+        goto _i2c_read_operation_end;
     }
 
-    // Set sync I2C configuration
-    I2C2->CR1 = I2C_CR1_PE;
-    I2C2->CR2 = i2c_address | ((internal_address_size + bytes_count) << I2C_CR2_NBYTES_Pos) | I2C_CR2_START;
-    
-    // Send internal address (MSB first)
-    if (send_internal_address(internal_address, internal_address_size) == false) {
-        disable_i2c();
-        return false;
-    }
-    
-    // Set async I2C configuration
-    I2C2->ICR = 0xFFFFFFFF;
-    I2C2->CR1 |= I2C_CR1_TCIE | I2C_CR1_NACKIE | I2C_CR1_ERRIE | I2C_CR1_TXDMAEN;
-    DMA1_Channel4->CMAR  = (uint32_t)data;
-    DMA1_Channel4->CNDTR = bytes_count;
-    DMA1_Channel4->CCR  |= DMA_CCR_EN;
+    // Read data from device
+    I2C2->CR2 &= ~I2C_CR2_NBYTES;
+    I2C2->CR2 |= I2C_CR2_RD_WRN | (bytes_count << I2C_CR2_NBYTES_Pos) | I2C_CR2_START;
+    for (uint32_t i = 0; i < bytes_count; ++i) {
 
-    is_driver_error = false;
-    async_operation_timeout_value = get_time_ms() + bytes_count * I2C_MAX_TX_BYTE_TIME;
-    return true;
+        // Wait RX register is not empty event
+        if (!wait_set_bit(&I2C2->ISR, I2C_ISR_RXNE)) {
+            result = false;
+            goto _i2c_read_operation_end;
+        }
+
+        // Read byte
+        *buffer = I2C2->RXDR;
+        ++buffer;
+    }
+
+    _i2c_read_operation_end:
+
+    // Send STOP condition
+    I2C2->CR2 |= I2C_CR2_STOP;
+    if (!wait_clear_bit(&I2C2->CR2, I2C_CR2_STOP)) {
+        result = false;
+    }
+
+    // Disable I2C
+    I2C2->CR1 &= ~I2C_CR1_PE;
+    return result;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
+/// @brief  Wrappers for read function
+/// @param  i2c_address: device address
+/// @param  internal_address: device internal register address
+/// @return readed value, 0 - error
+/// ***************************************************************************
+uint8_t i2c2_read8(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size) {
+    uint8_t data = 0;
+    if (!i2c2_read(i2c_address, internal_address, internal_address_size, &data, 1)) {
+        return 0;
+    }
+    return data;
+}
+uint16_t i2c2_read16(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, bool is_msbf) {
+    uint8_t data[2] = {0};
+    if (!i2c2_read(i2c_address, internal_address, internal_address_size, data, 2)) {
+        return 0;
+    }
+    if (is_msbf) {
+        return make16(data[0], data[1]);
+    }
+    return make16(data[1], data[0]);
+}
+
+/// ***************************************************************************
 /// @brief  Write data to I2C device
 /// @param  i2c_address: device address
 /// @param  internal_address: device internal register address
-/// @param  data: pointer to buffer
+/// @param  data: data for write
 /// @param  bytes_count: bytes count for write
 /// @return true - success, false - error
-//  ***************************************************************************
+/// ***************************************************************************
 bool i2c2_write(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t* data, uint8_t bytes_count) {
-    if (i2c2_async_write(i2c_address, internal_address, internal_address_size, data, bytes_count) == false) {
-        return false;
-    }
-    while (i2c2_is_async_operation_completed() == false);
-    return i2c2_get_async_operation_result();
-}
+    bool result = true;
 
-//  ***************************************************************************
-/// @brief  Get async operation state
-/// @return true - operation completed, false - operation in progress
-//  ***************************************************************************
-bool i2c2_is_async_operation_completed(void) {
-    if (I2C2->ISR & I2C_ISR_BUSY) {
-        if (get_time_ms() > async_operation_timeout_value) {
-            disable_i2c();
+    // Set basic I2C configuration
+    I2C2->CR1 |= I2C_CR1_PE;
+    I2C2->CR2  = i2c_address;
+    
+    // Configure bytes count for send and send START condition
+    I2C2->CR2 |= ((internal_address_size + bytes_count) << I2C_CR2_NBYTES_Pos) | I2C_CR2_START;
+    if (!send_internal_address(internal_address, internal_address_size)) {
+        result = false;
+        goto _i2c_write_operation_end;
+    }
+
+    // Send data
+    for (uint32_t i = 0; i < bytes_count; ++i) {
+        I2C2->TXDR = *data;
+        ++data;
+        
+        // Wait TX register empty event
+        if (!wait_set_bit(&I2C2->ISR, I2C_ISR_TXE)) {
+            result = false;
+            goto _i2c_write_operation_end;
         }
-        return false;
     }
-    return true;
+
+    _i2c_write_operation_end:
+
+    // Send STOP condition
+    I2C2->CR2 |= I2C_CR2_STOP;
+    if (!wait_clear_bit(&I2C2->CR2, I2C_CR2_STOP)) {
+        result = false;
+    }
+
+    // Disable I2C
+    I2C2->CR1 &= ~I2C_CR1_PE;
+    return result;
 }
 
-//  ***************************************************************************
-/// @brief  Get async operation status
+/// ***************************************************************************
+/// @brief  Wrappers for write function
+/// @param  i2c_address: device address
+/// @param  internal_address: device internal register address
+/// @param  data: data for write
 /// @return true - success, false - error
-//  ***************************************************************************
-bool i2c2_get_async_operation_result(void) {
-    return is_driver_error == false;
+/// ***************************************************************************
+bool i2c2_write8(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint8_t data) {
+    return i2c2_write(i2c_address, internal_address, internal_address_size, &data, 1);
+}
+bool i2c2_write16(uint8_t i2c_address, uint32_t internal_address, uint8_t internal_address_size, uint16_t data) {
+    return i2c2_write(i2c_address, internal_address, internal_address_size, (uint8_t*)&data, 2);
 }
 
 
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Send internal address data
 /// @note   Send internal address as MSB first
 /// @param  internal_address: internal address
 /// @param  internal_address_size: internal address size
 /// @return true - success, false - timeout
-//  ***************************************************************************
+/// ***************************************************************************
 static bool send_internal_address(uint32_t internal_address, uint8_t internal_address_size) {
     uint8_t* ptr = (uint8_t*)&internal_address;
     ptr += internal_address_size - 1; // Go to MSB
@@ -176,69 +219,41 @@ static bool send_internal_address(uint32_t internal_address, uint8_t internal_ad
     return true;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Wait bit set in register with timeout
 /// @param  reg: register address
 /// @param  mask: mask
 /// @return true - success, false - timeout
-//  ***************************************************************************
-#define I2C_WAIT_TIMEOUT_VALUE          (5) // ms
+/// ***************************************************************************
 static bool wait_set_bit(volatile uint32_t* reg, uint32_t mask) {
     uint64_t start_time = get_time_ms();
     do {
-        if ((get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) || (I2C2->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) ) {
-            return false;
+        if (get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) {
+            return false; // Timeout
         }
-    } 
-    while ((*reg & mask) == 0);
+        if (I2C2->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) {
+            return false; // I2C bus error
+        }
+    } while ((*reg & mask) == 0);
     return true;
 }
 
-//  ***************************************************************************
-/// @brief  Disable I2C
-/// @return none
-//  ***************************************************************************
-static void disable_i2c(void) {
-    I2C2->CR2 |= I2C_CR2_STOP; // Send stop condition
-    for (uint32_t i = 0; (i < 1000) && (I2C2->CR2 & I2C_CR2_STOP); ++i);
-    
-    // Disable I2C
-    DMA1_Channel4->CCR &= ~DMA_CCR_EN;
-    I2C2->CR1 = 0;
-}
 
-
-
-
-
-//  ***************************************************************************
-/// @brief  I2C2 event ISR
-/// @param  none
-/// @return none
-//  ***************************************************************************
-void I2C2_EV_IRQHandler(void) {
-    uint32_t status = I2C2->ISR;
-    I2C2->ICR = 0xFFFFFFFF; // Clear flags
-
-    if (status & I2C_ISR_NACKF) {
-        is_driver_error = true;
-    } else if (status & I2C_ISR_TC) {
-        is_driver_error = false;
-    }
-    disable_i2c();
-}
-
-//  ***************************************************************************
-/// @brief  I2C2 error ISR
-/// @param  none
-/// @return none
-//  ***************************************************************************
-void I2C2_ER_IRQHandler(void) {
-    uint32_t status = I2C2->ISR;
-    I2C2->ICR = 0xFFFFFFFF; // Clear flags
-
-    if (status & (I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_OVR | I2C_ISR_NACKF)) {
-        is_driver_error = true;
-        disable_i2c();
-    }
+/// ***************************************************************************
+/// @brief  Wait bit clear in register with timeout
+/// @param  reg: register address
+/// @param  mask: mask
+/// @return true - success, false - timeout
+/// ***************************************************************************
+static bool wait_clear_bit(volatile uint32_t* reg, uint32_t mask) {
+    uint64_t start_time = get_time_ms();
+    do {
+        if (get_time_ms() - start_time > I2C_WAIT_TIMEOUT_VALUE) {
+            return false; // Timeout
+        }
+        if (I2C2->ISR & (I2C_ISR_OVR | I2C_ISR_ARLO | I2C_ISR_BERR | I2C_ISR_NACKF)) {
+            return false; // I2C bus error
+        }
+    } while (*reg & mask);
+    return true;
 }

@@ -40,11 +40,10 @@ Item {
         source: "qrc:/fonts/OpenSans-Regular.ttf"
     }
 
-    AnimatedImage {
+    Image {
         id: noiseImage
         anchors.fill: parent
-        source: "qrc:/images/noise.gif"
-        fillMode: Image.Tile
+        source: ""
         verticalAlignment: Qt.AlignTop
 
         Button {
@@ -103,7 +102,7 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;formeditorColor:"#000000"}D{i:2;anchors_y:407}D{i:6;anchors_x:5}
+    D{i:0;formeditorColor:"#000000"}D{i:2}D{i:6}
 }
 ##^##*/
 

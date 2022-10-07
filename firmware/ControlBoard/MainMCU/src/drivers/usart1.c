@@ -1,13 +1,13 @@
-//  ***************************************************************************
+/// ***************************************************************************
 /// @file    usart1.c
 /// @author  NeoProg
-//  ***************************************************************************
+/// ***************************************************************************
 #include "usart1.h"
-#include "project_base.h"
+#include "project-base.h"
 #define USART_TX_PIN                    GPIOA, 9
 #define USART_RX_PIN                    GPIOA, 10
 
-static uint8_t  tx_buffer[3072] = {0};
+static uint8_t  tx_buffer[USART1_TX_BUFFER_SIZE] = {0};
 static uint8_t  rx_buffer[512]  = {0};
 static uint8_t* rx_buffer_cursor = NULL;
 static uint32_t rx_bytes_count = 0;
@@ -17,11 +17,10 @@ static usart1_callbacks_t usart_callbacks;
 static void usart_reset(bool reset_tx, bool reset_rx);
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART initialization
 /// @param  baud_rate: USART baud rate
-/// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void usart1_init(uint32_t baud_rate, usart1_callbacks_t* callbacks) {
     usart_callbacks = *callbacks;
     
@@ -52,11 +51,10 @@ void usart1_init(uint32_t baud_rate, usart1_callbacks_t* callbacks) {
     usart_reset(true, true);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART start frame transmit
 /// @param  bytes_count: bytes count for transmit
-/// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void usart1_start_sync_tx(uint32_t bytes_count) {
     if (bytes_count) {   
         usart_reset(true, false);
@@ -74,11 +72,9 @@ void usart1_start_sync_tx(uint32_t bytes_count) {
     usart_reset(true, false);
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART start frame receive
-/// @param  none
-/// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 void usart1_start_rx(void) {
     usart_reset(false, true);
     memset(rx_buffer, 0, sizeof(rx_buffer));
@@ -88,20 +84,18 @@ void usart1_start_rx(void) {
     USART1->CR1 |= USART_CR1_RE;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get USART TX buffer address
-/// @param  none
 /// @return TX buffer address
-//  ***************************************************************************
+/// ***************************************************************************
 uint8_t* usart1_get_tx_buffer(void) {
     return tx_buffer;
 }
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  Get USART RX buffer address
-/// @param  none
 /// @return RX buffer address
-//  ***************************************************************************
+/// ***************************************************************************
 uint8_t* usart1_get_rx_buffer(void) {
     return rx_buffer;
 }
@@ -110,13 +104,12 @@ uint8_t* usart1_get_rx_buffer(void) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART reset transmitted or\and receiver
 /// @note   Clear interrupt flags according interrupt mapping diagram (figure 222 of Reference Manual)
 /// @param  reset_tx: true - reset TX
 /// @param  reset_rx: true - reset RX
-/// @return none
-//  ***************************************************************************
+/// ***************************************************************************
 static void usart_reset(bool reset_tx, bool reset_rx) {
     if (reset_tx) {
         USART1->CR1 &= ~USART_CR1_TE; // Disable TX
@@ -133,11 +126,10 @@ static void usart_reset(bool reset_tx, bool reset_rx) {
 
 
 
-//  ***************************************************************************
+/// ***************************************************************************
 /// @brief  USART ISR
-/// @param  none
-/// @return none
-//  ***************************************************************************
+/// ***************************************************************************
+#pragma call_graph_root="interrupt"
 void USART1_IRQHandler(void) {
     uint32_t status = USART1->ISR;
     if (status & (USART_ISR_FE | USART_ISR_NE | USART_ISR_ORE | USART_ISR_PE)) {
