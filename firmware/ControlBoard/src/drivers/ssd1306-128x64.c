@@ -48,23 +48,12 @@ static bool ssd1306_send_command(uint8_t cmd, uint8_t data, bool is_data);
 static bool ssd1306_send_bytes(uint8_t* data, uint32_t bytes_count);
 
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-/// @brief  Display initialization
-/// @param  none
-/// @return true - success, false - error
-//  ***************************************************************************
-bool ssd1306_128x64_init(void) {
-    i2c2_init(I2C_SPEED_400KHZ);
-    
-=======
 /// ***************************************************************************
 /// @brief  Display initialization
 /// @param  none
 /// @return true - success, false - error
 /// ***************************************************************************
 bool ssd1306_128x64_init(void) {
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
     // Disable display
     if (!ssd1306_128x64_set_state(false)) return false;
     
@@ -90,54 +79,30 @@ bool ssd1306_128x64_init(void) {
     return ssd1306_128x64_full_update();
 }
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-/// @brief  Set display contrast
-/// @param  contrast: contrast value
-/// @return true - success, false - error
-//  ***************************************************************************
-=======
 /// ***************************************************************************
 /// @brief  Set display contrast
 /// @param  contrast: contrast value
 /// @return true - success, false - error
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 bool ssd1306_128x64_set_contrast(uint8_t contrast) {
     return ssd1306_send_command(SET_CONTRAST, contrast, true); // Set contrast
 }
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-/// @brief  Set display inverse
-/// @param  is_inverse: true - inverse, false - normal
-/// @return true - success, false - error
-//  ***************************************************************************
-=======
 /// ***************************************************************************
 /// @brief  Set display inverse
 /// @param  is_inverse: true - inverse, false - normal
 /// @return true - success, false - error
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 bool ssd1306_128x64_set_inverse(bool is_inverse) {
     uint8_t cmd = (is_inverse == true) ? SET_INVERT_DISPLAY : SET_NORMAL_DISPLAY;
     return ssd1306_send_command(cmd, 0x00, false); // Enable display
 }
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-/// @brief  Display power control
-/// @param  is_inverse: true - enable, false - disable
-/// @return true - success, false - error
-//  ***************************************************************************
-=======
 /// ***************************************************************************
 /// @brief  Display power control
 /// @param  is_inverse: true - enable, false - disable
 /// @return true - success, false - error
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 bool ssd1306_128x64_set_state(bool is_enable) {
     if (is_enable == true) {
         if (!ssd1306_send_command(SET_DC_DC_SETTINGS, DC_DC_SETTINGS_ENABLE, true)) return false; // Enable DC-DC
@@ -150,14 +115,6 @@ bool ssd1306_128x64_set_state(bool is_enable) {
     return true;
 }
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-/// @brief  Start asynchronous update row
-/// @param  row: row index [0; 7]
-/// @return true - success, false - error
-//  ***************************************************************************
-bool ssd1306_128x64_start_async_update_row(uint32_t row) {
-=======
 /// ***************************************************************************
 /// @brief  Start update row
 /// @param  row: row index [0; 7]
@@ -167,7 +124,6 @@ bool ssd1306_128x64_start_row_update(uint32_t row) {
     if (row >= FRAME_ROW_COUNT) {
         return false;
     }
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
     if (!ssd1306_send_command(SET_PAGE_START + row, 0x00, false)) return false;
     if (!ssd1306_send_command(SET_LOW_COLUMN, 0x00, false)) return false;
     if (!ssd1306_send_command(SET_HIGH_COLUMN, 0x00, false)) return false;
@@ -175,31 +131,6 @@ bool ssd1306_128x64_start_row_update(uint32_t row) {
     return true;
 }
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-/// @brief  Check asynchronous operation state
-/// @param  none
-/// @return true - operation complete, false - operation in progress
-//  ***************************************************************************
-bool ssd1306_128x64_is_async_operation_complete(void) {
-    return i2c2_is_async_operation_completed();
-}
-
-//  ***************************************************************************
-/// @brief  Check asynchronous operation status
-/// @param  none
-/// @return true - success, false - error
-//  ***************************************************************************
-bool ssd1306_128x64_is_async_operation_success(void) {
-    return i2c2_get_async_operation_result();
-}
-
-//  ***************************************************************************
-/// @brief  Transfer display frame
-/// @param  none
-/// @return true - success, false - error
-//  ***************************************************************************
-=======
 /// ***************************************************************************
 /// @brief  Send row data
 /// @param  row: row index [0; 7]
@@ -230,7 +161,6 @@ bool ssd1306_128x64_is_row_updated(void) {
 /// @brief  Transfer display frame
 /// @return true - success, false - error
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 bool ssd1306_128x64_full_update(void) {
     for (uint32_t i = 0; i < FRAME_ROW_COUNT; ++i) {
         if (!ssd1306_send_command(SET_PAGE_START + i, 0x00, false)) return false;
@@ -242,32 +172,17 @@ bool ssd1306_128x64_full_update(void) {
     return true;
 }
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-=======
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 /// @brief  Get pointer to fragment of inactive display frame buffer
 /// @param  row: row index [0; 7]
 /// @param  column: column index [0; 127]
 /// @return pointer to fragment of frame buffer
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-=======
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 uint8_t* ssd1306_128x64_get_frame_buffer(uint32_t row, uint32_t column) {
     return &frame_buffer[row * FRAME_COLUMN_COUNT + column + FRAME_BEGIN_DEAD_ZONE];
 }
 
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-/// @brief  Send command to display
-/// @param  cmd: command
-/// @return true - success, false - error
-//  ***************************************************************************
-=======
 
 
 
@@ -276,7 +191,6 @@ uint8_t* ssd1306_128x64_get_frame_buffer(uint32_t row, uint32_t column) {
 /// @param  cmd: command
 /// @return true - success, false - error
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 static bool ssd1306_send_command(uint8_t cmd, uint8_t data, bool is_data) {
     if (is_data == true) {
         uint8_t tx_buffer[2];
@@ -287,20 +201,12 @@ static bool ssd1306_send_command(uint8_t cmd, uint8_t data, bool is_data) {
     return i2c2_write(DISPLAY_I2C_ADDRESS, 0x00, 1, &cmd, 1); // 0x00 - Control byte = Command
 }
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-=======
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 /// @brief  Send bytes to display GRAM
 /// @param  data: pointer to data
 /// @param  bytes_count: bytes count
 /// @return true - success, false - error
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/drivers/ssd1306_128x64.c
-//  ***************************************************************************
-=======
 /// ***************************************************************************
->>>>>>> develop:firmware/ControlBoard/src/drivers/ssd1306-128x64.c
 static bool ssd1306_send_bytes(uint8_t* data, uint32_t bytes_count) {
     return i2c2_write(DISPLAY_I2C_ADDRESS, 0x40, 1, data, bytes_count); // 0x40 - Control byte = Data
 }

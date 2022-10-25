@@ -5,17 +5,13 @@
 #include "project-base.h"
 #include "system-monitor.h"
 #include "adc.h"
-#include "configurator.h"
 #include "systimer.h"
 
 #define PAUSE_BETWEEN_CONVERSIONS       (5)
 #define ACCUMULATE_SAMPLES_COUNT        (100)
 
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/system_monitor.c
-=======
 #define BATTERY_VOLTAGE_OFFSET          (90) 
 
->>>>>>> develop:firmware/ControlBoard/src/system-monitor.c
 
 typedef enum {
     STATE_NO_INIT,
@@ -29,10 +25,6 @@ typedef enum {
 
 static monitor_state_t monitor_state = STATE_NO_INIT;
 static uint32_t acc_adc_bins = 0;
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/src/system_monitor.c
-static int16_t  battery_voltage_offset = 0;
-=======
->>>>>>> develop:firmware/ControlBoard/src/system-monitor.c
 
 
 uint8_t  sysmon_system_status = SYSMON_CONN_LOST | SYSMON_CALIBRATION;
@@ -51,9 +43,6 @@ static void calculate_battery_voltage(void);
 /// ***************************************************************************
 void sysmon_init(void) {
     adc_init();
-    if (!config_read_16(MM_VBAT_OFFSET_EE_ADDRESS, (uint16_t*)&battery_voltage_offset)) {
-        battery_voltage_offset = 0;
-    }
     monitor_state = STATE_START_CONVERSION;
 }
 
