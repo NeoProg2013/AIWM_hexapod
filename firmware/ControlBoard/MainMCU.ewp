@@ -2506,25 +2506,19 @@
             <name>$PROJ_DIR$\src\cli.h</name>
         </file>
         <file>
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/MainMCU.ewp
             <name>$PROJ_DIR$\src\configurator.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\configurator.h</name>
         </file>
         <file>
-=======
->>>>>>> develop:firmware/ControlBoard/MainMCU.ewp
             <name>$PROJ_DIR$\src\display.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\display.h</name>
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/MainMCU.ewp
         </file>
         <file>
             <name>$PROJ_DIR$\src\gait_sequences.h</name>
-=======
->>>>>>> develop:firmware/ControlBoard/MainMCU.ewp
         </file>
         <file>
             <name>$PROJ_DIR$\src\indication.c</name>
