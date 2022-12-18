@@ -14,13 +14,8 @@
 #define PWM_MAX_FREQUENCY_HZ                        (200)
 
 
-// PWM period counter for synchronize
-extern uint64_t synchro;
-
-
 extern void pwm_init(uint32_t frequency);
 extern void pwm_set_state(bool is_enabled);
-extern void pwm_start_sync(void);
 extern void pwm_set_frequency(uint32_t frequency);
 extern void pwm_set_lock_state(bool is_locked);
 extern bool pwm_is_ready(void);

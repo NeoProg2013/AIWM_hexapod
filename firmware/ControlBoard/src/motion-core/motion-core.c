@@ -311,26 +311,38 @@ static void load_config(void) {
     g_limbs[0].coxa.zero_rotate = 135;
     g_limbs[0].femur.zero_rotate = 35;
     g_limbs[0].tibia.zero_rotate = 135;
-    
+    g_limbs[0].join.z = 104;
+    g_limbs[0].join.x = -53;
+
     g_limbs[1].coxa.zero_rotate = 180;
     g_limbs[1].femur.zero_rotate = 35;
     g_limbs[1].tibia.zero_rotate = 135;
-    
+    g_limbs[1].join.z = 0;
+    g_limbs[1].join.x = -80;
+
     g_limbs[2].coxa.zero_rotate = 225;
     g_limbs[2].femur.zero_rotate = 35;
     g_limbs[2].tibia.zero_rotate = 135;
-    
+    g_limbs[2].join.z = -104;
+    g_limbs[2].join.x = -53;
+
     g_limbs[3].coxa.zero_rotate = 45;
     g_limbs[3].femur.zero_rotate = 35;
     g_limbs[3].tibia.zero_rotate = 135;
-    
+    g_limbs[3].join.z = 104;
+    g_limbs[3].join.x = 53;
+
     g_limbs[4].coxa.zero_rotate = 0;
     g_limbs[4].femur.zero_rotate = 35;
     g_limbs[4].tibia.zero_rotate = 135;
-    
+    g_limbs[4].join.z = 0;
+    g_limbs[4].join.x = 80;
+
     g_limbs[5].coxa.zero_rotate = 315;
     g_limbs[5].femur.zero_rotate = 35;
     g_limbs[5].tibia.zero_rotate = 135;
+    g_limbs[5].join.z = -104;
+    g_limbs[5].join.x = 53;
 }
 
 

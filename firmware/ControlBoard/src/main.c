@@ -89,12 +89,12 @@ void main() {
             swlp_process();
             indication_process();
             cli_process();
+            
+            if (motion_core_is_down()) {
+                display_process();
+            }
         }
         sensors_core_process();
-
-        if (motion_core_is_down()) {
-            display_process();
-        }
     }
 }
 
