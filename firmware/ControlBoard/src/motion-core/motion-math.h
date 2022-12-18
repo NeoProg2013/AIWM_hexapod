@@ -24,6 +24,7 @@ typedef struct {
     link_t coxa;
     link_t femur;
     link_t tibia;
+    v2d_t  join;
 } limb_t;
 
 

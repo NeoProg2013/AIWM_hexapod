@@ -109,17 +109,6 @@ void pwm_set_state(bool is_enable) {
 }
 
 /// ***************************************************************************
-/// @brief  PWM enable/disable
-/// @param  is_enable: true - PWM enable, false - PWM disable
-/// ***************************************************************************
-void pwm_start_sync(void) {
-    if (!pwm_sync_enabled) {
-        pwm_sync_enabled = true;
-        pwm_ready = false;
-    }
-}
-
-/// ***************************************************************************
 /// @brief  Set PWM frequency
 /// @param  frequency: frequency [Hz]
 /// ***************************************************************************
