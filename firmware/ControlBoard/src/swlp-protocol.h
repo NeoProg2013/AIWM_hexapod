@@ -7,7 +7,7 @@
 #define _SWLP_PROTOCOL_H_
 
 #define SWLP_START_MARK_VALUE           (0xAABBCCDD)
-#define SWLP_CURRENT_VERSION            (0x03)
+#define SWLP_CURRENT_VERSION            (0x04)
 #define SWLP_CRC16_POLYNOM              (0xA001)
 
 // Motion ctrl flags
@@ -20,7 +20,7 @@ typedef struct {
     uint32_t start_mark;
     uint8_t  version;
     uint8_t  payload[25];
-    uint16_t crc16;
+    uint16_t checksum;
 } swlp_frame_t;
 
 typedef struct {

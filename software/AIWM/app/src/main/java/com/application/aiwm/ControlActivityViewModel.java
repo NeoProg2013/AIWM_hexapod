@@ -5,17 +5,25 @@ import android.util.Log;
 import androidx.lifecycle.ViewModel;
 
 public class ControlActivityViewModel extends ViewModel {
-    private Swlp m_swlp = null;
+    public Swlp swlp = null;
 
     public ControlActivityViewModel() {
         Log.e("CA_ViewModel", "call ctor");
-        m_swlp = new Swlp();
-        m_swlp.start();
+        swlp = new Swlp();
+        swlp.start();
+    }
+
+    public void setCurvature(float v) {
+        swlp.setCurvature(v);
+    }
+
+    public void setDistance(float v) {
+        swlp.setDistance(v);
     }
 
     @Override protected void onCleared() {
         Log.e("CA_ViewModel", "call onCleared");
         super.onCleared();
-        m_swlp.interrupt();
+        swlp.interrupt();
     }
 }

@@ -42,8 +42,6 @@ public class SquareJoystick extends ConstraintLayout {
     }
 
     @Override public boolean onTouchEvent(MotionEvent e) {
-        Log.e("DragItem", "onTouchEvent: " + e.getX() + " " + e.getY());
-
         ImageView handle = (ImageView)getChildAt(0);
 
         // Layout center
@@ -63,9 +61,6 @@ public class SquareJoystick extends ConstraintLayout {
             if (dx > (layout_cx - handle_cx))  dx = (layout_cx - handle_cx);
             if (dy < -(layout_cy - handle_cy)) dy = -(layout_cy - handle_cy);
             if (dy > (layout_cy - handle_cy))  dy = (layout_cy - handle_cy);
-
-            Log.e("DragItem", "delta1: " + dx + " " + dy);
-            Log.e("DragItem", "cx: " + (layout_cx - handle_cx) + " " + (layout_cy - handle_cy));
 
             // Handle coordinates (screen system)
             float x = layout_cx - handle_cx + dx;
