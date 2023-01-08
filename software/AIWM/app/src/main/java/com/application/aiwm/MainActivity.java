@@ -1,6 +1,7 @@
 package com.application.aiwm;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.MutableLiveData;
 //import androidx.databinding.DataBindingUtil;
 
 //import com.application.aiwm.databinding.ActivityMainBinding;
@@ -13,11 +14,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     //ActivityMainBinding binding;
+
+    MutableLiveData<Integer> m_test = new MutableLiveData<>(0);
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

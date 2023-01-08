@@ -1,4 +1,4 @@
-package com.application.aiwm;
+package com.application.aiwm.swlp;
 
 import android.util.Log;
 
@@ -23,10 +23,17 @@ public class Swlp {
     private int m_rxCount = 0;
     private int m_txCount = 0;
 
+    // Request
     volatile private int m_curvature = 0;
     volatile private int m_distance = 0;
     volatile private int m_stepHeight = 0;
-    volatile private int m_height = 0;
+    volatile private int m_motionCtrl = 0;
+    volatile private int m_surfacePointX = 0;
+    volatile private int m_surfacePointY = 0;
+    volatile private int m_surfacePointZ = 0;
+    volatile private int m_surfaceRotateX = 0;
+    volatile private int m_surfaceRotateY = 0;
+    volatile private int m_surfaceRotateZ = 0;
 
 
     public void setCurvature(float v) {
@@ -38,8 +45,8 @@ public class Swlp {
     public void setStepHeight(float v) {
         m_stepHeight = Math.round(v);
     }
-    public void setHeight(float v) {
-        m_height = Math.round(v);
+    public void setSurfacePointY(float v) {
+        m_surfacePointY = Math.round(v);
     }
 
     public MutableLiveData<Integer> getRxPacketsCounter() { return m_rxCountLive; }
@@ -89,7 +96,7 @@ public class Swlp {
         Random rand = new Random();
         try {
             while (true) {
-                Log.e("SWLP", String.format("send: %d %d %d", m_curvature, m_distance, m_height));
+                Log.e("SWLP", String.format("send: %d %d %d", m_curvature, m_distance, m_surfacePointY));
 
                 byte[] frame = new byte[32];
                 // Start mark (0xAABBCCDD)
@@ -109,8 +116,8 @@ public class Swlp {
                 frame[11] = 0;
                 frame[12] = 0; // surface_point_x
                 frame[13] = 0;
-                frame[14] = (byte)((m_height >> 0) & 0xFF); // surface_point_y
-                frame[15] = (byte)((m_height >> 8) & 0xFF);
+                frame[14] = (byte)((m_surfacePointY >> 0) & 0xFF); // surface_point_y
+                frame[15] = (byte)((m_surfacePointY >> 8) & 0xFF);
 
                 int crc = calculateChecksum(frame);
                 frame[30] = (byte)((crc >> 0) & 0xFF);

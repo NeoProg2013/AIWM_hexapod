@@ -12,8 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/squareJoystick"
-        app:layout_constraintStart_toStartOf="@+id/squareJoystick" />
+        app:layout_constraintBottom_toTopOf="@+id/joystickOffset"
+        app:layout_constraintStart_toStartOf="@+id/joystickOffset" />
 
     <TextView
         android:id="@+id/textViewY"
@@ -21,11 +21,11 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/squareJoystick"
-        app:layout_constraintEnd_toEndOf="@+id/squareJoystick" />
+        app:layout_constraintBottom_toTopOf="@+id/joystickOffset"
+        app:layout_constraintEnd_toEndOf="@+id/joystickOffset" />
 
     <com.application.aiwm.joystick.SquareJoystick
-        android:id="@+id/squareJoystick"
+        android:id="@+id/joystickOffset"
         android:layout_width="250dp"
         android:layout_height="250dp"
         android:background="@drawable/square_borger"
@@ -49,8 +49,8 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/squareJoystick"
-        app:layout_constraintTop_toTopOf="@+id/squareJoystick">
+        app:layout_constraintStart_toEndOf="@+id/joystickOffset"
+        app:layout_constraintTop_toTopOf="@+id/joystickOffset">
 
         <Button
             android:id="@+id/buttonMotionUp"

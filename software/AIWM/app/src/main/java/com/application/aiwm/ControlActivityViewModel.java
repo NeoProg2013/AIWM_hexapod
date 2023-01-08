@@ -4,6 +4,8 @@ import android.util.Log;
 
 import androidx.lifecycle.ViewModel;
 
+import com.application.aiwm.swlp.Swlp;
+
 public class ControlActivityViewModel extends ViewModel {
     public Swlp swlp = new Swlp();
 

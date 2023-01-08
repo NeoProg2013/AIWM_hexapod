@@ -3,7 +3,6 @@ package fragments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
@@ -33,7 +32,7 @@ public class MotionFragment extends Fragment {
 
         m_viewModel = new ViewModelProvider(getActivity()).get(ControlActivityViewModel.class);
 
-        SquareJoystick joystick = root.findViewById(R.id.squareJoystick);
+        SquareJoystick joystick = root.findViewById(R.id.joystickOffset);
         joystick.setRangeX(-1000, 1000);
         joystick.setRangeY(-110, 110);
         joystick.m_x.observe(getViewLifecycleOwner(), v -> {
@@ -45,8 +44,8 @@ public class MotionFragment extends Fragment {
             m_viewModel.swlp.setDistance(v);
         });
 
-        root.findViewById(R.id.buttonMotionUp).setOnClickListener(view -> m_viewModel.swlp.setHeight(-85));
-        root.findViewById(R.id.buttonMotionDown).setOnClickListener(view -> m_viewModel.swlp.setHeight(-15));
+        root.findViewById(R.id.buttonMotionUp).setOnClickListener(view -> m_viewModel.swlp.setSurfacePointY(-85));
+        root.findViewById(R.id.buttonMotionDown).setOnClickListener(view -> m_viewModel.swlp.setSurfacePointY(-15));
         return root;
     }
 
