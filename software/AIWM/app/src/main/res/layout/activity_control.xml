@@ -6,61 +6,64 @@
     android:layout_height="match_parent"
     tools:context=".ControlActivity">
 
-    <com.application.aiwm.joystick.SquareJoystick
-        android:id="@+id/squareJoystick"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/controlFragmentContainerView"
+        android:name="fragments.MotionFragment"
+        android:layout_width="0dp"
+        android:layout_height="280dp"
         android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
-        android:background="@drawable/square_borger"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout="@layout/fragment_motion" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <ImageView
-            android:id="@+id/handle"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/joystick" />
-    </com.application.aiwm.joystick.SquareJoystick>
-
-    <TextView
-        android:id="@+id/textViewX"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/squareJoystick"
-        app:layout_constraintStart_toStartOf="@+id/squareJoystick" />
-
-    <TextView
-        android:id="@+id/textViewY"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:text="TextView"
-        app:layout_constraintBottom_toTopOf="@+id/squareJoystick"
-        app:layout_constraintEnd_toEndOf="@+id/squareJoystick" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/control_bottom_menu" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="1dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="1dp"
         android:layout_marginBottom="15dp"
-        app:layout_constraintBottom_toTopOf="@+id/textViewY"
+        app:layout_constraintBottom_toTopOf="@+id/controlFragmentContainerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <TextView
+            android:id="@+id/textViewTx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:text="TX: 0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textViewRx"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="RX: 0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewTx" />
+
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/imageViewWarning"
             android:layout_width="70dp"
             android:layout_height="70dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/internal_error" />
@@ -80,15 +83,5 @@
             app:srcCompat="@drawable/video_dummy" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="5dp"
-        android:text="Button"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

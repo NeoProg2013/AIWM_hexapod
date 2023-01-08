@@ -21,15 +21,24 @@ public class SquareJoystick extends ConstraintLayout {
 
     public SquareJoystick(Context context) {
         super(context);
+        init();
     }
     public SquareJoystick(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
     public SquareJoystick(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
     }
     public SquareJoystick(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        init();
+    }
+
+    public void init() {
+        m_x.postValue(0.0f);
+        m_y.postValue(0.0f);
     }
 
     public void setRangeX(float min, float max) {

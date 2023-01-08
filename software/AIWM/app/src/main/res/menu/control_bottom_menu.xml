@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menuMotion"
+        android:title="MOTION"
+        android:visible="true" />
+    <item
+        android:id="@+id/menuCtrl"
+        android:title="CTRL" />
+    <item
+        android:id="@+id/menuOffet"
+        android:title="OFFSET"
+        android:visible="true" />
+    <item
+        android:id="@+id/menuRotate"
+        android:title="ROTATE"
+        android:visible="true" />
+    <item
+        android:id="@+id/menuDiag"
+        android:title="DIAG"
+        android:visible="true" />
+</menu>

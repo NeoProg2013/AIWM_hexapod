@@ -2,34 +2,28 @@ package com.application.aiwm;
 
 import android.util.Log;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
+import androidx.lifecycle.MutableLiveData;
 
-public class Swlp extends Thread {
+import java.net.*;
+
+public class Swlp {
     private final static String SERVER_IP_ADDRESS = "111.111.111.111";
     private final static int SERVER_PORT = 3333;
+
     private DatagramSocket m_socket = null;
+    private Thread m_recvThread = null;
+    private Thread m_sendThread = null;
+    private MutableLiveData<Integer> m_rxCountLive = new MutableLiveData<>(0);
+    private MutableLiveData<Integer> m_txCountLive = new MutableLiveData<>(0);
 
-
-    /*private static Swlp m_instance = null;
-    public static Swlp getInstance() {
-        if (m_instance == null) {
-            Log.e("SWLP", "create instance");
-            m_instance = new Swlp();
-        }
-        return m_instance;
-    }*/
+    private int m_rxCount = 0;
+    private int m_txCount = 0;
 
     volatile private int m_curvature = 0;
     volatile private int m_distance = 0;
     volatile private int m_stepHeight = 0;
-
     volatile private int m_height = 0;
+
 
     public void setCurvature(float v) {
         m_curvature = Math.round(v);
@@ -44,17 +38,51 @@ public class Swlp extends Thread {
         m_height = Math.round(v);
     }
 
-    @Override public void run() {
-        byte[] recvBuffer = new byte[128];
+    public MutableLiveData<Integer> getRxPacketsCounter() { return m_rxCountLive; }
+    public MutableLiveData<Integer> getTxPacketsCounter() { return m_txCountLive; }
+
+    public void start() {
+        Log.e("SWLP", "call start()");
         try {
-            Log.e("SWLP", "----->");
             m_socket = new DatagramSocket(SERVER_PORT);
+        } catch (Exception e) {
+            Log.e("SWLP", "Exception! " + e);
+        }
 
-            DatagramPacket inPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
+        m_recvThread = new Thread(() -> {
+            recvResponseLoop();
+            Log.e("SWLP", "recv thread stopped");
+        });
+        m_sendThread = new Thread(() -> {
+            sendRequestLoop();
+            Log.e("SWLP", "send thread stopped");
+        });
 
+        m_recvThread.start();
+        m_sendThread.start();
+    }
 
+    public void stop() {
+        Log.e("SWLP", "call stop()");
+        m_socket.close();
+        m_recvThread.interrupt();
+        m_sendThread.interrupt();
+
+        try {
+            m_recvThread.join(1000);
+            m_sendThread.join(1000);
+        }
+        catch (Exception e) {
+            Log.e("SWLP", "exception: " + e);
+        }
+        m_recvThread = null;
+        m_sendThread = null;
+    }
+
+    private void sendRequestLoop() {
+        try {
             while (true) {
-                Log.e("SWLP", String.format("LOOP: %d %d %d", m_curvature, m_distance, m_height));
+                Log.e("SWLP", String.format("send: %d %d %d", m_curvature, m_distance, m_height));
 
                 byte[] frame = new byte[32];
                 // Start mark (0xAABBCCDD)
@@ -78,33 +106,38 @@ public class Swlp extends Thread {
                 frame[15] = (byte)((m_height >> 8) & 0xFF);
 
                 int crc = calculateChecksum(frame);
-                Log.e("SWLP", String.format("CRC: %d %x", frame.length, crc));
-                frame[30] = (byte)((crc & 0x00FF) >> 0);
-                frame[31] = (byte)((crc & 0xFF00) >> 8);
+                frame[30] = (byte)((crc >> 0) & 0xFF);
+                frame[31] = (byte)((crc >> 8) & 0xFF);
 
-                DatagramPacket outPacket = new DatagramPacket(frame, frame.length, InetAddress.getByName("111.111.111.111"), 3333);
+                DatagramPacket outPacket = new DatagramPacket(frame, frame.length, InetAddress.getByName(SERVER_IP_ADDRESS), 3333);
                 m_socket.send(outPacket);
 
+                ++m_txCount;
+                m_txCountLive.postValue(m_txCount);
+
                 Thread.sleep(1000);
-                if (this.isInterrupted()) {
-                    break;
-                }
             }
-            Log.e("SWLP", "<-----");
-        } catch (SocketException e) {
-            Log.e("SWLP", "SocketException! " + e);
-        } catch (UnknownHostException e) {
-            Log.e("SWLP", "UnknownHostException! " + e);
-        } catch (IOException e) {
-            Log.e("SWLP", "IOException! " + e);
-        } catch (InterruptedException e) {
-            Log.e("SWLP", "InterruptedException! " + e);
+        }
+        catch (Exception e) {
+            Log.e("SWLP", "send thread exception: " + e);
         }
     }
 
-    @Override public void interrupt() {
-        super.interrupt();
-        Log.e("SWLP", "call interrupt");
+    private void recvResponseLoop() {
+        try {
+            while (true) {
+                byte[] recvBuffer = new byte[128];
+                DatagramPacket inPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
+                m_socket.receive(inPacket);
+                Log.e("SWLP", "RECV! " + inPacket.getLength());
+
+                ++m_rxCount;
+                m_rxCountLive.postValue(m_rxCount);
+            }
+        }
+        catch (Exception e) {
+            Log.e("SWLP", "recv thread exception: " + e);
+        }
     }
 
     private int calculateChecksum(byte[] frame) {
