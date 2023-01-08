@@ -5,10 +5,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 //import com.application.aiwm.databinding.ActivityMainBinding;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -23,6 +27,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.settingsBtn).setOnClickListener(this);
         findViewById(R.id.connectBtn).setOnClickListener(this);
         ((TextView)findViewById(R.id.textViewVersion)).setText(BuildConfig.VERSION_NAME);
+
+        ValueAnimator colorAnim = ValueAnimator.ofObject(new ArgbEvaluator(), Color.CYAN, Color.GREEN, Color.CYAN);
+        colorAnim.setDuration(3000);
+        colorAnim.setRepeatCount(-1);
+        colorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator value) {
+                ImageView v = findViewById(R.id.connectBtn);
+                v.setColorFilter((int)value.getAnimatedValue());
+            }
+
+        });
+        colorAnim.start();
     }
 
     @Override protected void onDestroy() {
