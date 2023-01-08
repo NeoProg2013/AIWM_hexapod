@@ -6,9 +6,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -40,6 +42,17 @@ public class ControlActivity extends AppCompatActivity implements BottomNavigati
         });
         m_viewModel.swlp.getTxPacketsCounter().observe(this, (v) -> {
             ((TextView)findViewById(R.id.textViewTx)).setText("TX: " + v.toString());
+        });
+
+        m_viewModel.swlp.getSystemStatus().observe(this, (v) -> {
+            if (v != 0) {
+                findViewById(R.id.imageViewWarning).setVisibility(View.VISIBLE);
+            }
+        });
+        m_viewModel.swlp.getModuleStatus().observe(this, (v) -> {
+            if (v != 0) {
+                findViewById(R.id.imageViewWarning).setVisibility(View.VISIBLE);
+            }
         });
 
         m_motionFragment = new MotionFragment();

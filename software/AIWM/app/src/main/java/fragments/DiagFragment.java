@@ -1,66 +1,99 @@
 package fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.application.aiwm.ControlActivityViewModel;
 import com.application.aiwm.R;
+import com.application.aiwm.joystick.SquareJoystick;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link DiagFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class DiagFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    ControlActivityViewModel m_viewModel = null;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    final private String[] m_systemErrors = {
+        "- Критическая ошибка",
+        "- Внутренняя ошибка",
+        "- Низкий заряд АКБ",
+        "- Ошибка синхронизации",
+        "- Математическая ошибка",
+        "- Ошибка I2C шины",
+    };
+    final private String[] m_moduleErrors = {
+        "- Сбой ядра передвижения",
+        "- Сбой драйвера сервоприводов",
+        "- Сбой подсистемы мониторинга",
+        "- Сбой драйвера дисплея",
+        "- Сбой подсистемы ориентации",
+        "- Сбой подсистемы сенсоров",
+    };
 
     public DiagFragment() {
         // Required empty public constructor
     }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment DiagFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static DiagFragment newInstance(String param1, String param2) {
-        DiagFragment fragment = new DiagFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
+    @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_diag, container, false);
+    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.e("DiagFragment", "call onCreateView");
+        View root = inflater.inflate(R.layout.fragment_diag, container, false);
+
+        m_viewModel = new ViewModelProvider(getActivity()).get(ControlActivityViewModel.class);
+
+        root.findViewById(R.id.buttonDiagUpdate).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) {
+                LinearLayout l = root.findViewById(R.id.layoutSystemErrors);
+                l.removeAllViews();
+
+                int systemStatus = m_viewModel.swlp.getModuleStatus().getValue();
+                for (int i = 0; i < m_systemErrors.length; ++i) {
+                    int mask = 0x01 << i;
+                    if ((systemStatus & mask) == mask) {
+                        TextView t = new TextView(root.getContext());
+                        t.setText(m_systemErrors[i]);
+                        t.setTextColor(Color.RED);
+                        l.addView(t);
+                    }
+                }
+
+
+                l = root.findViewById(R.id.layoutModuleErrors);
+                l.removeAllViews();
+
+                int moduleStatus = m_viewModel.swlp.getModuleStatus().getValue();
+                for (int i = 0; i < m_moduleErrors.length; ++i) {
+                    int mask = 0x01 << i;
+                    if ((moduleStatus & mask) == mask) {
+                        TextView t = new TextView(root.getContext());
+                        t.setText(m_moduleErrors[i]);
+                        t.setTextColor(Color.RED);
+                        l.addView(t);
+                    }
+                }
+            }
+        });
+        return root;
+    }
+
+    @Override public void onDestroy() {
+        super.onDestroy();
+        Log.e("MotionFragment", "call onDestroy");
+    }
+
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        Log.e("MotionFragment", "call onDestroyView");
     }
 }

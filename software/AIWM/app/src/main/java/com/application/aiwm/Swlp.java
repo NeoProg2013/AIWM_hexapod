@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 
 import java.net.*;
+import java.util.Random;
 
 public class Swlp {
     private final static String SERVER_IP_ADDRESS = "111.111.111.111";
@@ -15,6 +16,9 @@ public class Swlp {
     private Thread m_sendThread = null;
     private MutableLiveData<Integer> m_rxCountLive = new MutableLiveData<>(0);
     private MutableLiveData<Integer> m_txCountLive = new MutableLiveData<>(0);
+
+    private MutableLiveData<Integer> m_systemStatus = new MutableLiveData<>(0);
+    private MutableLiveData<Integer> m_moduleStatus = new MutableLiveData<>(0);
 
     private int m_rxCount = 0;
     private int m_txCount = 0;
@@ -40,6 +44,8 @@ public class Swlp {
 
     public MutableLiveData<Integer> getRxPacketsCounter() { return m_rxCountLive; }
     public MutableLiveData<Integer> getTxPacketsCounter() { return m_txCountLive; }
+    public MutableLiveData<Integer> getSystemStatus() { return m_systemStatus; }
+    public MutableLiveData<Integer> getModuleStatus() { return m_moduleStatus; }
 
     public void start() {
         Log.e("SWLP", "call start()");
@@ -80,6 +86,7 @@ public class Swlp {
     }
 
     private void sendRequestLoop() {
+        Random rand = new Random();
         try {
             while (true) {
                 Log.e("SWLP", String.format("send: %d %d %d", m_curvature, m_distance, m_height));
@@ -114,6 +121,9 @@ public class Swlp {
 
                 ++m_txCount;
                 m_txCountLive.postValue(m_txCount);
+
+                m_systemStatus.postValue(rand.nextInt(255));
+                m_moduleStatus.postValue(rand.nextInt(255));
 
                 Thread.sleep(1000);
             }
