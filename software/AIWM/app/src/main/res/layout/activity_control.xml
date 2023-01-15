@@ -7,13 +7,113 @@
     tools:context=".ControlActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/diagLayout"
+        android:id="@+id/ctrlLayout"
         android:layout_width="match_parent"
         android:layout_height="280dp"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
         android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textViewCtrlBodyHeight"
+                        android:layout_width="120dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="5dp"
+                        android:gravity="center_vertical"
+                        android:text="Body height (15)"
+                        android:textAlignment="viewEnd" />
+
+                    <SeekBar
+                        android:id="@+id/seekBarCtrlBodyHeight"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:max="150"
+                        android:min="15"
+                        android:progress="15" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_marginTop="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textViewCtrlMotionSpeed"
+                        android:layout_width="120dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="Motion speed (70)"
+                        android:textAlignment="viewEnd" />
+
+                    <SeekBar
+                        android:id="@+id/seekBarCtrlMotionSpeed"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:max="100"
+                        android:min="0"
+                        android:progress="70" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_marginTop="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textViewCtrlStepHeight"
+                        android:layout_width="120dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="Step height (30)"
+                        android:textAlignment="viewEnd" />
+
+                    <SeekBar
+                        android:id="@+id/seekBarCtrlStepHeight"
+                        style="@style/Widget.AppCompat.SeekBar.Discrete"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:max="60"
+                        android:min="15"
+                        android:progress="30" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/diagLayout"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -90,12 +190,13 @@
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="vertical"
@@ -111,24 +212,6 @@
                 android:layout_marginStart="10dp"
                 android:text="RST" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/rotateTextViewX"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:text="0"
-            app:layout_constraintBottom_toTopOf="@+id/joystickRotate"
-            app:layout_constraintStart_toStartOf="@+id/joystickRotate" />
-
-        <TextView
-            android:id="@+id/rotateTextViewY"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:text="0"
-            app:layout_constraintBottom_toTopOf="@+id/joystickRotate"
-            app:layout_constraintEnd_toEndOf="@+id/joystickRotate" />
 
         <com.application.aiwm.joystick.CircleJoystick
             android:id="@+id/joystickRotate"
@@ -156,12 +239,13 @@
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
+            android:id="@+id/linearLayout2"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:orientation="vertical"
@@ -177,24 +261,6 @@
                 android:layout_marginStart="10dp"
                 android:text="RST" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/offsetTextViewX"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:text="0"
-            app:layout_constraintBottom_toTopOf="@+id/joystickOffset"
-            app:layout_constraintStart_toStartOf="@+id/joystickOffset" />
-
-        <TextView
-            android:id="@+id/offsetTextViewY"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:text="0"
-            app:layout_constraintBottom_toTopOf="@+id/joystickOffset"
-            app:layout_constraintEnd_toEndOf="@+id/joystickOffset" />
 
         <com.application.aiwm.joystick.SquareJoystick
             android:id="@+id/joystickOffset"
@@ -222,28 +288,10 @@
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-
-        <TextView
-            android:id="@+id/motionTextViewX"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:text="0"
-            app:layout_constraintBottom_toTopOf="@+id/joystickMotion"
-            app:layout_constraintStart_toStartOf="@+id/joystickMotion" />
-
-        <TextView
-            android:id="@+id/motionTextViewY"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:text="0"
-            app:layout_constraintBottom_toTopOf="@+id/joystickMotion"
-            app:layout_constraintEnd_toEndOf="@+id/joystickMotion" />
 
         <com.application.aiwm.joystick.SquareJoystick
             android:id="@+id/joystickMotion"
@@ -304,7 +352,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="15dp"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/motionLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

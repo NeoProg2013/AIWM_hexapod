@@ -10,13 +10,19 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.application.aiwm.joystick.CircleJoystick;
 import com.application.aiwm.joystick.SquareJoystick;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class ControlActivity extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener, View.OnClickListener {
+import org.w3c.dom.Text;
+
+public class ControlActivity extends AppCompatActivity implements
+        BottomNavigationView.OnItemSelectedListener,
+        View.OnClickListener,
+        SeekBar.OnSeekBarChangeListener {
 
     private ControlActivityViewModel m_viewModel = null;
     final private String[] m_systemErrors = {
@@ -70,6 +76,7 @@ public class ControlActivity extends AppCompatActivity implements BottomNavigati
         findViewById(R.id.motionLayout).setVisibility(View.VISIBLE);
         findViewById(R.id.offsetLayout).setVisibility(View.INVISIBLE);
         findViewById(R.id.rotateLayout).setVisibility(View.INVISIBLE);
+        findViewById(R.id.ctrlLayout).setVisibility(View.INVISIBLE);
         findViewById(R.id.diagLayout).setVisibility(View.INVISIBLE);
 
         //
@@ -77,54 +84,41 @@ public class ControlActivity extends AppCompatActivity implements BottomNavigati
         //
         SquareJoystick joystickMotion = findViewById(R.id.joystickMotion);
         joystickMotion.setRange(-1000, 1000, -110, 110);
-        joystickMotion.m_x.observe(this, v -> {
-            ((TextView)findViewById(R.id.motionTextViewX)).setText(v.toString());
-            m_viewModel.swlp.setCurvature(v);
-        });
-        joystickMotion.m_y.observe(this, v -> {
-            ((TextView)findViewById(R.id.motionTextViewY)).setText(v.toString());
-            m_viewModel.swlp.setDistance(v);
-        });
+        joystickMotion.m_x.observe(this, v -> m_viewModel.swlp.setCurvature(Math.round(v)));
+        joystickMotion.m_y.observe(this, v -> m_viewModel.swlp.setDistance(Math.round(v)));
         joystickMotion.setResetAfterMove(true);
 
         //
         // OFFSET
         //
         findViewById(R.id.buttonOffsetReset).setOnClickListener(this);
-
         SquareJoystick joystickOffset = findViewById(R.id.joystickOffset);
         joystickOffset.setRange(-150, 150, -150, 150);
-        joystickOffset.m_x.observe(this, v -> {
-            ((TextView)findViewById(R.id.offsetTextViewX)).setText(v.toString());
-            //m_viewModel.swlp.setCurvature(v);
-        });
-        joystickOffset.m_y.observe(this, v -> {
-            ((TextView)findViewById(R.id.offsetTextViewY)).setText(v.toString());
-            //m_viewModel.swlp.setDistance(v);
-        });
+        joystickOffset.m_x.observe(this, v -> m_viewModel.swlp.setSurfacePointX(Math.round(v)));
+        joystickOffset.m_y.observe(this, v -> m_viewModel.swlp.setSurfacePointZ(Math.round(v)));
         joystickOffset.setResetAfterMove(false);
 
         //
         // ROTATE
         //
         findViewById(R.id.buttonRotateReset).setOnClickListener(this);
-
         CircleJoystick joystickRotate = findViewById(R.id.joystickRotate);
         joystickRotate.setRange(-15, 15, -15, 15);
-        joystickRotate.m_x.observe(this, v -> {
-            ((TextView)findViewById(R.id.rotateTextViewX)).setText(v.toString());
-            //m_viewModel.swlp.setCurvature(v);
-        });
-        joystickRotate.m_y.observe(this, v -> {
-            ((TextView)findViewById(R.id.rotateTextViewY)).setText(v.toString());
-            //m_viewModel.swlp.setDistance(v);
-        });
+        joystickRotate.m_x.observe(this, v -> m_viewModel.swlp.setSurfaceRotateX(Math.round(v)));
+        joystickRotate.m_y.observe(this, v -> m_viewModel.swlp.setSurfaceRotateZ(Math.round(v)));
         joystickRotate.setResetAfterMove(false);
 
         //
         // DIAG
         //
         findViewById(R.id.buttonDiagUpdate).setOnClickListener(this);
+
+        //
+        // CTRL
+        //
+        ((SeekBar)findViewById(R.id.seekBarCtrlBodyHeight)).setOnSeekBarChangeListener(this);
+        ((SeekBar)findViewById(R.id.seekBarCtrlMotionSpeed)).setOnSeekBarChangeListener(this);
+        ((SeekBar)findViewById(R.id.seekBarCtrlStepHeight)).setOnSeekBarChangeListener(this);
     }
 
     @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -153,25 +147,8 @@ public class ControlActivity extends AppCompatActivity implements BottomNavigati
         findViewById(R.id.motionLayout).setVisibility(item.getItemId() == R.id.menuMotion ? View.VISIBLE : View.INVISIBLE);
         findViewById(R.id.offsetLayout).setVisibility(item.getItemId() == R.id.menuOffet  ? View.VISIBLE : View.INVISIBLE);
         findViewById(R.id.rotateLayout).setVisibility(item.getItemId() == R.id.menuRotate ? View.VISIBLE : View.INVISIBLE);
+        findViewById(R.id.ctrlLayout)  .setVisibility(item.getItemId() == R.id.menuCtrl   ? View.VISIBLE : View.INVISIBLE);
         findViewById(R.id.diagLayout)  .setVisibility(item.getItemId() == R.id.menuDiag   ? View.VISIBLE : View.INVISIBLE);
-
-            //fm.beginTransaction().replace(R.id.controlFragmentContainerView, m_motionFragment).commit();
-        /*}
-        if (item.getItemId() == R.id.menuCtrl) {
-            //fm.beginTransaction().replace(R.id.controlFragmentContainerView, m_ctrlFragment).commit();
-        }
-        if (item.getItemId() == R.id.menuOffet) {
-            findViewById(R.id.motionLayout).setVisibility(View.INVISIBLE);
-            findViewById(R.id.offsetLayout).setVisibility(View.VISIBLE);
-            findViewById(R.id.rotateLayout).setVisibility(View.INVISIBLE);
-            //fm.beginTransaction().replace(R.id.controlFragmentContainerView, m_offsetFragment).commit();
-        }
-        if (item.getItemId() == R.id.menuRotate) {
-            //fm.beginTransaction().replace(R.id.controlFragmentContainerView, m_rotateFragment).commit();
-        }
-        if (item.getItemId() == R.id.menuDiag) {
-            //fm.beginTransaction().replace(R.id.controlFragmentContainerView, m_diagFragment).commit();
-        }*/
         return true;
     }
 
@@ -213,4 +190,21 @@ public class ControlActivity extends AppCompatActivity implements BottomNavigati
             }
         }
     }
+
+    @Override public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+        if (seekBar.getId() == R.id.seekBarCtrlBodyHeight) {
+            ((TextView)findViewById(R.id.textViewCtrlBodyHeight)).setText("Body height (" + i + ")");
+            m_viewModel.swlp.setSurfacePointY(i);
+        }
+        else if (seekBar.getId() == R.id.seekBarCtrlMotionSpeed) {
+            ((TextView)findViewById(R.id.textViewCtrlMotionSpeed)).setText("Motion speed (" + i + ")");
+            m_viewModel.swlp.setMotionSpeed(i);
+        }
+        else if (seekBar.getId() == R.id.seekBarCtrlStepHeight) {
+            ((TextView)findViewById(R.id.textViewCtrlStepHeight)).setText("Step height (" + i + ")");
+            m_viewModel.swlp.setStepHeight(i);
+        }
+    }
+    @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+    @Override public void onStopTrackingTouch(SeekBar seekBar) {}
 }
