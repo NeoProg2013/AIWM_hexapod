@@ -6,18 +6,288 @@
     android:layout_height="match_parent"
     tools:context=".ControlActivity">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/controlFragmentContainerView"
-        android:name="fragments.MotionFragment"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/diagLayout"
+        android:layout_width="match_parent"
         android:layout_height="280dp"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout="@layout/fragment_motion" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/textViewDiagSystemErrors"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Ошибки системы"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="@+id/scrollViewDiagSystemErrors"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textViewDiagModuleErrors"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Ошибки модулей"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/scrollViewDiagModuleErrors"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ScrollView
+            android:id="@+id/scrollViewDiagModuleErrors"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/buttonDiagUpdate"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/scrollViewDiagSystemErrors"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDiagModuleErrors">
+
+            <LinearLayout
+                android:id="@+id/layoutDiagModuleErrors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/scrollViewDiagSystemErrors"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/buttonDiagUpdate"
+            app:layout_constraintEnd_toStartOf="@+id/scrollViewDiagModuleErrors"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDiagSystemErrors">
+
+            <LinearLayout
+                android:id="@+id/layoutDiagSystemErrors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <Button
+            android:id="@+id/buttonDiagUpdate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Обновить"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rotateLayout"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/joystickRotate"
+            app:layout_constraintTop_toTopOf="@+id/joystickRotate">
+
+            <Button
+                android:id="@+id/buttonRotateReset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="RST" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/rotateTextViewX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="0"
+            app:layout_constraintBottom_toTopOf="@+id/joystickRotate"
+            app:layout_constraintStart_toStartOf="@+id/joystickRotate" />
+
+        <TextView
+            android:id="@+id/rotateTextViewY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="0"
+            app:layout_constraintBottom_toTopOf="@+id/joystickRotate"
+            app:layout_constraintEnd_toEndOf="@+id/joystickRotate" />
+
+        <com.application.aiwm.joystick.CircleJoystick
+            android:id="@+id/joystickRotate"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:background="@drawable/circle_border"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/joystick" />
+        </com.application.aiwm.joystick.CircleJoystick>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/offsetLayout"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/joystickOffset"
+            app:layout_constraintTop_toTopOf="@+id/joystickOffset">
+
+            <Button
+                android:id="@+id/buttonOffsetReset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="RST" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/offsetTextViewX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="0"
+            app:layout_constraintBottom_toTopOf="@+id/joystickOffset"
+            app:layout_constraintStart_toStartOf="@+id/joystickOffset" />
+
+        <TextView
+            android:id="@+id/offsetTextViewY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="0"
+            app:layout_constraintBottom_toTopOf="@+id/joystickOffset"
+            app:layout_constraintEnd_toEndOf="@+id/joystickOffset" />
+
+        <com.application.aiwm.joystick.SquareJoystick
+            android:id="@+id/joystickOffset"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:background="@drawable/square_borger"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/joystick" />
+        </com.application.aiwm.joystick.SquareJoystick>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/motionLayout"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/motionTextViewX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="0"
+            app:layout_constraintBottom_toTopOf="@+id/joystickMotion"
+            app:layout_constraintStart_toStartOf="@+id/joystickMotion" />
+
+        <TextView
+            android:id="@+id/motionTextViewY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="0"
+            app:layout_constraintBottom_toTopOf="@+id/joystickMotion"
+            app:layout_constraintEnd_toEndOf="@+id/joystickMotion" />
+
+        <com.application.aiwm.joystick.SquareJoystick
+            android:id="@+id/joystickMotion"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:background="@drawable/square_borger"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/joystick" />
+        </com.application.aiwm.joystick.SquareJoystick>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/joystickMotion"
+            app:layout_constraintTop_toTopOf="@+id/joystickMotion">
+
+            <Button
+                android:id="@+id/buttonMotionUp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="UP" />
+
+            <Button
+                android:id="@+id/buttonMotionDown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="DWN" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
@@ -34,7 +304,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="15dp"
-        app:layout_constraintBottom_toTopOf="@+id/controlFragmentContainerView"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/motionLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

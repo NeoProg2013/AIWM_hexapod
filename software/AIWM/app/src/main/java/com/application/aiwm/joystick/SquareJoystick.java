@@ -18,6 +18,7 @@ public class SquareJoystick extends ConstraintLayout {
     private float m_minX = -1.0f;
     private float m_maxY = 1.0f;
     private float m_minY = -1.0f;
+    private boolean m_isResetAfterMove = true;
 
     public SquareJoystick(Context context) {
         super(context);
@@ -41,13 +42,19 @@ public class SquareJoystick extends ConstraintLayout {
         m_y.postValue(0.0f);
     }
 
-    public void setRangeX(float min, float max) {
-        m_minX = min;
-        m_maxX = max;
+    public void setRange(float minX, float maxX, float minY, float maxY) {
+        m_minX = minX;
+        m_maxX = maxX;
+        m_minY = minY;
+        m_maxY = maxY;
     }
-    public void setRangeY(float min, float max) {
-        m_minY = min;
-        m_maxY = max;
+    public void setResetAfterMove(boolean v) {
+        m_isResetAfterMove = v;
+    }
+    public void resetHandlePosition() {
+        ImageView handle = (ImageView)getChildAt(0);
+        handle.setX(getWidth() / 2.0f - handle.getWidth() / 2.0f);
+        handle.setY(getHeight() / 2.0f - handle.getHeight() / 2.0f);
     }
 
     @Override public boolean onTouchEvent(MotionEvent e) {
@@ -77,7 +84,7 @@ public class SquareJoystick extends ConstraintLayout {
 
             handle.setX(x);
             handle.setY(y);
-        } else {
+        } else if (m_isResetAfterMove) {
             handle.setX(layout_cx - handle_cx);
             handle.setY(layout_cy - handle_cy);
         }
