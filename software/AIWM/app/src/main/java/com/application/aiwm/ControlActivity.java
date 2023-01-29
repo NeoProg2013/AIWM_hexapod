@@ -2,6 +2,7 @@ package com.application.aiwm;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.graphics.Color;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -22,6 +24,7 @@ import org.w3c.dom.Text;
 public class ControlActivity extends AppCompatActivity implements
         BottomNavigationView.OnItemSelectedListener,
         View.OnClickListener,
+        CompoundButton.OnCheckedChangeListener,
         SeekBar.OnSeekBarChangeListener {
 
     private ControlActivityViewModel m_viewModel = null;
@@ -56,12 +59,12 @@ public class ControlActivity extends AppCompatActivity implements
             ((TextView)findViewById(R.id.textViewTx)).setText("TX: " + v.toString());
         });
 
-        m_viewModel.swlp.getSystemStatus().observe(this, (v) -> {
+        m_viewModel.swlp.currentSystemStatus.observe(this, (v) -> {
             if (v != 0) {
                 findViewById(R.id.imageViewWarning).setVisibility(View.VISIBLE);
             }
         });
-        m_viewModel.swlp.getModuleStatus().observe(this, (v) -> {
+        m_viewModel.swlp.currentModuleStatus.observe(this, (v) -> {
             if (v != 0) {
                 findViewById(R.id.imageViewWarning).setVisibility(View.VISIBLE);
             }
@@ -124,6 +127,7 @@ public class ControlActivity extends AppCompatActivity implements
         m_viewModel.swlp.setSurfacePointY(((SeekBar)findViewById(R.id.seekBarCtrlBodyHeight)).getProgress());
         m_viewModel.swlp.setMotionSpeed(((SeekBar)findViewById(R.id.seekBarCtrlMotionSpeed)).getProgress());
         m_viewModel.swlp.setStepHeight(((SeekBar)findViewById(R.id.seekBarCtrlStepHeight)).getProgress());
+        ((SwitchCompat)findViewById(R.id.switchCtrlStabilization)).setOnCheckedChangeListener(this);
     }
 
     @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -174,7 +178,7 @@ public class ControlActivity extends AppCompatActivity implements
             LinearLayout l = findViewById(R.id.layoutDiagSystemErrors);
             l.removeAllViews();
 
-            int systemStatus = m_viewModel.swlp.getModuleStatus().getValue();
+            int systemStatus = m_viewModel.swlp.currentSystemStatus.getValue();
             for (int i = 0; i < m_systemErrors.length; ++i) {
                 int mask = 0x01 << i;
                 if ((systemStatus & mask) == mask) {
@@ -189,7 +193,7 @@ public class ControlActivity extends AppCompatActivity implements
             l = findViewById(R.id.layoutDiagModuleErrors);
             l.removeAllViews();
 
-            int moduleStatus = m_viewModel.swlp.getModuleStatus().getValue();
+            int moduleStatus = m_viewModel.swlp.currentModuleStatus.getValue();
             for (int i = 0; i < m_moduleErrors.length; ++i) {
                 int mask = 0x01 << i;
                 if ((moduleStatus & mask) == mask) {
@@ -218,4 +222,10 @@ public class ControlActivity extends AppCompatActivity implements
     }
     @Override public void onStartTrackingTouch(SeekBar seekBar) {}
     @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+
+    @Override public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        if (compoundButton.getId() == R.id.switchCtrlStabilization) {
+            m_viewModel.swlp.setStabilizationState(b);
+        }
+    }
 }

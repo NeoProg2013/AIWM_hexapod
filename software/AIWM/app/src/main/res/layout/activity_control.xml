@@ -52,9 +52,9 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_marginTop="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -77,9 +77,9 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_marginTop="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -98,6 +98,26 @@
                         android:max="60"
                         android:min="15"
                         android:progress="30" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="125dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="Stabilization"
+                        android:textAlignment="viewEnd" />
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/switchCtrlStabilization"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp" />
 
                 </LinearLayout>
 
