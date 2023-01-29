@@ -104,6 +104,7 @@ void motion_core_move(const ext_motion_t* ext_motion) {
 ext_motion_t motion_core_get_motion(void) {
     ext_motion_t ext_motion = {0};
     ext_motion.cfg = g_cur_motion.cfg;
+    ext_motion.ctrl = g_ext_motion.ctrl;
     ext_motion.surface_point = g_cur_motion.surface_point;
     ext_motion.surface_rotate = g_cur_motion.surface_rotate;
     return ext_motion;
