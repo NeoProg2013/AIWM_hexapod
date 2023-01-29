@@ -1,4 +1,4 @@
-package com.application.aiwm.swlp;
+package com.application.aiwm;
 
 import android.util.Log;
 
@@ -16,13 +16,12 @@ public class Swlp {
     private Thread m_sendThread = null;
 
     // Statistic
-    private final MutableLiveData<Integer> m_rxCountLive = new MutableLiveData<>(0);
-    private final MutableLiveData<Integer> m_txCountLive = new MutableLiveData<>(0);
+    public final MutableLiveData<Integer> rxCountLive = new MutableLiveData<>(0);
+    public final MutableLiveData<Integer> txCountLive = new MutableLiveData<>(0);
+    public final MutableLiveData<Integer> lostCountLive = new MutableLiveData<>(0);
     private int m_rxCount = 0;
     private int m_txCount = 0;
-
-    public MutableLiveData<Integer> getRxPacketsCounter() { return m_rxCountLive; }
-    public MutableLiveData<Integer> getTxPacketsCounter() { return m_txCountLive; }
+    private int m_lostCount = 0;
 
     // Request
     volatile private int m_curvature = 0;
@@ -154,9 +153,14 @@ public class Swlp {
                 DatagramPacket outPacket = new DatagramPacket(frame, frame.length, InetAddress.getByName(SERVER_IP_ADDRESS), 3333);
                 m_socket.send(outPacket);
 
-                ++m_txCount;
-                m_txCountLive.postValue(m_txCount);
-                Thread.sleep(500);
+
+                if (m_txCount - m_rxCount > m_lostCount) {
+                    m_lostCount = m_txCount - m_rxCount;
+                    lostCountLive.postValue(m_lostCount);
+                }
+                txCountLive.postValue(++m_txCount);
+
+                Thread.sleep(50);
             }
         }
         catch (Exception e) {
@@ -218,8 +222,7 @@ public class Swlp {
                 Log.e("SWLP", String.format("px=%d py=%d pz=%d", currentSurfacePointX.getValue(), currentSurfacePointY.getValue(), currentSurfacePointZ.getValue()));
                 Log.e("SWLP", String.format("rx=%d ry=%d rz=%d", currentSurfaceRotateX.getValue(), currentSurfaceRotateY.getValue(), currentSurfaceRotateZ.getValue()));
 
-                ++m_rxCount;
-                m_rxCountLive.postValue(m_rxCount);
+                rxCountLive.postValue(++m_rxCount);
             }
         }
         catch (Exception e) {

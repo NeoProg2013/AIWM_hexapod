@@ -9,7 +9,13 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -18,8 +24,6 @@ import android.widget.TextView;
 import com.application.aiwm.joystick.CircleJoystick;
 import com.application.aiwm.joystick.SquareJoystick;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import org.w3c.dom.Text;
 
 public class ControlActivity extends AppCompatActivity implements
         BottomNavigationView.OnItemSelectedListener,
@@ -52,11 +56,14 @@ public class ControlActivity extends AppCompatActivity implements
 
         m_viewModel = new ViewModelProvider(this).get(ControlActivityViewModel.class);
 
-        m_viewModel.swlp.getRxPacketsCounter().observe(this, (v) -> {
+        m_viewModel.swlp.rxCountLive.observe(this, (v) -> {
             ((TextView)findViewById(R.id.textViewRx)).setText("RX: " + v.toString());
         });
-        m_viewModel.swlp.getTxPacketsCounter().observe(this, (v) -> {
+        m_viewModel.swlp.txCountLive.observe(this, (v) -> {
             ((TextView)findViewById(R.id.textViewTx)).setText("TX: " + v.toString());
+        });
+        m_viewModel.swlp.lostCountLive.observe(this, (v) -> {
+            ((TextView)findViewById(R.id.textViewLost)).setText("LO: " + v.toString());
         });
 
         m_viewModel.swlp.currentSystemStatus.observe(this, (v) -> {
@@ -67,6 +74,31 @@ public class ControlActivity extends AppCompatActivity implements
         m_viewModel.swlp.currentModuleStatus.observe(this, (v) -> {
             if (v != 0) {
                 findViewById(R.id.imageViewWarning).setVisibility(View.VISIBLE);
+            }
+        });
+        findViewById(R.id.imageViewWarning).setVisibility(View.INVISIBLE);
+
+        WebView wv = findViewById(R.id.webViewStream);
+        wv.loadUrl("http://111.111.111.5/");
+        wv.getSettings().setUserAgentString("AIWM");
+        wv.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        wv.getSettings().setLoadWithOverviewMode(true);
+        wv.getSettings().setUseWideViewPort(true);
+        wv.setVerticalScrollBarEnabled(false);
+        wv.setHorizontalScrollBarEnabled(false);
+        wv.setOnTouchListener(new View.OnTouchListener() {
+            @Override public boolean onTouch(View v, MotionEvent event) {
+                return (event.getAction() == MotionEvent.ACTION_MOVE);
+            }
+        });
+
+
+        wv.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Log.e("", "request.getRequestHeaders()::"+request.getRequestHeaders());
+
+                return null;
             }
         });
 
