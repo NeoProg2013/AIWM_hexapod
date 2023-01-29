@@ -2,6 +2,7 @@ package com.application.aiwm.joystick;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -55,6 +56,16 @@ public class SquareJoystick extends ConstraintLayout {
         ImageView handle = (ImageView)getChildAt(0);
         handle.setX(getWidth() / 2.0f - handle.getWidth() / 2.0f);
         handle.setY(getHeight() / 2.0f - handle.getHeight() / 2.0f);
+
+        MotionEvent touchEvent = MotionEvent.obtain(
+                SystemClock.uptimeMillis(),
+                SystemClock.uptimeMillis() + 100,
+                MotionEvent.ACTION_UP,
+                handle.getX(),
+                handle.getY(),
+                0
+        );
+        this.dispatchTouchEvent(touchEvent);
     }
 
     @Override public boolean onTouchEvent(MotionEvent e) {

@@ -53,7 +53,7 @@ public class Swlp {
         m_surfacePointX = v;
     }
     public void setSurfacePointY(int v) {
-        m_surfacePointY = v;
+        m_surfacePointY = -v;
     }
     public void setSurfacePointZ(int v) {
         m_surfacePointZ = v;
@@ -162,7 +162,7 @@ public class Swlp {
                 m_systemStatus.postValue(rand.nextInt(255));
                 m_moduleStatus.postValue(rand.nextInt(255));
 
-                Thread.sleep(1000);
+                Thread.sleep(30);
             }
         }
         catch (Exception e) {

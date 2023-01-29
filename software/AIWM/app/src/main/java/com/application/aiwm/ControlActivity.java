@@ -87,15 +87,17 @@ public class ControlActivity extends AppCompatActivity implements
         joystickMotion.m_x.observe(this, v -> m_viewModel.swlp.setCurvature(Math.round(v)));
         joystickMotion.m_y.observe(this, v -> m_viewModel.swlp.setDistance(Math.round(v)));
         joystickMotion.setResetAfterMove(true);
+        findViewById(R.id.buttonMotionUp).setOnClickListener(this);
+        findViewById(R.id.buttonMotionDown).setOnClickListener(this);
 
         //
         // OFFSET
         //
         findViewById(R.id.buttonOffsetReset).setOnClickListener(this);
         SquareJoystick joystickOffset = findViewById(R.id.joystickOffset);
-        joystickOffset.setRange(-150, 150, -150, 150);
-        joystickOffset.m_x.observe(this, v -> m_viewModel.swlp.setSurfacePointX(Math.round(v)));
-        joystickOffset.m_y.observe(this, v -> m_viewModel.swlp.setSurfacePointZ(Math.round(v)));
+        joystickOffset.setRange(-75, 75, -75, 75);
+        joystickOffset.m_x.observe(this, v -> m_viewModel.swlp.setSurfacePointX(Math.round(-v)));
+        joystickOffset.m_y.observe(this, v -> m_viewModel.swlp.setSurfacePointZ(Math.round(-v)));
         joystickOffset.setResetAfterMove(false);
 
         //
@@ -104,8 +106,8 @@ public class ControlActivity extends AppCompatActivity implements
         findViewById(R.id.buttonRotateReset).setOnClickListener(this);
         CircleJoystick joystickRotate = findViewById(R.id.joystickRotate);
         joystickRotate.setRange(-15, 15, -15, 15);
-        joystickRotate.m_x.observe(this, v -> m_viewModel.swlp.setSurfaceRotateX(Math.round(v)));
-        joystickRotate.m_y.observe(this, v -> m_viewModel.swlp.setSurfaceRotateZ(Math.round(v)));
+        joystickRotate.m_x.observe(this, v -> m_viewModel.swlp.setSurfaceRotateZ(Math.round(v)));
+        joystickRotate.m_y.observe(this, v -> m_viewModel.swlp.setSurfaceRotateX(Math.round(v)));
         joystickRotate.setResetAfterMove(false);
 
         //
@@ -119,6 +121,9 @@ public class ControlActivity extends AppCompatActivity implements
         ((SeekBar)findViewById(R.id.seekBarCtrlBodyHeight)).setOnSeekBarChangeListener(this);
         ((SeekBar)findViewById(R.id.seekBarCtrlMotionSpeed)).setOnSeekBarChangeListener(this);
         ((SeekBar)findViewById(R.id.seekBarCtrlStepHeight)).setOnSeekBarChangeListener(this);
+        m_viewModel.swlp.setSurfacePointY(((SeekBar)findViewById(R.id.seekBarCtrlBodyHeight)).getProgress());
+        m_viewModel.swlp.setMotionSpeed(((SeekBar)findViewById(R.id.seekBarCtrlMotionSpeed)).getProgress());
+        m_viewModel.swlp.setStepHeight(((SeekBar)findViewById(R.id.seekBarCtrlStepHeight)).getProgress());
     }
 
     @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -153,7 +158,13 @@ public class ControlActivity extends AppCompatActivity implements
     }
 
     @Override public void onClick(View view) {
-        if (view.getId() == R.id.buttonOffsetReset) {
+        if (view.getId() == R.id.buttonMotionUp) {
+            ((SeekBar)findViewById(R.id.seekBarCtrlBodyHeight)).setProgress(85);
+        }
+        else if (view.getId() == R.id.buttonMotionDown) {
+            ((SeekBar)findViewById(R.id.seekBarCtrlBodyHeight)).setProgress(15);
+        }
+        else if (view.getId() == R.id.buttonOffsetReset) {
             ((SquareJoystick)findViewById(R.id.joystickOffset)).resetHandlePosition();
         }
         else if (view.getId() == R.id.buttonRotateReset) {
