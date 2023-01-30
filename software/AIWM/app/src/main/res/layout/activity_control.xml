@@ -380,8 +380,11 @@
 
         <com.application.aiwm.StreamWebView
             android:id="@+id/webViewStream"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:rotation="-90"
+            android:transformPivotX="0dp"
+            android:transformPivotY="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -414,6 +417,16 @@
             android:text="LO: 0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewRx" />
+
+        <TextView
+            android:id="@+id/textViewStab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="STAB"
+            android:textColor="#4CAF50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewLost" />
 
         <ImageView
             android:id="@+id/imageViewWarning"

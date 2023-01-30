@@ -10,7 +10,7 @@ public class ControlActivityViewModel extends ViewModel {
 
     public ControlActivityViewModel() {
         Log.e("CA_ViewModel", "call ctor");
-        //swlp.start();
+        swlp.start();
     }
     @Override protected void onCleared() {
         Log.e("CA_ViewModel", "call onCleared");

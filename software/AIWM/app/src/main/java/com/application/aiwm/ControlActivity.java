@@ -76,29 +76,26 @@ public class ControlActivity extends AppCompatActivity implements
                 findViewById(R.id.imageViewWarning).setVisibility(View.VISIBLE);
             }
         });
+        m_viewModel.swlp.currentMotionCtrl.observe(this, (v) -> {
+            if ((v & 0x01) == 0x01) {
+                findViewById(R.id.textViewStab).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.textViewStab).setVisibility(View.INVISIBLE);
+            }
+        });
         findViewById(R.id.imageViewWarning).setVisibility(View.INVISIBLE);
 
         WebView wv = findViewById(R.id.webViewStream);
         wv.loadUrl("http://111.111.111.5/");
         wv.getSettings().setUserAgentString("AIWM");
         wv.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        wv.getSettings().setLoadWithOverviewMode(true);
+        //wv.getSettings().setLoadWithOverviewMode(true);
         wv.getSettings().setUseWideViewPort(true);
         wv.setVerticalScrollBarEnabled(false);
         wv.setHorizontalScrollBarEnabled(false);
         wv.setOnTouchListener(new View.OnTouchListener() {
             @Override public boolean onTouch(View v, MotionEvent event) {
                 return (event.getAction() == MotionEvent.ACTION_MOVE);
-            }
-        });
-
-
-        wv.setWebViewClient(new WebViewClient() {
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                Log.e("", "request.getRequestHeaders()::"+request.getRequestHeaders());
-
-                return null;
             }
         });
 
