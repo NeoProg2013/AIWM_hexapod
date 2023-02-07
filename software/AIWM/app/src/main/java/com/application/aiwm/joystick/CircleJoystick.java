@@ -11,8 +11,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.MutableLiveData;
 
 public class CircleJoystick extends ConstraintLayout {
-    public MutableLiveData<Float> m_x = new MutableLiveData<>();
-    public MutableLiveData<Float> m_y = new MutableLiveData<>();
+    public final MutableLiveData<Float> m_x = new MutableLiveData<>();
+    public final MutableLiveData<Float> m_y = new MutableLiveData<>();
     private float m_maxX = 1.0f;
     private float m_minX = -1.0f;
     private float m_maxY = 1.0f;
