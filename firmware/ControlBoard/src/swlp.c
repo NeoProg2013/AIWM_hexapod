@@ -32,6 +32,7 @@ static void frame_received_callback(uint32_t frame_size);
 static void frame_transmitted_or_error_callback(void);
 static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size);
 static uint16_t calculate_crc16(const uint8_t* frame, uint32_t size);
+static uint16_t calculate_checksum(const uint8_t* frame, uint32_t size);
 
 
 /// ***************************************************************************
@@ -109,9 +110,15 @@ void swlp_process(void) {
 
         // Prepare response
         swlp_tx_frame->start_mark = SWLP_START_MARK_VALUE;
-        swlp_tx_frame->version = SWLP_CURRENT_VERSION;
-        swlp_tx_frame->crc16 = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - sizeof(swlp_tx_frame->crc16));
+        swlp_tx_frame->version = swlp_rx_frame->version;
         
+        // Calculate frame checksum
+        if (swlp_rx_frame->version == SWLP_CURRENT_VERSION) {
+            swlp_tx_frame->checksum = calculate_checksum((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - sizeof(swlp_tx_frame->checksum));
+        } else {
+            swlp_tx_frame->checksum = calculate_crc16((uint8_t*)swlp_tx_frame, sizeof(swlp_frame_t) - sizeof(swlp_tx_frame->checksum));
+        }
+
         // Transmit response
         state = STATE_TRANSMIT;
         usart2_start_tx(sizeof(swlp_frame_t));
@@ -141,16 +148,23 @@ static bool check_frame(const uint8_t* rx_buffer, uint32_t frame_size) {
     if (frame_size != sizeof(swlp_frame_t)) { // Check frame size
         return false;
     }
-
-    // Check frame CRC16
-    uint16_t crc = calculate_crc16(rx_buffer, frame_size - 2);
-    if (calculate_crc16(rx_buffer, frame_size) != 0) {
+    
+    // Check start mark
+    const swlp_frame_t* swlp_frame = (const swlp_frame_t*)rx_buffer;
+    if (swlp_frame->start_mark != SWLP_START_MARK_VALUE) {
         return false;
     }
-
-    // Check start mark and vesrion
-    const swlp_frame_t* swlp_frame = (const swlp_frame_t*)rx_buffer;
-    if (swlp_frame->start_mark != SWLP_START_MARK_VALUE || swlp_frame->version != SWLP_CURRENT_VERSION) {
+    
+    // Check frame intergity
+    if (swlp_frame->version == SWLP_CURRENT_VERSION) {
+        if (calculate_checksum(rx_buffer, frame_size - 2) != swlp_frame->checksum) {
+            return false;
+        }
+    } else if (0x03) {
+        if (calculate_crc16(rx_buffer, frame_size) != 0) {
+            return false;
+        }
+    } else {
         return false;
     }
 
@@ -180,6 +194,20 @@ static uint16_t calculate_crc16(const uint8_t* frame, uint32_t size) {
         }
     }
     return crc16;
+}
+
+/// ***************************************************************************
+/// @brief  Calculate frame checksum
+/// @param  frame: frame
+/// @param  size: frame size
+/// @return checksum value
+/// ***************************************************************************
+static uint16_t calculate_checksum(const uint8_t* frame, uint32_t size) {
+    uint32_t checksum = 0;
+    for (uint32_t i = 0; i < size; ++i) {
+        checksum += frame[i];
+    }
+    return checksum & 0xFFFF;
 }
 
 /// ***************************************************************************
