@@ -146,22 +146,12 @@ bool mm_surface_calculate_offsets(limb_t* limbs, const p3d_t* surface_point, con
     // Nx(x - x0) + Ny(y - y0) + Nz(z - 0z) = 0
     // y = (-Nx(x - x0) - Nz(z - z0)) / Ny + y0
     for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        float z_sign = 1.0f;
-        if (limbs[i].pos.z != 0) {
-            z_sign = limbs[i].pos.z / fabs(limbs[i].pos.z);
-        }
-        float z = limbs[i].pos.z + z_sign * 104.0f; // 104 - coxa position from center by axix Z
-        
-        float x_sign = 1.0f;
-        if (limbs[i].pos.x != 0) {
-            x_sign = limbs[i].pos.x / fabs(limbs[i].pos.x);
-        }
-        float x = limbs[i].pos.x + x_sign * 104.0f;
-        
+        z = limbs[i].pos.z + limbs[i].join.z;
+        x = limbs[i].pos.x + limbs[i].join.x;
         
         limbs[i].surface_offsets.x = surface_point->x;
         limbs[i].surface_offsets.z = surface_point->z;
-        limbs[i].surface_offsets.y = -(n.x * (x/*limbs[i].pos.x*/ - surface_point->x) + n.z * (z/*limbs[i].pos.z*/ - surface_point->z)) / n.y + surface_point->y;
+        limbs[i].surface_offsets.y = -(n.x * (x - surface_point->x) + n.z * (z - surface_point->z)) / n.y + surface_point->y;
     }
     return true;
 }

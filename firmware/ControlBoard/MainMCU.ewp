@@ -285,7 +285,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>10010100</state>
+                    <state>00000000</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -370,7 +370,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>2</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -379,7 +379,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>2</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CompilerMisraRules98</name>
@@ -405,7 +405,7 @@
                 </option>
                 <option>
                     <name>IccLang</name>
-                    <state>2</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IccCDialect</name>
@@ -2506,25 +2506,10 @@
             <name>$PROJ_DIR$\src\cli.h</name>
         </file>
         <file>
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/MainMCU.ewp
-            <name>$PROJ_DIR$\src\configurator.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\configurator.h</name>
-        </file>
-        <file>
-=======
->>>>>>> develop:firmware/ControlBoard/MainMCU.ewp
             <name>$PROJ_DIR$\src\display.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\display.h</name>
-<<<<<<< HEAD:firmware/ControlBoard/MainMCU/MainMCU.ewp
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\gait_sequences.h</name>
-=======
->>>>>>> develop:firmware/ControlBoard/MainMCU.ewp
         </file>
         <file>
             <name>$PROJ_DIR$\src\indication.c</name>
@@ -2555,12 +2540,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\src\swlp-protocol.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\smcu.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\smcu.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\src\swlp.c</name>

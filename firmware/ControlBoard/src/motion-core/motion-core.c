@@ -74,26 +74,6 @@ void motion_core_init() {
     g_cur_motion.surface_point.y = g_ext_motion.surface_point.y = MOTION_SURFACE_MIN_HEIGHT;
     g_cur_motion.cfg.step_height = g_ext_motion.cfg.step_height = MOTION_DEFAULT_STEP_HEIGHT;
 
-    /*// Calculate limbs offset by regarding surface
-    if (!mm_surface_calculate_offsets(g_limbs, &g_cur_motion.surface_point, &g_cur_motion.surface_rotate)) {
-        sysmon_set_error(SYSMON_MATH_ERROR | SYSMON_FATAL_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
-        return;
-    }
-
-    // Set servo start angles
-    if (!mm_kinematic_calculate_angles(g_limbs)) {
-        sysmon_set_error(SYSMON_MATH_ERROR | SYSMON_FATAL_ERROR);
-        sysmon_disable_module(SYSMON_MODULE_MOTION_CORE);
-        return;
-    }
-
-    // Load start angles and turn servo power ON
-    for (uint32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) {
-        servo_driver_move(i * 3 + 0, g_limbs[i].coxa.angle);
-        servo_driver_move(i * 3 + 1, g_limbs[i].femur.angle);
-        servo_driver_move(i * 3 + 2, g_limbs[i].tibia.angle);
-    }*/
     servo_driver_power_on();
 }
 
@@ -124,6 +104,7 @@ void motion_core_move(const ext_motion_t* ext_motion) {
 ext_motion_t motion_core_get_motion(void) {
     ext_motion_t ext_motion = {0};
     ext_motion.cfg = g_cur_motion.cfg;
+    ext_motion.ctrl = g_ext_motion.ctrl;
     ext_motion.surface_point = g_cur_motion.surface_point;
     ext_motion.surface_rotate = g_cur_motion.surface_rotate;
     return ext_motion;
@@ -141,7 +122,7 @@ void motion_core_process(void) {
     //
     // Motion section
     //
-    // Constrain step height before motions
+    // Constrain step height before motions by hardware limits
     constrain_u16(&g_ext_motion.cfg.step_height, MOTION_MIN_STEP_HEIGHT, MOTION_MAX_STEP_HEIGHT); 
     
     // Change motion speed 
@@ -175,7 +156,7 @@ void motion_core_process(void) {
     constrain_float(&dst_surface_point.y, MOTION_SURFACE_MAX_HEIGHT, min_y_surface_point);
 
     //
-    // Move surface
+    // Move hexapod surface to destination surface
     //
     g_is_surface_move_completed = mm_move_surface(&g_cur_motion.surface_point, &dst_surface_point, &g_cur_motion.surface_rotate, &dst_surface_rotate, CHANGE_SURFACE_POS_MAX_STEP);
     
@@ -239,12 +220,18 @@ static void main_motion_process(void) {
     static int32_t motion_time = MOTION_TIME_MIN_VALUE;
     static int32_t motion_loop = 0;
 
+    //
+    // Start motion state
+    //
     if (g_hexapod_state == HEXAPOD_STATE_RDY && g_ext_motion.cfg.distance) {
         g_cur_motion.cfg = g_ext_motion.cfg; // Update motion configuration
         g_hexapod_state = HEXAPOD_STATE_MOTION_INIT;
     } 
     
-    if (g_hexapod_state == HEXAPOD_STATE_MOTION_INIT) {
+    //
+    // Motion loop
+    //
+    if (g_hexapod_state == HEXAPOD_STATE_MOTION_INIT) { // Prepare for motion -- move limbs to init position
         // Move limbs 0, 2, 4 to up state for even loop
         // Move limbs 1, 3, 5 to up state for odd loop
         bool is_completed = true;
@@ -258,13 +245,15 @@ static void main_motion_process(void) {
             g_hexapod_state = HEXAPOD_STATE_MOTION_EXEC;
         }
     } 
-    else if (g_hexapod_state == HEXAPOD_STATE_MOTION_EXEC) {
-        if (motion_time == MOTION_TIME_MID_VALUE) { // Reached update motion configuration time
+    else if (g_hexapod_state == HEXAPOD_STATE_MOTION_EXEC) { // Process motion loop
+        // Check reached update motion configuration time
+        // Here we can update motion configuration
+        if (motion_time == MOTION_TIME_MID_VALUE) { 
             g_cur_motion.cfg = g_ext_motion.cfg;
         }
         
         static uint64_t last_exec_time = 0;
-        if (g_cur_motion.cfg.distance) {
+        if (g_cur_motion.cfg.distance) { // Move hexapod if step distance is present
             const motion_cfg_t* cfg = &g_cur_motion.cfg;
             if (!mm_process_advanced_traj(g_limbs, g_limbs_base_pos, motion_time, motion_loop, cfg->curvature, cfg->distance, cfg->step_height)) {
                 sysmon_set_error(SYSMON_MATH_ERROR);
@@ -284,9 +273,8 @@ static void main_motion_process(void) {
             }
         }
     } 
-    else if (g_hexapod_state == HEXAPOD_STATE_MOTION_DEINIT) {
-        if (g_ext_motion.cfg.distance == 0) {
-            // Move all limbs to down state
+    else if (g_hexapod_state == HEXAPOD_STATE_MOTION_DEINIT) { // Deinit motion -- move all limbs to down state
+        if (!g_ext_motion.cfg.distance) {
             bool is_completed = true;
             for (int32_t i = 0; i < SUPPORT_LIMBS_COUNT; ++i) { 
                 if (!mm_move_value(&g_limbs[i].pos.y, 0.0f, CHANGE_SURFACE_POS_MAX_STEP)) {
@@ -324,26 +312,38 @@ static void load_config(void) {
     g_limbs[0].coxa.zero_rotate = 135;
     g_limbs[0].femur.zero_rotate = 35;
     g_limbs[0].tibia.zero_rotate = 135;
-    
+    g_limbs[0].join.z = 104;
+    g_limbs[0].join.x = -53;
+
     g_limbs[1].coxa.zero_rotate = 180;
     g_limbs[1].femur.zero_rotate = 35;
     g_limbs[1].tibia.zero_rotate = 135;
-    
+    g_limbs[1].join.z = 0;
+    g_limbs[1].join.x = -80;
+
     g_limbs[2].coxa.zero_rotate = 225;
     g_limbs[2].femur.zero_rotate = 35;
     g_limbs[2].tibia.zero_rotate = 135;
-    
+    g_limbs[2].join.z = -104;
+    g_limbs[2].join.x = -53;
+
     g_limbs[3].coxa.zero_rotate = 45;
     g_limbs[3].femur.zero_rotate = 35;
     g_limbs[3].tibia.zero_rotate = 135;
-    
+    g_limbs[3].join.z = 104;
+    g_limbs[3].join.x = 53;
+
     g_limbs[4].coxa.zero_rotate = 0;
     g_limbs[4].femur.zero_rotate = 35;
     g_limbs[4].tibia.zero_rotate = 135;
-    
+    g_limbs[4].join.z = 0;
+    g_limbs[4].join.x = 80;
+
     g_limbs[5].coxa.zero_rotate = 315;
     g_limbs[5].femur.zero_rotate = 35;
     g_limbs[5].tibia.zero_rotate = 135;
+    g_limbs[5].join.z = -104;
+    g_limbs[5].join.x = 53;
 }
 
 
